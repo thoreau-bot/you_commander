@@ -5,9 +5,10 @@ A private, local-first organizer, watch player and transcript tool for a large Y
 YouCommander imports your playlist exports from Google Takeout into a local SQLite database. From there you can search, tag, triage and watch your videos. **Nothing leaves your machine**: there is no account, no cloud, no telemetry, and it never writes back to YouTube.
 
 ![Commander](docs/img/commander.png)
+*Commander, with a video open in place. The picture in the player is an illustration, since the real player needs YouTube.*
 
 ![Watch page](docs/img/watch.png)
-*The Watch page. The picture in the video area is a generated illustration, since the real player needs YouTube.*
+*The Watch page, same illustration caveat.*
 
 ## Features
 
