@@ -1,6 +1,6 @@
 # Architecture
 
-Single-process FastAPI app serving static HTML pages (vanilla JS, no build step) over a SQLite database.
+Single-process FastAPI app serving static HTML pages (vanilla JS, no build step) over a SQLite database. Every page links one shared stylesheet, `static/app.css`; page-specific rules stay inline in the page.
 
 | File | Role |
 |---|---|
@@ -10,6 +10,7 @@ Single-process FastAPI app serving static HTML pages (vanilla JS, no build step)
 | `transcripts.py` | Caption fetch (`yt-dlp`, json3), Whisper path, background worker, transcript search |
 | `voice.py` | Local `faster-whisper` transcription, optional Ollama tag extraction |
 | `ui.html` `triage.html` `watch.html` `history.html` `import.html` | Pages |
+| `static/app.css` `static/app.js` | Shared visual system (tokens, controls, light/dark) and the `?` help overlay; served at `/static/` |
 | `tools/make_demo.py` | Builds an invented demo library |
 | `tests/` | pytest smoke tests and a JS syntax check of every page |
 

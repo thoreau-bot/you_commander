@@ -1,35 +1,63 @@
 <!doctype html><meta charset=utf-8><title>YouCommander · Triage</title><link rel=icon href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='8' fill='%232a5bd7'/%3E%3Cg fill='none' stroke='white' stroke-width='2.6' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='9,13 16,7.5 23,13'/%3E%3Cpolyline points='9,20 16,14.5 23,20'/%3E%3Cline x1='12' y1='26' x2='20' y2='26'/%3E%3C/g%3E%3C/svg%3E"><meta name=viewport content="width=device-width,initial-scale=1">
+<link rel=stylesheet href="/static/app.css">
 <style>
-:root{--bg:#fff;--fg:#1d1d1f;--mut:#6b6b70;--bd:#dcdce0;--ac:#2a5bd7;--pn:#f5f5f7;--ok:#1d7a3a;--bad:#b3261e}
-@media(prefers-color-scheme:dark){:root{--bg:#18181b;--fg:#ececf0;--mut:#9a9aa3;--bd:#34343a;--ac:#7ea2ff;--pn:#222226;--ok:#6fcf8e;--bad:#ff8a80}}
-*{box-sizing:border-box}body{margin:0;font:14px system-ui;background:var(--bg);color:var(--fg)}
-#top{display:flex;gap:10px;align-items:center;padding:8px 12px;border-bottom:1px solid var(--bd);background:var(--pn)}#top a{color:var(--ac)}
-#wrap{display:grid;grid-template-columns:minmax(0,1.4fr) minmax(280px,1fr);gap:14px;padding:12px;max-width:1500px;margin:auto}
-#pl{aspect-ratio:16/9;background:#000;border-radius:8px;overflow:hidden}#pl iframe{width:100%;height:100%;border:0}
-h2{margin:8px 0 2px;font-size:17px}.mut{color:var(--mut)}
-button,input,textarea{font:inherit;border:1px solid var(--bd);border-radius:6px;background:var(--bg);color:var(--fg);padding:6px 10px}button{cursor:pointer}button:hover{background:var(--pn)}
-.chip{display:inline-flex;gap:4px;align-items:center;border:1px solid var(--bd);border-radius:14px;padding:2px 4px 2px 10px;margin:2px;cursor:default}.chip.s{border-style:dashed;color:var(--mut)}.chip b{cursor:pointer;padding:0 6px}
-#sugg{position:absolute;background:var(--bg);border:1px solid var(--bd);border-radius:6px;max-height:240px;overflow:auto;z-index:5;min-width:260px}#sugg div{padding:5px 10px;cursor:pointer}#sugg div.on,#sugg div:hover{background:var(--pn)}
-.bar{display:flex;flex-wrap:wrap;gap:6px;margin:10px 0}.ok{border-color:var(--ok);color:var(--ok)}.bad{border-color:var(--bad);color:var(--bad)}
-#ctx{position:fixed;background:var(--bg);border:1px solid var(--bd);border-radius:8px;box-shadow:0 4px 18px #0004;display:none;z-index:9}#ctx div{padding:7px 16px;cursor:pointer}#ctx div:hover{background:var(--pn)}
-kbd{border:1px solid var(--bd);border-bottom-width:2px;border-radius:4px;padding:0 5px;font-size:12px}
-@media(max-width:900px){#wrap{grid-template-columns:1fr}}
-.pwret{display:block;font-size:11px;color:var(--mut);margin:4px 0;outline:none}.pwret.b4{position:absolute;width:1px;height:1px;overflow:hidden;margin:0;opacity:0}#fhint{position:fixed;right:14px;bottom:12px;background:var(--bg);color:var(--fg);border:1px solid var(--bd);border-radius:8px;padding:6px 10px;font-size:12px;box-shadow:0 4px 18px #0003;display:none;z-index:20;max-width:340px}
+#wrap{display:grid;grid-template-columns:minmax(0,1.45fr) minmax(320px,1fr);gap:22px;padding:18px 22px 40px;max-width:1540px;margin:auto}
+#ti{font-size:21px;margin-top:4px}#ch{margin-top:3px}#pls{font-size:12.5px;margin-top:3px;color:var(--mut)}
+.panel .in{padding:14px}
+#tg{min-height:30px;margin-bottom:6px}
+.tagwrap{position:relative}
+#note{width:100%;margin-top:4px}
+.decide{display:flex;flex-wrap:wrap;gap:6px;margin-top:14px}
+.decide .sp{flex:1}
+.more{display:flex;flex-wrap:wrap;gap:6px;margin-top:8px}
+#vs{min-height:20px;margin-top:10px;font-size:12.5px;line-height:1.5}
+#vsug{margin-top:6px;display:flex;flex-wrap:wrap;gap:6px}
+#vsug:empty{display:none}
+.side{align-self:start;position:sticky;top:70px}
+@media(max-width:900px){#wrap{grid-template-columns:1fr;padding:14px}.side{position:static}}
+/* batch */
 .batch #wrap{grid-template-columns:minmax(0,1fr)}.batch #wrap>section:first-child,.batch #bs,.batch #bp,.batch #bm,.batch #bo{display:none}
-#batch{display:none;max-width:1500px;margin:0 auto;padding:0 12px 60px}.batch #batch{display:block}
-#batch details{border:1px solid var(--bd);border-radius:8px;margin:8px 0;background:var(--pn)}#batch summary{padding:8px 12px;cursor:pointer;font-weight:600;display:flex;gap:8px;align-items:center}#batch summary .x{margin-left:auto;font-weight:400}
-#batch details.bfoc{outline:3px solid var(--ac);outline-offset:2px}#batch details.bflash{animation:bfl .7s ease-in-out 2}@keyframes bfl{50%{background:color-mix(in srgb,var(--ac) 22%,var(--pn))}}
-#batch .bin{padding:0 12px 10px}#batch details.warn{border-color:var(--bad);box-shadow:0 0 0 2px var(--bad)}#batch .bpv{aspect-ratio:16/9;max-width:640px;margin-top:8px;background:#000;border-radius:8px;overflow:hidden}#batch .bpv iframe{width:100%;height:100%;border:0}
-.pmode{outline:3px solid var(--ac);outline-offset:3px;border-radius:8px}
+.batch .side{position:static;max-width:760px}
+#batch{display:none;max-width:1540px;margin:0 auto;padding:0 22px 60px}.batch #batch{display:block}
+#batch h2{font-size:17px;margin-bottom:4px}#batch .intro{margin-bottom:12px;color:var(--mut);font-size:12.5px;max-width:80ch}
+#batch details{border:1px solid var(--bd);border-radius:var(--r);margin:8px 0;background:var(--sf);box-shadow:var(--sh)}
+#batch summary{list-style:none;padding:10px 14px;cursor:pointer;font-weight:600;display:flex;gap:10px;align-items:center;border-radius:var(--r)}
+#batch summary::-webkit-details-marker{display:none}
+#batch summary::before{content:"";width:0;height:0;border:5px solid transparent;border-left:7px solid var(--mut);margin-right:2px;transition:transform .12s}
+#batch details[open]>summary::before{transform:rotate(90deg)}
+#batch summary>span:first-of-type{flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+#batch summary .x{margin-left:auto;font-weight:400;display:flex;gap:6px;flex:none}
+#batch details.bfoc{outline:2px solid var(--ac);outline-offset:1px}#batch details.bflash{animation:bfl .7s ease-in-out 2}@keyframes bfl{50%{background:var(--ac-s)}}
+#batch .bin{padding:2px 14px 14px 38px;color:var(--fg2)}#batch .bin .chips{margin:8px 0 6px}
+#batch details.warn{border-color:var(--bad);box-shadow:0 0 0 3px var(--bad-s)}
+#batch .bpv{max-width:640px;margin-top:10px}
 </style>
-<div id=top><a href="/" title="YouCommander — back to Commander" style="display:flex"><svg class=logo width=22 height=22 viewBox="0 0 32 32" role=img aria-label=YouCommander><rect width=32 height=32 rx=8 fill="var(--ac)"/><g fill=none stroke="var(--bg)" stroke-width=2.6 stroke-linecap=round stroke-linejoin=round><polyline points="9,13 16,7.5 23,13"/><polyline points="9,20 16,14.5 23,20"/><line x1=12 y1=26 x2=20 y2=26 /></g></svg></a><a href="/">← Commander</a><b>Triage</b><span id=pos class=mut></span><span id=cnt class=mut style="margin-left:auto"></span></div>
-<div id=wrap><section><span class="pwret b4" tabindex=0 onfocus="retList()"></span><div id=pl><div id=yt></div></div><span class=pwret tabindex=0 onfocus="retList()">F: video controls (Space, arrows, volume&hellip;) &middot; F or Esc to finish</span><div id=fhint></div><h2 id=ti></h2><div class=mut id=ch></div><div class=mut id=pls style="font-size:12px;margin-top:4px"></div></section>
-<section><div class=mut><span id=tglab>Tags</span> <small>(dashed = suggested from your playlists, not yet confirmed)</small></div><div id=tg style="min-height:34px"></div>
-<div style="position:relative"><input id=ti2 placeholder="Add tag… (T)" style="width:100%" autocomplete=off><div id=sugg style="display:none"></div></div>
-<div class=mut style="margin-top:10px">Note <small>(N to focus, Esc to leave)</small></div><textarea id=note rows=4 style="width:100%"></textarea>
-<div class=bar><button class=ok id=bc title="Confirm all shown tags and go to the next video (Enter)">Confirm + next ⏎</button><button id=bs title="Skip without changing anything (→ or S)">Skip →</button><button id=bp title="Previous video (←)">← Back</button><button class=bad id=bd title="Drop: leave out of every published playlist (X)">Drop ✕</button><button id=bm title="Sound on/off (M). Starts muted.">🔇 Sound (M)</button><button id=bo title="Open on YouTube (G)">YouTube ↗</button><button id=bv title="Record a voice note (Space). Press Space again to stop. Everything stays on this computer.">🎙 Voice (Space)</button></div><div id=vs class=mut style="font-size:13px;min-height:20px"></div><div id=vsug style="margin:4px 0"></div>
-<div class=mut style="font-size:12px;line-height:1.9"><kbd>Enter</kbd> confirm · <kbd>T</kbd> add tag · <kbd>X</kbd> drop · <kbd>→</kbd>/<kbd>S</kbd> skip · <kbd>←</kbd> back · <kbd>Space</kbd> voice note · <kbd>M</kbd> sound · <kbd>F</kbd> video controls · <kbd>J</kbd>/<kbd>L</kbd> −/+10s · <kbd>K</kbd> pause · <kbd>N</kbd> note · right-click for the menu</div></section></div>
+<div class=topbar><a class=brand href="/" title="Back to Commander"><svg width=24 height=24 viewBox="0 0 32 32" role=img aria-label=YouCommander><rect width=32 height=32 rx=8 fill="var(--ac)"/><g fill=none stroke="var(--ac-fg)" stroke-width=2.6 stroke-linecap=round stroke-linejoin=round><polyline points="9,13 16,7.5 23,13"/><polyline points="9,20 16,14.5 23,20"/><line x1=12 y1=26 x2=20 y2=26 /></g></svg></a><nav><a href="/">Commander</a><a class=here>Triage</a></nav><span class=fill></span><span id=pos class=meta></span><span id=cnt class=meta></span><button class="ghost help" data-help title="Keyboard shortcuts (?)">?</button></div>
+<div id=wrap>
+<section><span class="pwret b4" tabindex=0 onfocus="retList()"></span><div id=pl class=stage><div id=yt></div></div><span class=pwret tabindex=0 onfocus="retList()"><kbd>F</kbd> video controls: Space, arrows, volume. F or Esc to finish.</span><div id=fhint></div><h2 id=ti></h2><div class=mut id=ch></div><div id=pls></div></section>
+<section class=side><div class=panel><div class=in>
+ <div class=lbl><span id=tglab>Tags</span><small>dashed = suggested from your playlists, not yet confirmed</small></div><div id=tg></div>
+ <div class=tagwrap><input id=ti2 placeholder="Add a tag…  (T)" style="width:100%" autocomplete=off><div id=sugg style="display:none"></div></div>
+ <div class=lbl style="margin-top:14px">Note<small>N to focus · Esc leaves</small></div><textarea id=note rows=4></textarea>
+ <div class=decide><button class=ok id=bc title="Confirm all shown tags and go to the next video (Enter)">Confirm + next<kbd>Enter</kbd></button><button id=bs title="Skip without changing anything (→ or S)">Skip<kbd>→</kbd></button><button id=bp title="Previous video (←)">Back<kbd>←</kbd></button><span class=sp></span><button class=bad id=bd title="Drop: leave out of every published playlist (X)">Drop<kbd>X</kbd></button></div>
+ <div class=more><button id=bv class=ghost title="Record a voice note (Space). Press Space again to stop. Everything stays on this computer.">Voice note<kbd>Space</kbd></button><button id=bm class=ghost title="Sound on/off (M). Starts muted.">Muted<kbd>M</kbd></button><button id=bo class=ghost title="Open on YouTube (G)">Open on YouTube<kbd>G</kbd></button></div>
+ <div id=vs class=mut></div><div id=vsug></div>
+</div></div></section></div>
 <div id=batch></div><div id=ctx></div>
+<div id=help><div class=card>
+ <h2>Keyboard shortcuts<span class=mut>Esc or ? closes</span></h2>
+ <div class=cols>
+  <div><h3>Decide</h3><dl>
+   <dt><kbd>Enter</kbd></dt><dd>confirm the tags, next video</dd><dt><kbd>→</kbd><kbd>S</kbd></dt><dd>skip, change nothing</dd><dt><kbd>←</kbd></dt><dd>back one</dd><dt><kbd>X</kbd></dt><dd>drop</dd>
+   <dt><kbd>T</kbd></dt><dd>add a tag</dd><dt><kbd>N</kbd></dt><dd>the note box</dd><dt><kbd>Space</kbd><kbd>V</kbd></dt><dd>voice note (again to stop, Esc cancels)</dd></dl></div>
+  <div><h3>Video</h3><dl>
+   <dt><kbd>F</kbd></dt><dd>video controls on: Space, arrows, J L, M, 0–9, &lt; &gt;</dd><dt><kbd>K</kbd></dt><dd>play, pause</dd><dt><kbd>J</kbd><kbd>L</kbd></dt><dd>−10s, +10s</dd><dt><kbd>M</kbd></dt><dd>sound</dd><dt><kbd>G</kbd></dt><dd>open on YouTube</dd></dl></div>
+  <div><h3>Batch</h3><dl>
+   <dt><kbd>↑</kbd><kbd>↓</kbd></dt><dd>highlight a video</dd><dt><kbd>Space</kbd></dt><dd>preview it</dd><dt><kbd>R</kbd></dt><dd>take it out of the batch</dd><dt><kbd>Enter</kbd></dt><dd>fold, unfold</dd><dt><kbd>Esc</kbd><kbd>←</kbd></dt><dd>back to the controls</dd></dl></div>
+  <div><h3>Elsewhere</h3><dl><dt><kbd>Esc</kbd></dt><dd>back to Commander</dd><dt>right-click</dt><dd>the same actions as a menu</dd></dl></div>
+ </div>
+</div></div>
+<script src="/static/app.js"></script>
 <script src="https://www.youtube.com/iframe_api"></script>
 <script>
 const J=async(u,o)=>(await fetch(u,o)).json(),P=(u,b,m='POST')=>J(u,{method:m,headers:{'content-type':'application/json'},body:JSON.stringify(b||{})});
@@ -40,15 +68,15 @@ function load(id){if(!ready)return;if(player){player.loadVideoById(id);muted?pla
 window.BATCH=new URLSearchParams(location.search).has('batch');
 async function init(){TAGS=await J('/api/tags');if(window.BATCH){counts();return binit()}const sp=new URLSearchParams(location.search),tg0=sp.get('tag'),v0=sp.get('v');window.SINGLE=!!v0;Q=(await J('/api/triage/queue?limit=3000'+(v0?'&video='+encodeURIComponent(v0):'')+(tg0?'&tag='+tg0:''))).map(x=>x.video_id);i=0;counts();show()}
 async function counts(){const c=await J('/api/triage/counts');cnt.textContent=c.map(x=>x.status+' '+x.n).join(' · ')}
-async function show(){vsug.innerHTML='';if(!Object.keys(VPROC).includes(Q[i]||''))vs.textContent='';if(i<0)i=0;if(i>=Q.length){if(window.SINGLE){try{window.close()}catch(e){}}ti.textContent=window.SINGLE?'Done — you can close this tab.':'Queue finished 🎉';ch.textContent='';tg.innerHTML='';pos.textContent='';return}
+async function show(){vsug.innerHTML='';if(!Object.keys(VPROC).includes(Q[i]||''))vs.textContent='';if(i<0)i=0;if(i>=Q.length){if(window.SINGLE){try{window.close()}catch(e){}}ti.textContent=window.SINGLE?'Done. You can close this tab.':'Queue finished. Nothing left to sort.';ch.textContent='';tg.innerHTML='';pos.textContent='';return}
  cur=await J('/api/video/'+Q[i]);try{fetch('/api/watch/'+cur.video_id+'/open',{method:'POST',headers:{'content-type':'application/json'},body:JSON.stringify({source:'triage'})})}catch(e){}pos.textContent=(i+1)+' of '+Q.length;ti.textContent=cur.title||'(title unavailable — private or removed)';ch.textContent=cur.channel||cur.video_id;
- pls.textContent='In: '+cur.playlists.map(p=>p.title+' ('+p.account_id+')').join(', ');note.value=cur.note||'';drawTags();load(cur.video_id)}
+ pls.textContent='In '+cur.playlists.map(p=>p.title+' ('+p.account_id+')').join(', ');note.value=cur.note||'';drawTags();load(cur.video_id)}
 function drawTags(){tg.innerHTML=cur.tags.map(t=>`<span class="chip${t.confirmed?'':' s'}" title="${esc(t.description||t.name)}">${esc(pathOf(TAGS.find(x=>x.id==t.id)||t))}<b data-r=${t.id} title="Remove tag">×</b></span>`).join('')||'<span class=mut>No tags yet</span>'}
 tg.onclick=async e=>{const r=e.target.dataset.r;if(r){await J(`/api/video/${cur.video_id}/tags/${r}`,{method:'DELETE'});cur=await J('/api/video/'+cur.video_id);drawTags()}};
 async function go(a){if(!cur||i>=Q.length)return;if(a=='confirm'&&VPROC[cur.video_id]){vstat('Waiting for the voice note to finish…');await VPROC[cur.video_id];cur=await J('/api/video/'+cur.video_id)}
  if(a=='confirm'&&!cur.tags.some(t=>t.name!='Inbox')){pls.textContent='Add at least one tag first (T), or Drop (X).';ti2.focus();return}if(a)await P(`/api/video/${cur.video_id}/triage`,{action:a,note:note.value});else if(note.value!==(cur.note||''))await P(`/api/video/${cur.video_id}/triage`,{action:'note',note:note.value});i++;counts();show()}
 bc.onclick=()=>go('confirm');bs.onclick=()=>go(null);bp.onclick=()=>{i=Math.max(0,i-1);show()};bd.onclick=()=>go('drop');
-bm.onclick=()=>{muted=!muted;if(player){muted?player.mute():player.unMute()}bm.textContent=muted?'🔇 Sound (M)':'🔊 Sound (M)'};bo.onclick=()=>window.open('https://youtu.be/'+cur.video_id);
+bm.onclick=()=>{muted=!muted;if(player){muted?player.mute():player.unMute()}bm.innerHTML=muted?'Muted<kbd>M</kbd>':'Sound on<kbd>M</kbd>'};bo.onclick=()=>window.open('https://youtu.be/'+cur.video_id);
 // tag picker
 const byId=()=>Object.fromEntries(TAGS.map(t=>[t.id,t]));
 function pathOf(t){const m=byId(),p=[];let x=t,n=0;while(x&&n++<10){p.unshift(x.name);x=x.parent_id?m[x.parent_id]:null}return p.join(' / ')}
@@ -80,24 +108,24 @@ async function toggleRec(){
  RECVID=cur.video_id;CH=[];if(player&&player.pauseVideo)player.pauseVideo();
  const mt=['audio/webm;codecs=opus','audio/webm','audio/ogg'].find(m=>MediaRecorder.isTypeSupported(m))||'';
  REC=new MediaRecorder(STREAM,mt?{mimeType:mt}:{});REC.ondataavailable=e=>{if(e.data.size)CH.push(e.data)};
- REC.onstop=async()=>{const vid=RECVID,type=REC.mimeType||'audio/webm';STREAM.getTracks().forEach(t=>t.stop());REC=null;bv.textContent='🎙 Voice (Space)';bv.classList.remove('bad');
+ REC.onstop=async()=>{const vid=RECVID,type=REC.mimeType||'audio/webm';STREAM.getTracks().forEach(t=>t.stop());REC=null;bv.innerHTML='Voice note<kbd>Space</kbd>';bv.classList.remove('bad');
   if(player&&player.playVideo&&cur&&cur.video_id==vid)player.playVideo();
   const blob=new Blob(CH,{type});if(blob.size<500){vstat('Recording was too short.');return}
   vstat('Transcribing…');const r=await J('/api/video/'+vid+'/audio',{method:'POST',headers:{'content-type':type},body:blob});
   if(r.error){vstat(r.error);return}
   VPROC[vid]=new Promise(res=>{const poll=async()=>{const a=await J('/api/audio/'+r.id);if(a.status=='processing'||a.status=='transcribed'){if(cur&&cur.video_id==vid)vstat(a.status=='processing'?'Transcribing…':'Finding tags…');setTimeout(poll,700);return}res(a)};poll()}).then(a=>{delete VPROC[vid];voiceDone(vid,a);return a})};
- REC.start();bv.textContent='⏹ Stop (Space)';bv.classList.add('bad');vstat('Recording… press Space to stop, Esc to cancel')}
+ REC.start();bv.innerHTML='Stop recording<kbd>Space</kbd>';bv.classList.add('bad');vstat('Recording… press Space to stop, Esc to cancel')}
 async function voiceDone(vid,a){if(!cur||cur.video_id!=vid)return;
  if(a.status=='error'){vstat('Voice note problem: '+a.error);return}
  const ex=a.extracted||{tags:[],new_tags:[],note:''};
  cur=await J('/api/video/'+vid);drawTags();
  if(ex.note&&!note.value.trim())note.value=ex.note;
  vstat((a.error?a.error+' · ':'')+'Heard: “'+(a.transcript||'').slice(0,240)+'”'+(ex.tags.length?' → '+ex.tags.length+' tag suggestion'+(ex.tags.length>1?'s':'')+' added (dashed). Enter confirms.':''));
- vsug.innerHTML=(ex.new_tags||[]).map(n=>`<button data-nt="${esc(n)}" title="Create this tag and add it">+ Create “${esc(n)}”</button> `).join('')}
+ vsug.innerHTML=(ex.new_tags||[]).map(n=>`<button data-nt="${esc(n)}" class=sm title="Create this tag and add it">Create “${esc(n)}”</button>`).join('')}
 vsug.onclick=async e=>{const n=e.target.dataset.nt;if(!n)return;const r=await P('/api/tags/path',{path:n});TAGS=await J('/api/tags');await P(`/api/video/${cur.video_id}/tags`,{tag_id:r.id});cur=await J('/api/video/'+cur.video_id);drawTags();e.target.remove()};
 bv.onclick=toggleRec;
 addEventListener('keydown',e=>{if(['INPUT','TEXTAREA'].includes(document.activeElement.tagName)||e.ctrlKey||e.metaKey)return;const k=e.key.toLowerCase();
- if(k=='v'||k==' '){e.preventDefault();if(document.activeElement&&document.activeElement.tagName=='BUTTON')document.activeElement.blur();toggleRec()}else if(k=='escape'&&REC){REC.onstop=()=>{STREAM.getTracks().forEach(t=>t.stop());REC=null;bv.textContent='🎙 Voice (Space)';bv.classList.remove('bad');vstat('Recording cancelled.')};REC.stop()}else if(k=='escape'&&!REC){leave()}});
+ if(k=='v'||k==' '){e.preventDefault();if(document.activeElement&&document.activeElement.tagName=='BUTTON')document.activeElement.blur();toggleRec()}else if(k=='escape'&&REC){REC.onstop=()=>{STREAM.getTracks().forEach(t=>t.stop());REC=null;bv.innerHTML='Voice note<kbd>Space</kbd>';bv.classList.remove('bad');vstat('Recording cancelled.')};REC.stop()}else if(k=='escape'&&!REC){leave()}});
 function leave(){if(window.SINGLE){try{window.close()}catch(e){}setTimeout(()=>{location.href='/'},200)}else location.href='/'}
 vcheck();init();
 
@@ -160,8 +188,8 @@ function bchips(v){return v.tags.map(t=>`<span class="chip${t.confirmed?'':' s'}
 function brender(){
  const snap=[...OP].map(id=>({id,t:(PL[id]&&PL[id].getCurrentTime)?PL[id].getCurrentTime():0}));snap.forEach(x=>{try{PL[x.id].destroy()}catch(e){}delete PL[x.id]});OP.clear();
  const open=new Set([...document.querySelectorAll('#batch details')].filter(d=>!d.open).map(d=>d.dataset.v));
- batch.innerHTML=`<h2>Triaging ${BV.length} videos together</h2><div class=mut style="font-size:12px;margin-bottom:6px">Tags you add or remove in the controls above apply to <b>all</b> of them. The × on a tag below changes only that video. ↑/↓ highlight a video (Space preview · F video controls · R remove · Enter fold/unfold · Esc or ← back to the controls) · Enter confirms all · X drops all · Esc leaves.</div>`+
-  BV.map(v=>`<details open data-v="${v.video_id}"><summary><span>${esc(v.title||'(title unavailable — private or removed)')}</span><span class="mut x"><button data-prev="${v.video_id}" title="Show or hide the video here (Space while this video is highlighted)">▶ Preview Video (Space)</button> <button data-out="${v.video_id}" title="Take this video out of the batch; it stays untouched (R while this video is highlighted)">⊖ Remove From Batch (R)</button></span></summary><div class=bin><div class=mut>${esc(v.channel||v.video_id)} · <a href="https://youtu.be/${v.video_id}" target=_blank rel=noopener>YouTube ↗</a></div><div style="margin:6px 0">${bchips(v)}</div><div class=mut style="font-size:12px">In: ${esc(v.playlists.map(p=>p.title+' ('+p.account_id+')').join(', ')||'—')}</div><div class=bpv data-pv="${v.video_id}" style="display:none"></div></div></details>`).join('');
+ batch.innerHTML=`<h2>Triaging ${BV.length} videos together</h2><div class=intro>Tags added or removed in the controls above apply to all of them; the × on a tag below changes only that video. Enter confirms all, X drops all. Press ? for the rest of the keys.</div>`+
+  BV.map(v=>`<details open data-v="${v.video_id}"><summary><span>${esc(v.title||'(title unavailable — private or removed)')}</span><span class="mut x"><button data-prev="${v.video_id}" class="sm ghost" title="Show or hide the video here (Space while this video is highlighted)">Preview<kbd>Space</kbd></button><button data-out="${v.video_id}" class="sm ghost" title="Take this video out of the batch; it stays untouched (R while this video is highlighted)">Remove from batch<kbd>R</kbd></button></span></summary><div class=bin><div>${esc(v.channel||v.video_id)} <span class=mut>·</span> <a href="https://youtu.be/${v.video_id}" target=_blank rel=noopener>Open on YouTube</a></div><div class=chips>${bchips(v)}</div><div class=mut style="font-size:12px">In ${esc(v.playlists.map(p=>p.title+' ('+p.account_id+')').join(', ')||'—')}</div><div class="bpv stage" data-pv="${v.video_id}" style="display:none"></div></div></details>`).join('');
  open.forEach(id=>{const d=batch.querySelector(`details[data-v="${id}"]`);if(d)d.open=false});
  // common tags
  const n=BV.length,cnt={};BV.forEach(v=>v.tags.forEach(t=>{(cnt[t.id]=cnt[t.id]||{t,n:0,c:0}).n++;if(t.confirmed)cnt[t.id].c++}));
@@ -178,7 +206,7 @@ function boxOf(id){return batch.querySelector(`[data-pv="${id}"]`)}
 function openPrev(id,start,after){const box=boxOf(id);if(!box)return;if(!ready||!window.YT||!YT.Player){setTimeout(()=>openPrev(id,start,after),300);return}
  box.style.display='block';box.innerHTML='<div id="bp_'+id+'"></div>';OP.add(id);LASTP=id;
  box.insertAdjacentHTML('beforebegin','<span class="pwret b4" tabindex=0 data-sent=1 onfocus="retList()"></span>');
- box.insertAdjacentHTML('afterend','<span class=pwret tabindex=0 data-sent=1 onfocus="retList()">F: video controls (Space, arrows, volume&hellip;) &middot; F or Esc to finish</span>');
+ box.insertAdjacentHTML('afterend','<span class=pwret tabindex=0 data-sent=1 onfocus="retList()"><kbd>F</kbd> video controls: Space, arrows, volume. F or Esc to finish.</span>');
  PL[id]=new YT.Player('bp_'+id,{videoId:id,playerVars:{autoplay:1,mute:1,rel:0,playsinline:1,start:Math.floor(start||0)},events:{onReady:e=>{e.target.mute();if(after)after()}}})}
 function closePrev(id){if(window.__pmOn&&window.__pmOn())window.exitPlayerMode();try{PL[id]&&PL[id].destroy()}catch(e){}delete PL[id];OP.delete(id);const box=boxOf(id);if(box){[box.previousElementSibling,box.nextElementSibling].forEach(x=>x&&x.dataset.sent&&x.remove());box.innerHTML='';box.style.display='none'}}
 function togglePrev(id){OP.has(id)?closePrev(id):openPrev(id,0)}
@@ -206,8 +234,8 @@ window.binit=async function(){
  const sp=new URLSearchParams(location.search);let ids=[];
  try{ids=JSON.parse(localStorage.getItem('batchIds')||'[]')}catch(e){}
  if(!ids.length&&sp.get('ids'))ids=sp.get('ids').split(',').filter(Boolean);
- if(!ids.length){batch.innerHTML='<h2>No videos selected</h2><p class=mut>Tick two or more videos on the Commander page, then press T.</p><p><a href="/">← Commander</a></p>';return}
- IDS=ids;await brefresh();if(!BV.length){batch.innerHTML='<h2>Those videos were not found</h2><p><a href="/">← Commander</a></p>'}};
+ if(!ids.length){batch.innerHTML='<div class=empty><b>No videos selected</b>Tick two or more videos on the Commander page, then press T.<br><a href="/">Back to Commander</a></div>';return}
+ IDS=ids;await brefresh();if(!BV.length){batch.innerHTML='<div class=empty><b>Those videos were not found</b><a href="/">Back to Commander</a></div>'}};
 batch.addEventListener('click',async e=>{
  const r=e.target.dataset.r,v=e.target.dataset.bv,pv=e.target.dataset.prev,out=e.target.dataset.out;
  if(r&&v){e.preventDefault();await J(`/api/video/${v}/tags/${r}`,{method:'DELETE'});await brefresh()}
@@ -233,7 +261,7 @@ go=async a=>{
  for(const v of BV){const body=nt?((v.note||'').trim()?v.note.trim()+'\n'+nt:nt):null;await P(`/api/video/${v.video_id}/triage`,{action:'confirm',note:body})}
  bdone()};
 function bdone(){try{localStorage.removeItem('batchIds')}catch(e){}location.href='/'}
-bc.onclick=()=>go('confirm');bd.onclick=()=>go('drop');bc.textContent='Confirm all ⏎';bd.textContent='Drop all ✕';
+bc.onclick=()=>go('confirm');bd.onclick=()=>go('drop');bc.innerHTML='Confirm all<kbd>Enter</kbd>';bd.innerHTML='Drop all<kbd>X</kbd>';
 bc.title='Confirm every video in the batch with its tags, and finish (Enter)';
 voiceDone=async(vid,a)=>{if(!IDS.includes(vid))return;
  if(a.status=='error'){vstat('Voice note problem: '+a.error);return}
@@ -243,7 +271,7 @@ voiceDone=async(vid,a)=>{if(!IDS.includes(vid))return;
  if(src){const sg=src.tags.filter(t=>!t.confirmed&&t.source=='voice').map(t=>t.id);if(sg.length){await P('/api/bulk/suggest',{video_ids:IDS,tag_ids:sg});await brefresh()}}
  if(ex.note&&!note.value.trim())note.value=ex.note;
  vstat((a.error?a.error+' · ':'')+'Heard: “'+(a.transcript||'').slice(0,240)+'”'+(ex.tags.length?' → '+ex.tags.length+' tag suggestion'+(ex.tags.length>1?'s':'')+' added to all videos (dashed). Enter confirms.':''));
- vsug.innerHTML=(ex.new_tags||[]).map(n=>`<button data-nt="${esc(n)}" title="Create this tag and add it to all videos">+ Create “${esc(n)}”</button> `).join('')};
+ vsug.innerHTML=(ex.new_tags||[]).map(n=>`<button data-nt="${esc(n)}" class=sm title="Create this tag and add it to all videos">Create “${esc(n)}”</button>`).join('')};
 vsug.onclick=async e=>{const n=e.target.dataset.nt;if(!n)return;const r=await P('/api/tags/path',{path:n});TAGS=await J('/api/tags');await pick(r.id);e.target.remove()};
 }
 </script>

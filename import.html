@@ -1,33 +1,34 @@
 <!doctype html><meta charset=utf-8><title>YouCommander · Import</title>
-<link rel=icon href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='8' fill='%2364748b'/%3E%3Cg fill='none' stroke='white' stroke-width='2.6' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='9,13 16,7.5 23,13'/%3E%3Cpolyline points='9,20 16,14.5 23,20'/%3E%3Cline x1='12' y1='26' x2='20' y2='26'/%3E%3C/g%3E%3C/svg%3E">
+<link rel=icon href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='8' fill='%232a5bd7'/%3E%3Cg fill='none' stroke='white' stroke-width='2.6' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='9,13 16,7.5 23,13'/%3E%3Cpolyline points='9,20 16,14.5 23,20'/%3E%3Cline x1='12' y1='26' x2='20' y2='26'/%3E%3C/g%3E%3C/svg%3E">
 <meta name=viewport content="width=device-width,initial-scale=1">
+<link rel=stylesheet href="/static/app.css">
 <style>
-:root{--bg:#fff;--fg:#1d1d1f;--mut:#6b6b70;--bd:#dcdce0;--ac:#2a5bd7;--pn:#f5f5f7;--slate:#64748b;--slate2:#94a3b8;--ok:#1d7a3a;--bad:#b3261e}
-@media(prefers-color-scheme:dark){:root{--bg:#18181b;--fg:#ececf0;--mut:#9a9aa3;--bd:#34343a;--ac:#7ea2ff;--pn:#222226;--slate:#7b8aa0;--slate2:#5b677a;--ok:#6fcf8e;--bad:#ff8a80}}
-*{box-sizing:border-box}html,body{height:100%}body{margin:0;font:14px/1.45 system-ui;background:var(--bg);color:var(--fg);display:flex;flex-direction:column}
-main{flex:1;display:flex;align-items:center;justify-content:center;padding:24px}
-#drop{width:min(640px,100%);min-height:380px;border:2px dashed var(--slate2);border-radius:20px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:10px;padding:34px 28px;text-align:center;transition:.15s;background:transparent}
-#drop.over{border-color:var(--slate);background:var(--pn);transform:scale(1.01)}
-.logo{display:block}.word{font-size:30px;font-weight:650;letter-spacing:.3px;color:var(--slate)}
-h1{font-size:18px;font-weight:600;margin:14px 0 0}p{margin:0;color:var(--mut)}.sm{font-size:12.5px}
-button{font:inherit;border:1px solid var(--bd);border-radius:8px;background:var(--bg);color:var(--fg);padding:8px 16px;cursor:pointer}button:hover{background:var(--pn)}
-button.pri{background:var(--slate);border-color:var(--slate);color:#fff}button.pri:hover{filter:brightness(1.08);background:var(--slate)}
-input[type=text]{font:inherit;border:1px solid var(--bd);border-radius:8px;background:var(--bg);color:var(--fg);padding:8px 10px;width:260px;text-align:center}
-details{max-width:520px;text-align:left;margin-top:8px;color:var(--mut)}summary{cursor:pointer;text-align:center;color:var(--slate)}details ol{margin:8px 0 0;padding-left:20px}details li{margin:3px 0}
-.card{background:var(--pn);border:1px solid var(--bd);border-radius:12px;padding:12px 18px;text-align:left;min-width:300px}.card b{font-variant-numeric:tabular-nums}
-.bar{width:300px;height:8px;background:var(--bd);border-radius:5px;overflow:hidden}.bar i{display:block;height:100%;background:var(--slate);width:0;transition:width .3s}
+html,body{height:100%}body{display:flex;flex-direction:column}
+main{flex:1;display:flex;align-items:center;justify-content:center;padding:28px 20px}
+#drop{width:min(660px,100%);min-height:420px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:8px;padding:40px 32px;text-align:center;
+  background:var(--sf);border:1px solid var(--bd);border-radius:24px;box-shadow:var(--sh-lg);position:relative;transition:transform .15s,box-shadow .15s}
+#drop::after{content:"";position:absolute;inset:10px;border:1.5px dashed var(--bd2);border-radius:16px;pointer-events:none;transition:border-color .15s}
+#drop.over{transform:scale(1.01);box-shadow:var(--glow)}#drop.over::after{border-color:var(--ac)}
+.logo{display:block;margin-bottom:6px}.word{font-size:22px;font-weight:600;letter-spacing:-.015em;margin-bottom:10px}
+h1{font-size:18px;margin:8px 0 0}p{margin:0;color:var(--mut);max-width:52ch}.sm{font-size:12.5px}
+section{display:flex;flex-direction:column;align-items:center;gap:8px}
+details{max-width:480px;text-align:left;margin-top:10px;color:var(--mut);font-size:12.5px}summary{cursor:pointer;text-align:center;color:var(--ac);font-weight:500;list-style:none}summary::-webkit-details-marker{display:none}
+details ol{margin:8px 0 0;padding-left:20px}details li{margin:3px 0}details b{color:var(--fg2)}
+.card{background:var(--sf2);border:1px solid var(--bd);border-radius:var(--r);padding:12px 18px;text-align:left;min-width:320px;line-height:1.6}.card b{font-variant-numeric:tabular-nums;color:var(--fg)}
+.bar{width:320px;height:6px;background:var(--bd);border-radius:5px;overflow:hidden;display:block}.bar i{display:block;height:100%;background:var(--ac);width:0;transition:width .3s}
+input[type=text]{width:280px;text-align:center}
 .hide{display:none!important}.err{color:var(--bad)}
 footer{padding:10px 18px;color:var(--mut);font-size:12px;text-align:center}
 </style>
 <main><div id=drop>
- <svg class=logo width=84 height=84 viewBox="0 0 32 32" role=img aria-label=YouCommander><rect width=32 height=32 rx=8 fill="var(--slate)"/><g fill=none stroke="var(--bg)" stroke-width=2.6 stroke-linecap=round stroke-linejoin=round><polyline points="9,13 16,7.5 23,13"/><polyline points="9,20 16,14.5 23,20"/><line x1=12 y1=26 x2=20 y2=26 /></g></svg>
+ <svg class=logo width=64 height=64 viewBox="0 0 32 32" role=img aria-label=YouCommander><rect width=32 height=32 rx=8 fill="var(--ac)"/><g fill=none stroke="var(--ac-fg)" stroke-width=2.6 stroke-linecap=round stroke-linejoin=round><polyline points="9,13 16,7.5 23,13"/><polyline points="9,20 16,14.5 23,20"/><line x1=12 y1=26 x2=20 y2=26 /></g></svg>
  <div class=word>YouCommander</div>
 
  <section id=s0>
   <h1>Drop your Google Takeout playlists here</h1>
-  <p style="margin-top:6px">Drag in the Takeout <b>.zip</b>, the <b>playlists</b> folder, or any playlist <b>.csv</b> files.</p>
-  <p class=sm style="margin-top:10px"><button id=pick class=pri>Choose files…</button></p>
-  <p class=sm style="margin-top:10px">Everything stays on this computer. Only the playlist files are read &mdash; watch history, comments and everything else in a Takeout are never opened.</p>
+  <p>Drag in the Takeout <b>.zip</b>, the <b>playlists</b> folder, or any playlist <b>.csv</b> files.</p>
+  <p class=sm style="margin-top:8px"><button id=pick class=pri>Choose files…</button></p>
+  <p class=sm style="margin-top:8px">Everything stays on this computer. Only the playlist files are read: watch history, comments and everything else in a Takeout are never opened.</p>
   <details><summary>How do I get my Takeout?</summary><ol>
    <li>Go to <b>takeout.google.com</b> and click <b>Deselect all</b>.</li>
    <li>Tick <b>YouTube and YouTube Music</b>, then <b>All YouTube data included</b>, and keep only <b>playlists</b>.</li>
@@ -42,21 +43,21 @@ footer{padding:10px 18px;color:var(--mut);font-size:12px;text-align:center}
   <h1>Ready to import</h1>
   <div class=card id=pv style="margin:10px auto"></div>
   <p class=sm>Name this account <span style="opacity:.7">(so you can tell several apart)</span></p>
-  <input type=text id=label value="My YouTube" style="margin:6px 0 10px"><br>
-  <button id=go class=pri>Import (Enter)</button> <button id=again>Choose different files</button>
+  <input type=text id=label value="My YouTube" style="margin:2px 0 8px">
+  <p><button id=go class=pri>Import<kbd>Enter</kbd></button> <button id=again class=ghost>Choose different files</button></p>
  </section>
 
  <section id=s3 class="hide">
   <h1 id=t3>Importing…</h1>
   <div class=card id=rep style="margin:10px auto"></div>
   <div id=tb class=hide><p class=sm id=ttxt style="margin:6px 0 4px"></p><div class=bar style="margin:auto"><i id=tbar></i></div>
-   <p class=sm style="margin-top:6px">Takeout files only contain video IDs, so titles are looked up on YouTube. You can start now &mdash; they fill in as they arrive.</p></div>
+   <p class=sm style="margin-top:6px">Takeout files only contain video IDs, so titles are looked up on YouTube. You can start now; they fill in as they arrive.</p></div>
   <p style="margin-top:12px"><button id=open class=pri>Open YouCommander</button></p>
  </section>
 
  <p id=msg class="sm err hide"></p>
 </div></main>
-<footer id=ft>Esc: back to Commander</footer>
+<footer id=ft><kbd>Esc</kbd> back to Commander</footer>
 <script>
 const $=id=>document.getElementById(id),J=async(u,o)=>(await fetch(u,o)).json(),esc=s=>(s||'').replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
 const show=n=>['s0','s1','s2','s3'].forEach((k,i)=>$(k).classList.toggle('hide',i!=n));
@@ -104,14 +105,14 @@ async function runImport(){
  $('go').disabled=true;const r=await J('/api/import/run',{method:'POST',headers:{'content-type':'application/json'},body:JSON.stringify({label:$('label').value})});
  $('go').disabled=false;
  if(r.error){err(r.error);return}
- show(3);$('t3').textContent='Imported ✓';
+ show(3);$('t3').textContent='Imported';
  $('rep').innerHTML=`<b>${fmt(r.playlists_new)}</b> new playlists`+(r.playlists_updated?` &middot; <b>${fmt(r.playlists_updated)}</b> refreshed`:'')+`<br><b>${fmt(r.videos_new)}</b> new videos (${fmt(r.videos_total)} total)<br><span class=sm style="color:var(--mut)">Each playlist became a tag; Watch later became Inbox.</span>`;
  if(r.need_titles){$('tb').classList.remove('hide');poll()}
 }
 function poll(){clearInterval(POLL);POLL=setInterval(async()=>{const s=await J('/api/import/status');
  const tot=s.total||s.pending||1,done=s.done||0;$('tbar').style.width=Math.min(100,Math.round(100*done/tot))+'%';
  if(s.running){$('ttxt').textContent='Looking up titles… '+fmt(done)+' of '+fmt(s.total)}
- else{clearInterval(POLL);$('ttxt').textContent=s.error?('Title lookup stopped: '+s.error):('Titles done'+(s.unavailable?' — '+fmt(s.unavailable)+' private or deleted videos found':'')+(s.failed?' ('+fmt(s.failed)+' will retry next time)':''));$('tbar').style.width='100%';$('t3').textContent='All set ✓'}},900)}
+ else{clearInterval(POLL);$('ttxt').textContent=s.error?('Title lookup stopped: '+s.error):('Titles done'+(s.unavailable?' — '+fmt(s.unavailable)+' private or deleted videos found':'')+(s.failed?' ('+fmt(s.failed)+' will retry next time)':''));$('tbar').style.width='100%';$('t3').textContent='All set'}},900)}
 $('go').onclick=runImport;
 $('open').onclick=()=>location.href='/';
 addEventListener('keydown',e=>{

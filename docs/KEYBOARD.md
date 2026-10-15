@@ -1,5 +1,7 @@
 # Keyboard Shortcuts
 
+Press `?` on any page for an overlay with that page's shortcuts (`Esc` or `?` closes it).
+
 ## Commander
 | Key | Action |
 |---|---|

@@ -1,62 +1,104 @@
 <!doctype html><meta charset=utf-8><title>YouCommander · Watch</title><link rel=icon href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='8' fill='%232a5bd7'/%3E%3Cg fill='none' stroke='white' stroke-width='2.6' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='9,13 16,7.5 23,13'/%3E%3Cpolyline points='9,20 16,14.5 23,20'/%3E%3Cline x1='12' y1='26' x2='20' y2='26'/%3E%3C/g%3E%3C/svg%3E"><meta name=viewport content="width=device-width,initial-scale=1">
+<link rel=stylesheet href="/static/app.css">
 <style>
-:root{--bg:#fff;--fg:#1d1d1f;--mut:#6b6b70;--bd:#dcdce0;--ac:#2a5bd7;--pn:#f5f5f7;--ok:#1d7a3a;--bad:#b3261e}
-@media(prefers-color-scheme:dark){:root{--bg:#18181b;--fg:#ececf0;--mut:#9a9aa3;--bd:#34343a;--ac:#7ea2ff;--pn:#222226;--ok:#6fcf8e;--bad:#ff8a80}}
-*{box-sizing:border-box}body{margin:0;font:14px system-ui;background:var(--bg);color:var(--fg)}
-#top{display:flex;gap:10px;align-items:center;padding:8px 12px;border-bottom:1px solid var(--bd);background:var(--pn)}#top a{color:var(--ac)}
-#wrap{display:grid;grid-template-columns:minmax(0,1.7fr) minmax(300px,1fr);gap:14px;padding:12px;max-width:1700px;margin:auto}
-#pl{aspect-ratio:16/9;background:#000;border-radius:8px;overflow:hidden;position:relative}#pl iframe{width:100%;height:100%;border:0}
-h2{margin:8px 0 2px;font-size:18px}.mut{color:var(--mut)}
-button,input,textarea{font:inherit;border:1px solid var(--bd);border-radius:6px;background:var(--bg);color:var(--fg);padding:6px 10px}button{cursor:pointer}button:hover{background:var(--pn)}
-button.on{border-color:var(--ac);color:var(--ac)}
-.chip{display:inline-flex;gap:4px;align-items:center;border:1px solid var(--bd);border-radius:14px;padding:2px 4px 2px 10px;margin:2px;cursor:default}.chip.s{border-style:dashed;color:var(--mut)}.chip b{cursor:pointer;padding:0 6px}
-#sugg{position:absolute;background:var(--bg);border:1px solid var(--bd);border-radius:6px;max-height:240px;overflow:auto;z-index:5;min-width:260px}#sugg div{padding:5px 10px;cursor:pointer}#sugg div.on,#sugg div:hover{background:var(--pn)}
-.bar{display:flex;flex-wrap:wrap;gap:6px;margin:8px 0;align-items:center}.ok{border-color:var(--ok);color:var(--ok)}.bad{border-color:var(--bad);color:var(--bad)}
-kbd{border:1px solid var(--bd);border-bottom-width:2px;border-radius:4px;padding:0 5px;font-size:12px}
-#fail{display:none;background:var(--pn);border:1px solid var(--bad);border-radius:8px;padding:10px 12px;margin:8px 0}
-#kb{display:none;background:var(--pn);border:1px solid var(--bd);border-radius:8px;padding:6px 10px;margin:6px 0;font-size:12px}
-#toast{position:fixed;right:14px;bottom:12px;background:var(--bg);color:var(--fg);border:1px solid var(--bd);border-radius:8px;padding:6px 10px;font-size:12px;box-shadow:0 4px 18px #0003;display:none;z-index:20;max-width:340px}
-.mk{display:flex;gap:8px;padding:4px 6px;border-radius:6px;cursor:pointer;align-items:baseline}.mk:hover{background:var(--pn)}.mk .t{color:var(--ac);font-variant-numeric:tabular-nums;min-width:48px}.mk .x{margin-left:auto;color:var(--mut);padding:0 6px}
-#q{max-height:46vh;overflow:auto;border:1px solid var(--bd);border-radius:8px}#q div{padding:6px 10px;border-bottom:1px solid var(--bd);cursor:pointer;display:flex;gap:6px}#q div:hover{background:var(--pn)}#q div .h{color:var(--mut);cursor:grab;user-select:none}#q div.dragging{opacity:.55}#q div.ot{box-shadow:inset 0 3px 0 var(--ac)}#q div.ob{box-shadow:inset 0 -3px 0 var(--ac)}
-#q div.qf{outline:3px solid var(--ac);outline-offset:-3px}#q div.qflash{animation:qfl .7s ease-in-out 2}@keyframes qfl{50%{background:color-mix(in srgb,var(--ac) 22%,var(--pn))}}
-#q div.cur{background:var(--pn);outline:2px solid var(--ac);outline-offset:-2px;font-weight:600}#q small{margin-left:auto;color:var(--mut);white-space:nowrap}
-#tx{border:1px solid var(--bd);border-radius:8px;margin-top:6px}#txh{display:flex;gap:6px;flex-wrap:wrap;align-items:center;padding:8px;border-bottom:1px solid var(--bd)}#txl{max-height:42vh;overflow-y:auto;overscroll-behavior:contain;padding:4px;position:relative}
-.tl{display:flex;gap:8px;padding:4px 6px;border-radius:6px;cursor:pointer}.tl:hover{background:var(--pn)}.tl .t{color:var(--ac);font-variant-numeric:tabular-nums;min-width:48px}.tl.now{background:var(--pn);outline:2px solid var(--ac);outline-offset:-2px}.tl .p{margin-left:auto;opacity:0}.tl:hover .p{opacity:1}.tl mark{background:#ffe08a;color:#000;border-radius:2px}
-#marks .mq{font-style:italic;color:var(--mut);border-left:3px solid var(--bd);padding-left:8px;margin:2px 0;font-size:13px}#marks .bd{display:inline-block}
-#txl .tl ::selection{background:#b9d3ff;color:#000}
-#mkbox{display:none;margin:6px 0}#mkbox input{width:100%}
-@media(max-width:1000px){#wrap{grid-template-columns:1fr}}
+#wrap{display:grid;grid-template-columns:minmax(0,1.75fr) minmax(320px,1fr);gap:22px;padding:18px 22px 60px;max-width:1720px;margin:auto}
+#pl{position:relative}
+#fail{display:none;margin:10px 0;padding:10px 14px;border-radius:var(--r);background:var(--bad-s);border:1px solid color-mix(in srgb,var(--bad) 35%,transparent)}
+#kb{display:none;margin:10px 0;padding:8px 12px;border-radius:var(--r);background:var(--amb-s);color:var(--amb);font-size:12.5px}
+.ctl{display:flex;flex-wrap:wrap;align-items:center;gap:10px;margin:14px 0 8px}
+.ctl .group>button{padding:0 11px}
+#sv{font-weight:600}
+#lv{color:var(--amb);font-size:12.5px;font-variant-numeric:tabular-nums;padding-left:4px}
+.acts{display:flex;flex-wrap:wrap;gap:6px;margin:0 0 14px}
+.acts button{color:var(--fg2)}
+#mkbox{display:none;margin:0 0 12px;padding:10px 12px;border-radius:var(--r);background:var(--sf);border:1px solid var(--ac);box-shadow:0 0 0 3px var(--ac-s)}
+#mkbox #mkl{margin-bottom:6px;font-size:12.5px}#mkbox input{width:100%}
+#ti{font-size:21px;margin-top:4px}#ch{margin-top:3px}#pls{font-size:12.5px;margin-top:3px;color:var(--mut)}
+.sec{margin-top:22px}
+#marks{display:flex;flex-direction:column;gap:2px}
+.mk{display:flex;gap:10px;padding:6px 8px;border-radius:var(--rs);cursor:pointer;align-items:baseline}.mk:hover{background:var(--sf2)}
+.mk .t{color:var(--ac);font-variant-numeric:tabular-nums;min-width:48px;font-weight:500}.mk .x{margin-left:auto;color:var(--mut);padding:0 6px;opacity:0}.mk:hover .x{opacity:1}
+#marks .mq{font-style:italic;color:var(--mut);border-left:2px solid var(--bd2);padding-left:8px;margin:2px 0 3px;font-size:12.5px}#marks .bd{display:inline-block}
+#tx{margin-top:6px}
+#txh{display:flex;gap:6px;flex-wrap:wrap;align-items:center;padding:8px 10px;border-bottom:1px solid var(--bd)}
+#txh input:not([type=checkbox]){flex:1;min-width:140px;min-height:30px}#txh label{font-size:12.5px}#txh button{min-height:30px}
+#txl{max-height:46vh;overflow-y:auto;overscroll-behavior:contain;padding:6px;position:relative}
+.tl{display:flex;gap:10px;padding:4px 8px;border-radius:var(--rs);cursor:pointer;line-height:1.5}.tl:hover{background:var(--sf2)}
+.tl .t{color:var(--mut);font-variant-numeric:tabular-nums;min-width:48px;font-size:12.5px;padding-top:1px}.tl.now{background:var(--ac-s);color:var(--fg)}.tl.now .t{color:var(--ac)}
+.tl .p{margin-left:auto;opacity:0;color:var(--mut)}.tl:hover .p{opacity:1}.tl mark{background:var(--amb-s);color:inherit;box-shadow:0 0 0 1px var(--amb-s);border-radius:3px}
+#txl .tl ::selection{background:var(--ac-s2)}
+.side{display:flex;flex-direction:column;gap:16px;align-self:start;position:sticky;top:70px}
+.panel .in{padding:14px}
+#tg{min-height:30px;margin-bottom:6px}
+.tagwrap{position:relative}
+#note{width:100%;margin-top:4px}
+.decide{display:flex;align-items:center;gap:8px;margin-top:12px}#st{margin-left:auto;font-size:12.5px}
+.qh{display:flex;align-items:center;gap:8px;padding:10px 12px;border-bottom:1px solid var(--bd)}
+.qh b{font-weight:600}.qh #qn{color:var(--mut);font-variant-numeric:tabular-nums}.qh .r{margin-left:auto;display:flex;gap:6px;align-items:center}
+.qh label{font-size:12.5px;margin-left:4px}
+#q{max-height:42vh;overflow:auto;padding:4px}
+#q div{padding:6px 10px;border-radius:var(--rs);cursor:pointer;display:flex;gap:8px;align-items:center;color:var(--fg2)}#q div:hover{background:var(--sf2)}
+#q div .h{color:var(--bd2);cursor:grab;user-select:none;letter-spacing:-2px}#q div:hover .h{color:var(--mut)}#q div.dragging{opacity:.5}
+#q div.ot{box-shadow:inset 0 2px 0 var(--ac)}#q div.ob{box-shadow:inset 0 -2px 0 var(--ac)}
+#q div span:nth-child(2){flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+#q div.qf{outline:2px solid var(--ac);outline-offset:-2px}#q div.qflash{animation:qfl .7s ease-in-out 2}@keyframes qfl{50%{background:var(--ac-s2)}}
+#q div.cur{background:var(--ac-s);color:var(--fg);font-weight:600}#q div.cur .h{color:var(--ac)}
+#q small{margin-left:auto;color:var(--mut);white-space:nowrap;font-variant-numeric:tabular-nums}
+#q .empty{padding:18px;cursor:default}#q .empty:hover{background:none}
+.qf2{display:flex;flex-wrap:wrap;gap:6px;padding:10px 12px;border-top:1px solid var(--bd)}
+.qf2 .r{margin-left:auto;display:flex;gap:6px}
+@media(max-width:1000px){#wrap{grid-template-columns:1fr;padding:14px}.side{position:static}}
 </style>
-<div id=top><a href="/" title="YouCommander — back to Commander" style="display:flex"><svg width=22 height=22 viewBox="0 0 32 32" role=img aria-label=YouCommander><rect width=32 height=32 rx=8 fill="var(--ac)"/><g fill=none stroke="var(--bg)" stroke-width=2.6 stroke-linecap=round stroke-linejoin=round><polyline points="9,13 16,7.5 23,13"/><polyline points="9,20 16,14.5 23,20"/><line x1=12 y1=26 x2=20 y2=26 /></g></svg></a><a href="/">← Commander</a><b>Watch</b><a href="/history" title="Everything you've opened or watched in the app (H)">History</a><span id=pos class=mut></span><span id=cnt class=mut style="margin-left:auto"></span></div>
+<div class=topbar><a class=brand href="/" title="Back to Commander"><svg width=24 height=24 viewBox="0 0 32 32" role=img aria-label=YouCommander><rect width=32 height=32 rx=8 fill="var(--ac)"/><g fill=none stroke="var(--ac-fg)" stroke-width=2.6 stroke-linecap=round stroke-linejoin=round><polyline points="9,13 16,7.5 23,13"/><polyline points="9,20 16,14.5 23,20"/><line x1=12 y1=26 x2=20 y2=26 /></g></svg></a><nav><a href="/">Commander</a><a class=here>Watch</a><a href="/history" title="Everything you've opened or watched in the app (H)">History</a></nav><span class=fill></span><span id=pos class=meta></span><span id=cnt class=meta></span><button class="ghost help" data-help title="Keyboard shortcuts (?)">?</button></div>
 <div id=wrap>
 <section>
-<div id=pl><div id=yt></div></div>
+<div id=pl class=stage><div id=yt></div></div>
 <div id=fail></div><div id=kb>The video has focus, so YouTube’s own keys apply. Click anywhere outside the video to get the app shortcuts back.</div>
-<div class=bar id=ctl>
-<button id=b10m title="Back 10 seconds (J)">⏪ 10</button><button id=bpp title="Play or pause (Space / K)">⏯ Play / Pause</button><button id=b10p title="Forward 10 seconds (L)">10 ⏩</button>
-<span class=mut>Speed</span><button id=sdn title="Slower (&lt;)">−</button><b id=sv style="min-width:44px;text-align:center">1×</b><button id=sup title="Faster (&gt;)">+</button>
-<button id=ba title="Set loop start here ([)">Loop Start [</button><button id=bb title="Set loop end here (])">Loop End ]</button><button id=bcl title="Clear the loop (\)">Clear Loop</button><span id=lv class=mut></span>
+<div class=ctl id=ctl>
+ <span class=group><button id=b10m title="Back 10 seconds (J)">−10<kbd>J</kbd></button><button id=bpp title="Play or pause (Space / K)">Play / Pause<kbd>Space</kbd></button><button id=b10p title="Forward 10 seconds (L)">+10<kbd>L</kbd></button></span>
+ <span class=group><button id=sdn title="Slower (&lt;)">−</button><b id=sv>1×</b><button id=sup title="Faster (&gt;)">+</button></span>
+ <span class=group><button id=ba title="Set loop start here ([)">Loop start<kbd>[</kbd></button><button id=bb title="Set loop end here (])">Loop end<kbd>]</kbd></button><button id=bcl title="Clear the loop (\)">Clear<kbd>\</kbd></button></span><span id=lv></span>
 </div>
-<div class=bar>
-<button id=bmk title="Add a typed note at this moment, or on the text you have selected in the transcript (B)">📌 Note At This Time (B)</button><button id=bvm title="Record a spoken note at this moment, or on the selected transcript text (V)">🎙 Voice Note (V)</button><button id=byt title="Open this moment on YouTube for likes, comments, subscribe and the transcript (G)">Open On YouTube At This Time (G)</button><button id=bcp title="Copy a link to this moment (C)">Copy Timestamp Link (C)</button><button id=bsn title="Sound on or off (M)">🔊 Sound (M)</button><button id=bfs title="Fullscreen (F or Enter)">Fullscreen (F)</button>
+<div class=acts>
+ <button id=bmk title="Add a typed note at this moment, or on the text you have selected in the transcript (B)">Note at this time<kbd>B</kbd></button><button id=bvm title="Record a spoken note at this moment, or on the selected transcript text (V)">Voice note<kbd>V</kbd></button><button id=byt title="Open this moment on YouTube for likes, comments, subscribe and the transcript (G)">Open on YouTube at this time<kbd>G</kbd></button><button id=bcp title="Copy a link to this moment (C)">Copy timestamp link<kbd>C</kbd></button><button id=bsn class=ghost title="Sound on or off (M)">Sound<kbd>M</kbd></button><button id=bfs class=ghost title="Fullscreen (F or Enter)">Fullscreen<kbd>F</kbd></button>
 </div>
 <div id=mkbox><div class=mut id=mkl></div><input id=mkin placeholder="What happens here? Enter saves, Esc cancels" autocomplete=off></div>
-<h2 id=ti></h2><div class=mut id=ch></div><div class=mut id=pls style="font-size:12px;margin-top:4px"></div>
-<div style="margin-top:10px"><b>Notes At Times</b> <small class=mut>(click to jump)</small></div><div id=marks style="margin-top:4px"></div>
-<div style="margin-top:14px"><b>Transcript</b> <small class=mut id=txs></small></div>
-<div id=tx><div id=txh></div><div id=txl><span class=mut style="padding:6px">Loading…</span></div></div>
+<h2 id=ti></h2><div class=mut id=ch></div><div id=pls></div>
+<div class=sec><div class=lbl>Notes at times<small>click one to jump there</small></div><div id=marks></div></div>
+<div class=sec><div class=lbl>Transcript<small id=txs></small></div>
+<div id=tx class=panel><div id=txh></div><div id=txl><span class=mut style="padding:6px">Loading…</span></div></div></div>
 </section>
-<section>
-<div class=mut>Tags <small>(dashed = suggested, not yet confirmed)</small></div><div id=tg style="min-height:34px"></div>
-<div style="position:relative"><input id=ti2 placeholder="Add tag… (T)" style="width:100%" autocomplete=off><div id=sugg style="display:none"></div></div>
-<div class=mut style="margin-top:10px">Note <small>(N to focus, Esc to leave the box; saved when you leave it)</small></div><textarea id=note rows=3 style="width:100%"></textarea>
-<div class=bar><button class=ok id=bc title="Confirm all shown tags and mark this video triaged">Confirm Tags</button><button class=bad id=bd title="Drop: leave out of every published playlist">Drop ✕</button><span id=st class=mut></span></div>
-<div class=bar style="margin-top:14px"><b>Queue</b><span id=qn class=mut></span><button id=qrs style="display:none" title="Go back to the original order for this queue">Reset Order</button><span style="margin:0 auto;display:flex;gap:6px"><button id=bpv2 title="Previous in the queue (PageUp)">◀ Previous (PgUp)</button><button id=bnx2 title="Next in the queue (PageDown)">Next (PgDn) ▶</button></span><label title="Play the next video when this one ends"><input type=checkbox id=auto checked> Autoplay Next</label></div>
-<div id=q></div>
-<div class=bar><button id=bpv title="Previous in queue (PageUp)">◀ Previous (PgUp)</button><button id=bnx title="Next in queue (PageDown)">Next (PgDn) ▶</button><button id=bcq title="Copy a youtube.com link that opens the next 50 videos as a temporary YouTube queue, which you can save from YouTube">Copy As YouTube Queue</button><button id=boq title="Open that queue on YouTube now">Open As YouTube Queue ↗</button></div>
-<div class=mut style="font-size:12px;line-height:1.9;margin-top:6px"><kbd>Space</kbd>/<kbd>K</kbd> play · <kbd>←</kbd>/<kbd>→</kbd> 5s · <kbd>J</kbd>/<kbd>L</kbd> 10s · <kbd>↑</kbd>/<kbd>↓</kbd> volume · <kbd>M</kbd> mute · <kbd>0</kbd>–<kbd>9</kbd> jump · <kbd>&lt;</kbd>/<kbd>&gt;</kbd> speed · <kbd>[</kbd> <kbd>]</kbd> <kbd>\</kbd> loop · <kbd>B</kbd>/<kbd>V</kbd> typed/voice note (on selected text, or <kbd>Shift</kbd> = the highlighted line) · <kbd>T</kbd> tag · <kbd>N</kbd> note · <kbd>Q</kbd> focus the queue · <kbd>PgUp</kbd>/<kbd>PgDn</kbd> queue · <kbd>Alt</kbd>+<kbd>↑</kbd>/<kbd>↓</kbd> or drag to reorder · <kbd>Y</kbd> transcript · <kbd>G</kbd> YouTube · <kbd>C</kbd> copy link · <kbd>F</kbd> fullscreen · <kbd>H</kbd> history · <kbd>Esc</kbd> leave</div>
-</section></div>
+<aside class=side>
+<div class=panel><div class=in>
+ <div class=lbl>Tags<small>dashed = suggested, not yet confirmed</small></div><div id=tg></div>
+ <div class=tagwrap><input id=ti2 placeholder="Add a tag…  (T)" style="width:100%" autocomplete=off><div id=sugg style="display:none"></div></div>
+ <div class=lbl style="margin-top:14px">Note<small>N to focus · Esc leaves · saved when you leave the box</small></div><textarea id=note rows=3></textarea>
+ <div class=decide><button class=ok id=bc title="Confirm all shown tags and mark this video triaged">Confirm tags</button><button class=bad id=bd title="Drop: leave out of every published playlist">Drop</button><span id=st class=mut></span></div>
+</div></div>
+<div class=panel>
+ <div class=qh><b>Queue</b><span id=qn></span><button id=qrs class="ghost sm" style="display:none" title="Go back to the original order for this queue">Reset order</button><span class=r><button id=bpv2 class=sm title="Previous in the queue (PageUp)">Previous<kbd>PgUp</kbd></button><button id=bnx2 class=sm title="Next in the queue (PageDown)">Next<kbd>PgDn</kbd></button><label title="Play the next video when this one ends"><input type=checkbox id=auto checked> Autoplay</label></span></div>
+ <div id=q></div>
+ <div class=qf2><button id=bpv class="ghost sm" title="Previous in queue (PageUp)">Previous</button><button id=bnx class="ghost sm" title="Next in queue (PageDown)">Next</button><span class=r><button id=bcq class=sm title="Copy a youtube.com link that opens the next 50 videos as a temporary YouTube queue, which you can save from YouTube">Copy as YouTube queue</button><button id=boq class=sm title="Open that queue on YouTube now">Open on YouTube</button></span></div>
+</div>
+</aside></div>
 <div id=toast></div>
+<div id=help><div class=card>
+ <h2>Keyboard shortcuts<span class=mut>Esc or ? closes</span></h2>
+ <div class=cols>
+  <div><h3>Playback</h3><dl>
+   <dt><kbd>Space</kbd><kbd>K</kbd></dt><dd>play, pause</dd><dt><kbd>←</kbd><kbd>→</kbd></dt><dd>5s back, forward</dd><dt><kbd>J</kbd><kbd>L</kbd></dt><dd>10s back, forward</dd>
+   <dt><kbd>↑</kbd><kbd>↓</kbd></dt><dd>volume</dd><dt><kbd>M</kbd></dt><dd>sound on, off</dd><dt><kbd>0</kbd>–<kbd>9</kbd></dt><dd>jump to 0–90%</dd><dt><kbd>&lt;</kbd><kbd>&gt;</kbd></dt><dd>speed</dd>
+   <dt><kbd>[</kbd><kbd>]</kbd><kbd>\</kbd></dt><dd>loop start, end, clear</dd><dt><kbd>F</kbd><kbd>Enter</kbd></dt><dd>fullscreen</dd><dt><kbd>Home</kbd><kbd>End</kbd></dt><dd>start, end of video</dd></dl></div>
+  <div><h3>Notes and tags</h3><dl>
+   <dt><kbd>B</kbd></dt><dd>typed note on the selected text, or at this time</dd><dt><kbd>V</kbd></dt><dd>voice note, same rule</dd><dt><kbd>Shift</kbd>+<kbd>B</kbd> / <kbd>V</kbd></dt><dd>note on the highlighted transcript line</dd>
+   <dt><kbd>T</kbd></dt><dd>add a tag</dd><dt><kbd>N</kbd></dt><dd>the note box</dd><dt><kbd>Y</kbd></dt><dd>transcript: fetch it, or jump to it</dd></dl></div>
+  <div><h3>Queue</h3><dl>
+   <dt><kbd>PgUp</kbd><kbd>PgDn</kbd></dt><dd>previous, next</dd><dt><kbd>Q</kbd></dt><dd>into the queue, then ↑↓ choose, Enter plays</dd><dt><kbd>Alt</kbd>+<kbd>↑</kbd><kbd>↓</kbd></dt><dd>move a video (or drag it)</dd></dl></div>
+  <div><h3>Elsewhere</h3><dl>
+   <dt><kbd>G</kbd></dt><dd>this moment on YouTube</dd><dt><kbd>C</kbd></dt><dd>copy a link to this moment</dd><dt><kbd>H</kbd></dt><dd>History</dd><dt><kbd>Esc</kbd></dt><dd>back to where you came from</dd></dl></div>
+ </div>
+</div></div>
+<script src="/static/app.js"></script>
 <script src="https://www.youtube.com/iframe_api"></script>
 <script>
 const J=async(u,o)=>(await fetch(u,o)).json(),P=(u,b,m='POST')=>J(u,{method:m,headers:{'content-type':'application/json'},body:JSON.stringify(b||{})});
@@ -75,13 +117,13 @@ function startPlayer(id,start){if(!ready){pending={id,start};return}
  player=new YT.Player('yt',{videoId:id,playerVars:{autoplay:1,mute:muted0()?1:0,rel:0,playsinline:1,start:Math.floor(start||0)},events:{onReady:e=>{if(muted0())e.target.mute();applySpeed();syncUI()},onStateChange:onState,onError:onErr}})}
 function onState(e){if(e.data===1){applySpeed();lastTick=Date.now()}if(e.data===0){flush(true,0);if($('auto').checked&&!LOOP.b)next(true)}syncUI()}
 function onErr(e){const c=e.data;const why={2:'invalid video id',5:'player problem',100:'video removed or private',101:'the owner disabled embedding',150:'the owner disabled embedding',152:'age-restricted or embedding blocked'}[c]||'playback error';
- const f=$('fail');f.style.display='block';f.innerHTML=`<b>This video can’t play here</b> (${esc(why)}, code ${c}). <a href="https://youtu.be/${V.video_id}" target=_blank rel=noopener>Open on YouTube ↗</a> · tags and notes still work. ${$('auto').checked&&Q.length>1?'<button id=skp>Skip To Next ▶</button>':''}`;const s=$('skp');if(s)s.onclick=()=>next(true)}
+ const f=$('fail');f.style.display='block';f.innerHTML=`<b>This video can’t play here</b> (${esc(why)}, code ${c}). <a href="https://youtu.be/${V.video_id}" target=_blank rel=noopener>Open on YouTube</a>. Tags and notes still work. ${$('auto').checked&&Q.length>1?'<button id=skp class=sm style="margin-left:8px">Skip to next</button>':''}`;const s=$('skp');if(s)s.onclick=()=>next(true)}
 const pl=()=>player&&player.getCurrentTime?player:null;
 function cur(){return pl()?pl().getCurrentTime():0}
 function applySpeed(){if(pl()&&pl().setPlaybackRate)try{pl().setPlaybackRate(SP)}catch(e){}$('sv').textContent=SP+'×'}
 function setSpeed(x){const r=[0.25,0.5,0.75,1,1.25,1.5,1.75,2,2.5,3];x=r.reduce((a,b)=>Math.abs(b-x)<Math.abs(a-x)?b:a);SP=x;applySpeed();flush(false);toast('Speed '+SP+'×')}
 function stepSpeed(d){const r=[0.25,0.5,0.75,1,1.25,1.5,1.75,2,2.5,3];let k=r.indexOf(SP);if(k<0)k=3;setSpeed(r[Math.max(0,Math.min(r.length-1,k+d))])}
-function syncUI(){const m=pl()&&pl().isMuted&&pl().isMuted();$('bsn').textContent=m?'🔇 Sound (M)':'🔊 Sound (M)';$('lv').textContent=LOOP.a!=null||LOOP.b!=null?'Loop '+(LOOP.a!=null?fmt(LOOP.a):'—')+' → '+(LOOP.b!=null?fmt(LOOP.b):'—'):''}
+function syncUI(){const m=pl()&&pl().isMuted&&pl().isMuted();$('bsn').innerHTML=m?'Muted<kbd>M</kbd>':'Sound on<kbd>M</kbd>';$('lv').textContent=LOOP.a!=null||LOOP.b!=null?'Looping '+(LOOP.a!=null?fmt(LOOP.a):'—')+' to '+(LOOP.b!=null?fmt(LOOP.b):'—'):''}
 // ---------- history pings ----------
 function body(clear){return {pos:cur(),dur:pl()&&pl().getDuration?pl().getDuration():0,delta:delta,speed:SP,loop_a:LOOP.a,loop_b:LOOP.b,log_id:LOG,clear_loop:!!clear}}
 function flush(sync,posOverride){if(!V)return;const b=body(!LOOP.a&&!LOOP.b&&false);if(posOverride!=null)b.pos=posOverride;b.clear_loop=LOOP.a==null&&LOOP.b==null;delta=0;sinceFlush=0;
@@ -96,16 +138,16 @@ async function loadVideo(id,startOverride){if(V){saveNote();flush(false)}
  V=v;const st=v.state||{};SP=st.speed||1;LOOP={a:st.loop_a==null?null:st.loop_a,b:st.loop_b==null?null:st.loop_b};delta=0;sinceFlush=0;
  let start=startOverride!=null?startOverride:(st.last_pos||0);if(startOverride==null&&!(start>5&&(!st.duration||start<st.duration-20)))start=0;
  qi=Math.max(0,Q.findIndex(x=>x.video_id==id));
- $('ti').textContent=v.title||'(title unavailable — private or removed)';$('ch').textContent=(v.channel||v.video_id)+(st.plays?` · opened ${st.plays}× · watched ${fmt(st.seconds)} total`:'');
- $('pls').textContent='In: '+v.playlists.map(p=>p.title+' ('+p.account_id+')').join(', ');
- $('note').value=v.note||'';$('st').textContent='Status: '+v.status;document.title=(v.title||'Watch')+' · YouCommander';
+ $('ti').textContent=v.title||'(title unavailable — private or removed)';$('ch').textContent=(v.channel||v.video_id)+(st.plays?`  —  opened ${st.plays}×, watched ${fmt(st.seconds)} in total`:'');
+ $('pls').textContent='In '+v.playlists.map(p=>p.title+' ('+p.account_id+')').join(', ');
+ $('note').value=v.note||'';$('st').textContent=v.status;document.title=(v.title||'Watch')+' · YouCommander';
  drawTags();drawMarks();drawQ();TX=null;TXVIEW=null;$('txl').innerHTML='<span class=mut style="padding:6px">Loading…</span>';loadTx();$('pos').textContent=Q.length>1?(qi+1)+' of '+Q.length:'';
  history.replaceState(null,'','/watch?v='+id+(TAGQ?'&tag='+TAGQ:'')+(seg.get('q')?'&q=1':''));
  const o=await P('/api/watch/'+id+'/open',{source:'watch'});LOG=o.log_id;
  startPlayer(id,start);if(start>5)toast('Resuming at '+fmt(start));syncUI()}
 function next(auto){if(qi<Q.length-1)loadVideo(Q[qi+1].video_id);else if(!auto)toast('End of the queue')}
 function prev(){if(qi>0)loadVideo(Q[qi-1].video_id);else toast('Start of the queue')}
-function drawQ(keep){$('qn').textContent=Q.length>1?Q.length+' videos':'';$('q').innerHTML=Q.map((x,k)=>`<div data-v="${x.video_id}" data-k=${k} draggable=true class="${k==qi?'cur':''}" title="Drag to reorder, or Alt+↑/↓ to move the playing video"><span class=h>⋮⋮</span><span>${esc(x.title||x.video_id)}</span><small>${x.last_pos>5&&x.duration?Math.round(100*x.last_pos/x.duration)+'%':''}</small></div>`).join('')||'<div class=mut>Just this video</div>';const c=$('q').querySelector('.cur');if(c&&!keep)c.scrollIntoView({block:'nearest'});paintQF()}
+function drawQ(keep){$('qn').textContent=Q.length>1?Q.length+' videos':'';$('q').innerHTML=Q.map((x,k)=>`<div data-v="${x.video_id}" data-k=${k} draggable=true class="${k==qi?'cur':''}" title="Drag to reorder, or Alt+↑/↓ to move the playing video"><span class=h>⋮⋮</span><span>${esc(x.title||x.video_id)}</span><small>${x.last_pos>5&&x.duration?Math.round(100*x.last_pos/x.duration)+'%':''}</small></div>`).join('')||'<div class="empty mut">Just this video</div>';const c=$('q').querySelector('.cur');if(c&&!keep)c.scrollIntoView({block:'nearest'});paintQF()}
 let QF=-1;
 function paintQF(flash){$('q').querySelectorAll('.qf,.qflash').forEach(x=>x.classList.remove('qf','qflash'));if(QF<0)return;const el=$('q').querySelector(`[data-k="${QF}"]`);if(!el){QF=-1;return}el.classList.add('qf');if(flash){void el.offsetWidth;el.classList.add('qflash')}el.scrollIntoView({block:'nearest'})}
 function qEnter(){if(Q.length<1)return;QF=Math.max(0,qi);$('q').scrollIntoView({block:'nearest'});paintQF(true);toast('Queue: ↑/↓ choose · Space/Enter play · Alt+↑/↓ move · Esc or Q back',3500)}
@@ -130,7 +172,7 @@ const byId=()=>Object.fromEntries(TAGS.map(t=>[t.id,t]));
 function pathOf(t){const m=byId(),p=[];let x=t,n=0;while(x&&n++<10){p.unshift(x.name);x=x.parent_id?m[x.parent_id]:null}return p.join(' / ')}
 function drawTags(){$('tg').innerHTML=V.tags.map(t=>`<span class="chip${t.confirmed?'':' s'}" title="${esc(t.description||t.name)}">${esc(pathOf(TAGS.find(x=>x.id==t.id)||t))}<b data-r=${t.id} title="Remove tag">×</b></span>`).join('')||'<span class=mut>No tags yet</span>'}
 $('tg').onclick=async e=>{const r=e.target.dataset.r;if(r){await J(`/api/video/${V.video_id}/tags/${r}`,{method:'DELETE'});await refreshV()}};
-async function refreshV(){const v=await J('/api/watch/'+V.video_id);V.tags=v.tags;V.status=v.status;$('st').textContent='Status: '+v.status;drawTags()}
+async function refreshV(){const v=await J('/api/watch/'+V.video_id);V.tags=v.tags;V.status=v.status;$('st').textContent=v.status;drawTags()}
 const normq=q=>q.trim().replace(/\s*\/\s*/g,' / ').toLowerCase();
 function matches(q){q=normq(q);return TAGS.filter(t=>t.name!='Inbox'&&pathOf(t).toLowerCase().includes(q)).sort((a,b)=>(pathOf(a).toLowerCase().startsWith(q)?0:1)-(pathOf(b).toLowerCase().startsWith(q)?0:1)||b.n-a.n).slice(0,12)}
 function opts(){const q=$('ti2').value.trim(),m=matches(q);if(q){const nq=normq(q);if(!TAGS.some(t=>pathOf(t).toLowerCase()==nq||t.name.toLowerCase()==q.toLowerCase()))m.push({create:1,name:q})}return m}
@@ -153,7 +195,7 @@ function selAnchor(){const sel=getSelection();if(!sel||sel.isCollapsed||!sel.ran
 function lineAnchor(){const r=document.querySelector('#txl .tl.now');if(!r)return null;return {t:+r.dataset.t,quote:compact(r.children[1].textContent),label:'the highlighted line'}}
 const timeAnchor=()=>({t:Math.floor(cur()),quote:null,label:'this moment'});
 const autoAnchor=()=>selAnchor()||timeAnchor();
-function drawMarks(){$('marks').innerHTML=V.marks.map(m=>`<div class=mk data-t="${m.t}" data-id=${m.id}><span class=t>${fmt(m.t)}</span><span style="flex:1;min-width:0">${m.quote?`<div class=mq>“${esc(m.quote)}”</div>`:''}<span class=bd data-bd=${m.id} title="Double-click to edit">${m.source=='voice'?'🎙 ':''}${m.status=='transcribing'?'<i class=mut>transcribing…</i>':esc(m.body)}</span></span><span class=x data-del=${m.id} title="Delete this note">✕</span></div>`).join('')||'<span class=mut>None yet. B = text note, V = voice note. Select text in the transcript first to attach the note to it.</span>';
+function drawMarks(){$('marks').innerHTML=V.marks.map(m=>`<div class=mk data-t="${m.t}" data-id=${m.id}><span class=t>${fmt(m.t)}</span><span style="flex:1;min-width:0">${m.quote?`<div class=mq>“${esc(m.quote)}”</div>`:''}<span class=bd data-bd=${m.id} title="Double-click to edit">${m.source=='voice'?'<span class=pill title="Voice note">voice</span> ':''}${m.status=='transcribing'?'<i class=mut>transcribing…</i>':esc(m.body)}</span></span><span class=x data-del=${m.id} title="Delete this note">✕</span></div>`).join('')||'<span class=mut>None yet. B adds a typed note, V a voice note. Select text in the transcript first to attach the note to it.</span>';
  V.marks.filter(m=>m.status=='transcribing').forEach(m=>pollMark(m.id))}
 const POLLING=new Set();
 function pollMark(id){if(POLLING.has(id))return;POLLING.add(id);const go=async()=>{const r=await J('/api/watch/marks/'+id);const m=V&&V.marks.find(x=>x.id==id);if(!m||r.error){POLLING.delete(id);return}
@@ -179,10 +221,10 @@ async function voiceAt(a){if(REC||ANCH)return;if(!navigator.mediaDevices){toast(
   if(cancelled){toast('Recording cancelled');return}const blob=new Blob(RCH,{type});if(blob.size<500){toast('Recording was too short');return}
   const r=await J(`/api/watch/${vid}/marks/voice?t=${a.t}&quote=${encodeURIComponent(a.quote||'')}`,{method:'POST',headers:{'content-type':type},body:blob});
   if(r.error){toast(r.error);return}if(V.video_id!=vid)return;V.marks.push({id:r.id,t:a.t,body:'',quote:a.quote,source:'voice',status:'transcribing'});V.marks.sort((x,y)=>x.t-y.t);drawMarks();getSelection().removeAllRanges();toast('Voice note saved at '+fmt(a.t))};
- REC.start();$('mkbox').style.display='block';$('mkl').textContent='🎙 Recording a note at '+fmt(a.t)+(a.quote?' on '+a.label:'')+' — press V or Space to stop, Esc to cancel';$('mkin').style.display='none'}
+ REC.start();$('mkbox').style.display='block';$('mkl').textContent='Recording a note at '+fmt(a.t)+(a.quote?' on '+a.label:'')+'. Press V or Space to stop, Esc to cancel.';$('mkin').style.display='none'}
 function stopRec(cancel){if(!REC)return;REC._cancel=!!cancel;REC.stop();$('mkin').style.display=''}
 // ---- selection pop-up ----
-const sp=document.createElement('div');sp.id='sp';sp.style.cssText='position:fixed;display:none;z-index:30;background:var(--bg);border:1px solid var(--ac);border-radius:8px;padding:4px;box-shadow:0 4px 18px #0004;gap:4px';sp.innerHTML='<button data-a=note>📌 Note On Selection (B)</button><button data-a=voice>🎙 Voice Note On Selection (V)</button>';document.body.appendChild(sp);
+const sp=document.createElement('div');sp.id='sp';sp.style.cssText='position:fixed;display:none;z-index:30;background:var(--sf);border:1px solid var(--bd);border-radius:10px;padding:4px;box-shadow:var(--sh-lg);gap:4px';sp.innerHTML='<button data-a=note class=sm>Note on selection<kbd>B</kbd></button><button data-a=voice class=sm>Voice note on selection<kbd>V</kbd></button>';document.body.appendChild(sp);
 let SPA=null;const hideSp=()=>{sp.style.display='none';SPA=null};
 sp.onmousedown=e=>e.preventDefault();
 sp.onclick=e=>{const a=e.target.dataset.a;if(!a||!SPA)return;const x=SPA;hideSp();a=='note'?noteAt(x):voiceAt(x)};
@@ -251,18 +293,18 @@ async function loadTx(){clearTimeout(TXPOLL);const id=V.video_id;const t=await J
  drawTx();if(t.captions.active||t.whisper.active)TXPOLL=setTimeout(loadTx,1500)}
 function txHead(){let h='';
  for(const k of ['captions','whisper']){const t=TX[k];
-  if(t.status=='ok')h+=`<button data-view=${k} class="${TXVIEW==k?'on':''}" title="${k=='captions'?'The YouTube caption track':'Local Whisper ('+esc(t.model)+')'}. Click to view it.">${KIND[k]} · ${t.cues.length} lines</button>`;
-  else if(t.active)h+=`<span class=mut>${KIND[k]}: working…</span>`;
-  else h+=`<button data-get=${k} title="${k=='captions'?'Reads the video’s caption track as text. No audio is downloaded.':'Downloads the audio to a temporary file, transcribes it on this computer with Whisper, then deletes the file.'}">${k=='captions'?'Get Captions':'Transcribe With Whisper'}</button>`+(t.status=='none'?'<span class=mut>No captions found.</span>':t.status=='error'?'<span style="color:var(--bad)">'+esc((t.error||'Failed').slice(0,120))+'</span>':'')}
- if(TXVIEW){const t=TX[TXVIEW];h+=`<input id=txq placeholder="Find in transcript" style="flex:1;min-width:120px"><label class=mut><input type=checkbox id=txf ${txF?'checked':''}> Follow Along</label><button id=txln title="Typed note on the line that Follow Along is highlighting (Shift+B)">📌 Note On Line (Shift+B)</button><button id=txlv title="Spoken note on the highlighted line (Shift+V)">🎙 Voice On Line (Shift+V)</button><button id=txcp title="Copy this transcript as text">Copy</button><button id=txrm title="Delete this version from this computer">Remove</button><span class=mut>${TXVIEW=='captions'?(t.model=='auto'?'Auto-captions':'Captions')+' · '+esc(t.language||''):'large model, local'}</span>`}
+  if(t.status=='ok')h+=`<button data-view=${k} class="${TXVIEW==k?'on':''}" title="${k=='captions'?'The YouTube caption track':'Local Whisper ('+esc(t.model)+')'}. Click to view it.">${KIND[k]} <span class="mut num">${t.cues.length}</span></button>`;
+  else if(t.active)h+=`<span class=mut>${KIND[k]} working…</span>`;
+  else h+=`<button data-get=${k} title="${k=='captions'?'Reads the video’s caption track as text. No audio is downloaded.':'Downloads the audio to a temporary file, transcribes it on this computer with Whisper, then deletes the file.'}">${k=='captions'?'Get captions':'Transcribe with Whisper'}</button>`+(t.status=='none'?'<span class=mut>No captions found.</span>':t.status=='error'?'<span style="color:var(--bad)">'+esc((t.error||'Failed').slice(0,120))+'</span>':'')}
+ if(TXVIEW){const t=TX[TXVIEW];h+=`<input id=txq placeholder="Find in transcript" style="flex:1;min-width:120px"><label title="Keep the current line highlighted and in view"><input type=checkbox id=txf ${txF?'checked':''}> Follow along</label><button id=txln class=ghost title="Typed note on the line that Follow along is highlighting (Shift+B)">Note on line<kbd>⇧B</kbd></button><button id=txlv class=ghost title="Spoken note on the highlighted line (Shift+V)">Voice on line<kbd>⇧V</kbd></button><button id=txcp class=ghost title="Copy this transcript as text">Copy</button><button id=txrm class=ghost title="Delete this version from this computer">Remove</button><span class=mut>${TXVIEW=='captions'?(t.model=='auto'?'Auto-captions':'Captions')+(t.language?', '+esc(t.language):''):'large model, local'}</span>`}
  $('txh').innerHTML=h}
 let txF=true;
 function drawTx(){const q0=$('txq')?$('txq').value:'';txHead();if($('txq'))$('txq').value=q0;drawTxList()}
 function drawTxList(){const box=$('txl');const t=TXVIEW?TX[TXVIEW]:null;
- if(!t){box.innerHTML='<span class=mut style="padding:6px">'+(TX.captions.active||TX.whisper.active?'':'No transcript yet. Press Y to get the captions, or use a button above.')+'</span>';$('txs').textContent='';return}
+ if(!t){box.innerHTML='<span class=mut style="padding:6px;display:block">'+(TX.captions.active||TX.whisper.active?'':'No transcript yet. Press Y to get the captions, or use a button above.')+'</span>';$('txs').textContent='';return}
  $('txs').textContent=t.cues.length+' lines';const q=($('txq')&&$('txq').value||'').trim().toLowerCase();
  const hl=x=>{if(!q)return esc(x);const i=x.toLowerCase().indexOf(q);return i<0?esc(x):esc(x.slice(0,i))+'<mark>'+esc(x.slice(i,i+q.length))+'</mark>'+esc(x.slice(i+q.length))};
- box.innerHTML=t.cues.map((c,k)=>(!q||c[1].toLowerCase().includes(q))?`<div class=tl data-k=${k} data-t="${c[0]}"><span class=t>${fmt(c[0])}</span><span>${hl(c[1])}</span><span class=p data-pin=${k} title="Pin this line as a note at this time">📌</span></div>`:'').join('')||'<span class=mut style="padding:6px">No matches.</span>';TXNOW=-1;box.scrollTop=0}
+ box.innerHTML=t.cues.map((c,k)=>(!q||c[1].toLowerCase().includes(q))?`<div class=tl data-k=${k} data-t="${c[0]}"><span class=t>${fmt(c[0])}</span><span>${hl(c[1])}</span><span class=p data-pin=${k} title="Pin this line as a note at this time">pin</span></div>`:'').join('')||'<span class=mut style="padding:6px">No matches.</span>';TXNOW=-1;box.scrollTop=0}
 $('txh').onclick=async e=>{const b=e.target.closest('button,input');if(!b)return;
  if(b.dataset.view){TXVIEW=b.dataset.view;try{localStorage.setItem('txView',TXVIEW)}catch(x){}drawTx()}
  else if(b.dataset.get){const k=b.dataset.get;const r=await P('/api/transcript/'+V.video_id,{method:k});if(r.error){toast(r.error,6000);return}TX[k]={status:'missing',active:true};drawTx();loadTx()}
@@ -287,7 +329,7 @@ setInterval(()=>{if(!TX||!TXVIEW||!pl()||!txF||($('txq')&&$('txq').value))return
  if(seg.get('q')){try{ids=JSON.parse(localStorage.getItem('watchIds')||'null')}catch(e){}}
  if(ids&&ids.length)Q=await P('/api/watch/queue',{ids});else if(TAGQ){Q=await P('/api/watch/queue',{tag:+TAGQ});applySaved();$('qrs').style.display=qkey()&&localStorage.getItem(qkey())?'':'none'}
  let start=v0||(Q[0]&&Q[0].video_id);
- if(!start){$('ti').textContent='Nothing to watch yet';$('ch').textContent='Open a video from the Commander page and press W.';return}
+ if(!start){$('ti').textContent='Nothing to watch yet';$('ch').textContent='Open a video from the Commander page and press W.';$('txl').innerHTML='';return}
  if(!Q.some(x=>x.video_id==start))Q=[{video_id:start,title:null}].concat(Q);
  $('cnt').textContent='';await loadVideo(start)})();
 </script>

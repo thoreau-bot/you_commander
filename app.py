@@ -221,6 +221,8 @@ def audio_get(aid:int):
     r=q("select id,video_id,status,transcript,extracted,error from audio_notes where id=?",(aid,))
     if not r: return {}
     r=r[0];r['extracted']=_json.loads(r['extracted']) if r['extracted'] else None;return r
+from fastapi.staticfiles import StaticFiles
+app.mount('/static',StaticFiles(directory=os.path.join(os.path.dirname(__file__),'static')),name='static')
 @app.get('/triage',response_class=HTMLResponse)
 def triage_page(): return open(os.path.join(os.path.dirname(__file__),'triage.html'),encoding='utf-8').read()
 @app.get('/',response_class=HTMLResponse)

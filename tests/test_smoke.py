@@ -8,6 +8,11 @@ def test_pages_serve(client):
     for path in ('/', '/import', '/triage', '/watch', '/history'):
         r = client.get(path)
         assert r.status_code == 200 and '<title>' in r.text
+        assert '/static/app.css' in r.text
+
+def test_static_assets_serve(client):
+    assert client.get('/static/app.css').status_code == 200
+    assert client.get('/static/app.js').status_code == 200
 
 def test_import_flow(client):
     client.post('/api/import/reset')
