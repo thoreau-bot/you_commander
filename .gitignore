@@ -1,0 +1,18 @@
+# Your data never goes in the repo
+*.db
+*.db-shm
+*.db-wal
+audio/
+demo_data/
+backups/
+import_staging/
+takeout*/
+*.zip
+# Python / environments
+.venv/
+__pycache__/
+*.pyc
+.pytest_cache/
+# Logs
+*.log
+voice_install_log.txt

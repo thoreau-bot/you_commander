@@ -1,0 +1,45 @@
+<!doctype html><meta charset=utf-8><title>YouCommander · History</title><link rel=icon href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='8' fill='%232a5bd7'/%3E%3Cg fill='none' stroke='white' stroke-width='2.6' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='9,13 16,7.5 23,13'/%3E%3Cpolyline points='9,20 16,14.5 23,20'/%3E%3Cline x1='12' y1='26' x2='20' y2='26'/%3E%3C/g%3E%3C/svg%3E"><meta name=viewport content="width=device-width,initial-scale=1">
+<style>
+:root{--bg:#fff;--fg:#1d1d1f;--mut:#6b6b70;--bd:#dcdce0;--ac:#2a5bd7;--pn:#f5f5f7}
+@media(prefers-color-scheme:dark){:root{--bg:#18181b;--fg:#ececf0;--mut:#9a9aa3;--bd:#34343a;--ac:#7ea2ff;--pn:#222226}}
+*{box-sizing:border-box}body{margin:0;font:14px system-ui;background:var(--bg);color:var(--fg)}
+#top{display:flex;gap:10px;align-items:center;padding:8px 12px;border-bottom:1px solid var(--bd);background:var(--pn)}#top a{color:var(--ac)}
+main{max-width:1100px;margin:auto;padding:12px}.mut{color:var(--mut)}
+button,input{font:inherit;border:1px solid var(--bd);border-radius:6px;background:var(--bg);color:var(--fg);padding:6px 10px}button{cursor:pointer}button:hover{background:var(--pn)}button.on{border-color:var(--ac);color:var(--ac)}
+.row{display:grid;grid-template-columns:minmax(0,1fr) 150px 80px 60px 70px;gap:10px;padding:8px 10px;border-bottom:1px solid var(--bd);align-items:center;cursor:pointer}.row:hover,.row.f{background:var(--pn)}.row.f{outline:3px solid var(--ac);outline-offset:-3px}.row small{color:var(--mut)}
+.row .t{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.cw{display:flex;gap:10px;overflow:auto;padding:4px 0 10px}.cw div{min-width:230px;max-width:230px;border:1px solid var(--bd);border-radius:8px;padding:8px 10px;cursor:pointer}.cw div:hover{background:var(--pn)}
+.bar2{height:4px;background:var(--bd);border-radius:2px;margin-top:6px}.bar2 i{display:block;height:4px;background:var(--ac);border-radius:2px}
+kbd{border:1px solid var(--bd);border-bottom-width:2px;border-radius:4px;padding:0 5px;font-size:12px}
+@media(max-width:800px){.row{grid-template-columns:1fr 70px}.row>:nth-child(2),.row>:nth-child(4),.row>:nth-child(5){display:none}}
+</style>
+<div id=top><a href="/" style="display:flex"><svg width=22 height=22 viewBox="0 0 32 32" role=img aria-label=YouCommander><rect width=32 height=32 rx=8 fill="var(--ac)"/><g fill=none stroke="var(--bg)" stroke-width=2.6 stroke-linecap=round stroke-linejoin=round><polyline points="9,13 16,7.5 23,13"/><polyline points="9,20 16,14.5 23,20"/><line x1=12 y1=26 x2=20 y2=26 /></g></svg></a><a href="/">← Commander</a><b>History</b><span id=sum class=mut style="margin-left:auto"></span></div>
+<main>
+<h3 style="margin:6px 0">Continue Watching</h3><div class=cw id=cw></div>
+<div style="display:flex;gap:6px;flex-wrap:wrap;align-items:center;margin:8px 0"><input id=fq placeholder="Filter by title or channel (/)" style="width:260px"><span id=chips></span><button id=wq style="margin-left:auto" title="Play everything listed, in this order, on the Watch page">Watch These In Order ▶</button></div>
+<div class=mut style="font-size:12px;margin-bottom:6px">Every video you open or play anywhere in YouCommander is listed here, newest first. Stored only on this computer. <kbd>↑</kbd><kbd>↓</kbd> move · <kbd>Enter</kbd> watch · <kbd>/</kbd> filter · <kbd>Esc</kbd> back</div>
+<div id=list></div></main>
+<script>
+const J=async u=>(await fetch(u)).json(),esc=s=>(s||'').replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+const fmt=s=>{s=Math.max(0,Math.floor(s||0));const h=Math.floor(s/3600),m=Math.floor(s%3600/60);return h?h+'h '+m+'m':m?m+'m':s+'s'};
+const clock=s=>{s=Math.floor(s||0);return Math.floor(s/60)+':'+String(s%60).padStart(2,'0')};
+const when=s=>{if(!s)return'';const d=new Date(s.replace(' ','T')+'Z');return d.toLocaleDateString(undefined,{month:'short',day:'numeric'})+' '+d.toLocaleTimeString(undefined,{hour:'numeric',minute:'2-digit'})};
+let ALL=[],MODE='all',FI=0;
+const MODES={all:['All',x=>true],played:['Actually Watched',x=>x.seconds>5],watch:['Watch Page',x=>x.src=='watch'],commander:['Commander',x=>x.src=='commander'],triage:['Triage',x=>x.src=='triage']};
+function shown(){const q=fq.value.trim().toLowerCase();return ALL.filter(MODES[MODE][1]).filter(x=>!q||((x.title||'')+' '+(x.channel||'')).toLowerCase().includes(q))}
+function draw(){const L=shown();FI=Math.min(FI,Math.max(0,L.length-1));
+ chips.innerHTML=Object.entries(MODES).map(([k,v])=>`<button data-m=${k} class="${k==MODE?'on':''}">${v[0]}</button> `).join('');
+ list.innerHTML=L.map((x,k)=>`<div class="row${k==FI?' f':''}" data-v="${x.video_id}"><div><div class=t>${esc(x.title||x.video_id)}</div><small>${esc(x.channel||'')}${x.marks?' · '+x.marks+' note'+(x.marks>1?'s':'')+' at times':''}</small>${x.duration&&x.last_pos>5?`<div class=bar2><i style="width:${Math.min(100,100*x.last_pos/x.duration)}%"></i></div>`:''}</div><small>${when(x.last_watched)}</small><small>${x.seconds>5?fmt(x.seconds):'opened'}</small><small>${x.plays}×</small><small>${x.last_pos>5?'at '+clock(x.last_pos):''}</small></div>`).join('')||'<p class=mut>Nothing here yet. Open a video from Commander (Space) or press W to use the Watch page.</p>';
+ const f=list.querySelector('.f');if(f)f.scrollIntoView({block:'nearest'})}
+chips.onclick=e=>{if(e.target.dataset.m){MODE=e.target.dataset.m;FI=0;draw()}};fq.oninput=()=>{FI=0;draw()};
+list.onclick=e=>{const r=e.target.closest('[data-v]');if(r)location.href='/watch?v='+r.dataset.v};
+cw.onclick=e=>{const r=e.target.closest('[data-v]');if(r)location.href='/watch?v='+r.dataset.v};
+wq.onclick=()=>{const ids=shown().map(x=>x.video_id).slice(0,300);if(!ids.length)return;try{localStorage.setItem('watchIds',JSON.stringify(ids))}catch(e){}location.href='/watch?q=1&v='+ids[0]};
+addEventListener('keydown',e=>{const a=document.activeElement;if(a&&a.tagName=='INPUT'){if(e.key=='Escape'||e.key=='Enter'||e.key=='ArrowDown'){if(e.key=='Escape')fq.value='';a.blur();draw();e.preventDefault()}return}
+ const L=shown();if(e.key=='ArrowDown'){e.preventDefault();FI=Math.min(L.length-1,FI+1);draw()}else if(e.key=='ArrowUp'){e.preventDefault();FI=Math.max(0,FI-1);draw()}
+ else if(e.key=='Enter'&&L[FI])location.href='/watch?v='+L[FI].video_id;else if(e.key=='/'){e.preventDefault();fq.focus()}else if(e.key=='Escape')location.href='/'});
+(async()=>{const d=await J('/api/history?limit=2000');ALL=d.items;sum.textContent=d.videos+' videos opened · '+fmt(d.seconds)+' watched in the app';
+ const c=ALL.filter(x=>x.duration>0&&x.last_pos>30&&x.last_pos<x.duration-20).slice(0,10);
+ cw.innerHTML=c.map(x=>`<div data-v="${x.video_id}"><div style="font-weight:600;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${esc(x.title||x.video_id)}</div><small class=mut>${esc(x.channel||'')} · at ${clock(x.last_pos)} of ${clock(x.duration)}</small><div class=bar2><i style="width:${100*x.last_pos/x.duration}%"></i></div></div>`).join('')||'<span class=mut>Nothing in progress.</span>';
+ draw()})();
+</script>
