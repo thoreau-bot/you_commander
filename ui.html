@@ -52,7 +52,7 @@ header{flex:none;display:flex;align-items:center;gap:10px;padding:10px 16px;bord
 .acc .meta .tags{display:flex;flex-wrap:wrap;gap:4px}
 .acc .meta .acts{margin-left:auto;display:flex;gap:6px}
 .sel{cursor:pointer}
-#more{margin:12px auto;display:flex}
+.loadmore{display:flex;justify-content:center;padding:12px}
 /* tag editor sheet */
 #ed{flex:none;display:none;max-height:40vh;overflow:auto;padding:12px 16px;border-top:1px solid var(--bd);background:var(--sf)}
 #ed .edrow{display:flex;flex-wrap:wrap;align-items:center;gap:8px 14px}
@@ -132,7 +132,7 @@ function edit(id){const t=TAGS.find(x=>x.id==id);ed.style.display='block';
  save.onclick=async()=>{await J('/api/tags/'+id,{method:'PATCH',headers:{'content-type':'application/json'},body:JSON.stringify({set_parent:true,parent_id:par.value?+par.value:null,kind:kind.value,publish:pub.checked?1:0})});init()}}
 var CUR=-1,ANCH=-1;let OFF=0;async function load(more){if(!more){OFF=0;CUR=-1;ANCH=-1;RUN=null}const p=new URLSearchParams();p.set('offset',OFF);if(cur.tag)p.set('tag',cur.tag);if(cur.audit)p.set('audit',cur.audit);if(s.value)p.set('search',s.value);
  const r=await J('/api/videos?'+p);OFF+=r.length;info.textContent=OFF+' shown';
- const h=r.map(v=>`<div class=item data-v="${v.video_id}"><div class=row><input type=checkbox class=sel data-v="${v.video_id}"${SEL.has(v.video_id)?' checked':''}><span class=t><a target=_blank href="https://youtu.be/${v.video_id}">${v.title?esc(v.title):'<i>(unavailable or private) '+v.video_id+'</i>'}</a></span><span class=tg>${v.tags?v.tags.split(', ').map(x=>'<span class=pill>'+esc(x)+'</span>').join(''):esc(v.added||v.title_source||'')}</span></div><div class=acc></div></div>`).join('')+(r.length==200?'<div class=item><button id=more class=ghost>Load next 200</button></div>':'');
+ const h=r.map(v=>`<div class=item data-v="${v.video_id}"><div class=row><input type=checkbox class=sel data-v="${v.video_id}"${SEL.has(v.video_id)?' checked':''}><span class=t><a target=_blank href="https://youtu.be/${v.video_id}">${v.title?esc(v.title):'<i>(unavailable or private) '+v.video_id+'</i>'}</a></span><span class=tg>${v.tags?v.tags.split(', ').map(x=>'<span class=pill>'+esc(x)+'</span>').join(''):esc(v.added||v.title_source||'')}</span></div><div class=acc></div></div>`).join('')+(r.length==200?'<div class=loadmore><button id=more class=ghost>Load next 200</button></div>':'');
  if(more){list.querySelector('#more')?.parentElement.remove();list.insertAdjacentHTML('beforeend',h)}else list.innerHTML=h||'<div class=empty><b>Nothing here</b>'+(s.value?'No video, channel, tag or transcript matches that.':'No videos in this view yet.')+'</div>';
  const m=document.getElementById('more');if(m)m.onclick=()=>load(true)}
 list.addEventListener('click',async e=>{const a=e.target.closest('.row a');if(!a||e.ctrlKey||e.metaKey||e.shiftKey||e.button)return;e.preventDefault();
