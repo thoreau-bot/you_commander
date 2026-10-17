@@ -21,6 +21,25 @@ def q(sql,a=()):
 def w(sql,a=()):
     c=sqlite3.connect(DB);cur=c.execute(sql,a);c.commit();i=cur.lastrowid;c.close();return i
 AUD=['recent_adds','duplicates','unavailable','untagged_inbox']
+_FTS_T=None
+def _fts_rebuild():
+    c=sqlite3.connect(DB,isolation_level=None)
+    try:
+        c.execute('begin immediate')
+        c.execute("drop table if exists video_fts")
+        c.execute("create virtual table video_fts using fts5(title,channel,tags,content='')")
+        c.execute("""insert into video_fts(rowid,title,channel,tags) select v.rowid,coalesce(v.title,''),coalesce(v.channel,''),
+          coalesce((select group_concat(t.name,' ') from video_tags vt join tags t on t.id=vt.tag_id where vt.video_id=v.video_id),'') from videos v""")
+        c.execute('commit')
+    except Exception:
+        try: c.execute('rollback')
+        except Exception: pass
+    finally: c.close()
+def fts_dirty(delay=1.0):
+    """Tags changed: rebuild the search index shortly (coalesces bursts such as triage confirms)."""
+    global _FTS_T
+    if _FTS_T: _FTS_T.cancel()
+    _FTS_T=threading.Timer(delay,_fts_rebuild);_FTS_T.daemon=True;_FTS_T.start()
 @app.get('/api/tags')
 def tags():
     return q("""select t.*,(select count(*) from video_tags v where v.tag_id=t.id) n,
@@ -35,6 +54,7 @@ def videos(tag:int|None=None,search:str|None=None,audit:str|None=None,limit:int=
     if tag: where.append("v.video_id in (select video_id from video_tags where tag_id=?)");a.append(tag)
     if search:
         s=' '.join(f'"{x}"*' for x in re.findall(r'\w+',search))
+        if not s: return []
         if s:
             where.append("(v.rowid in (select rowid from video_fts where video_fts match ?) or v.video_id in (select video_id from transcript_fts where transcript_fts match ?))");a.append(s);a.append(s)
     sql=sel+(' where '+' and '.join(where) if where else '')+' order by (v.title is null), v.title collate nocase limit ? offset ?'
@@ -55,6 +75,7 @@ def upd(tid:int,t:TagIn):
     for f in ('name','publish','kind','description'):
         v=getattr(t,f)
         if v is not None: w(f"update tags set {f}=? where id=?",(v,tid))
+    if t.name is not None: fts_dirty()
     if t.set_parent:
         p=t.parent_id;x=p
         while x:  # no cycles
@@ -112,7 +133,7 @@ def bulk(b:Bulk):
         elif b.action=='remove' and ex is not None:
             c.execute("delete from video_tags where video_id=? and tag_id=?",(v,tag))
             c.execute("insert into bulk_log(op,video_id,tag_id,removed_tag,prev_confirmed) values(?,?,?,1,?)",(op,v,tag,ex[0]));n+=1
-    c.commit();c.close();return {'ok':1,'changed':n,'op':op,'tag_id':tag}
+    c.commit();c.close();fts_dirty();return {'ok':1,'changed':n,'op':op,'tag_id':tag}
 @app.post('/api/bulk/undo')
 def bulk_undo():
     c=sqlite3.connect(DB)
@@ -127,7 +148,7 @@ def bulk_undo():
         if hi and ib: c.execute("insert or ignore into video_tags(video_id,tag_id,source,confirmed) values(?,?, 'import',1)",(v,ib))
         if ps: c.execute("update triage set status=? where video_id=?",(ps,v))
         n+=1
-    c.execute("delete from bulk_log where op=?",(op,));c.commit();c.close();return {'ok':1,'restored':n}
+    c.execute("delete from bulk_log where op=?",(op,));c.commit();c.close();fts_dirty();return {'ok':1,'restored':n}
 @app.get('/api/bulk/last')
 def bulk_last():
     try: return q("select op,count(*) n from bulk_log where op=(select max(op) from bulk_log) group by op")
@@ -141,7 +162,7 @@ def merge(tid:int,m:Merge):
     c.execute("update video_tags set confirmed=1 where tag_id=? and video_id in (select video_id from video_tags where tag_id=? and confirmed=1)",(m.into,tid))
     c.execute("delete from video_tags where tag_id=?",(tid,))
     c.execute("update tags set parent_id=? where parent_id=?",(m.into,tid))
-    c.execute("delete from tags where id=?",(tid,));c.commit();c.close();return {'ok':1}
+    c.execute("delete from tags where id=?",(tid,));c.commit();c.close();fts_dirty();return {'ok':1}
 @app.get('/api/triage/queue')
 def tqueue(limit:int=400,offset:int=0,status:str='open',tag:int|None=None,video:str|None=None):
     if video: return q("select video_id from videos where video_id=?",(video,))
@@ -174,15 +195,15 @@ def bulk_suggest(b:BSug):
     c=sqlite3.connect(DB)
     for v in b.video_ids:
         for t in b.tag_ids: c.execute("insert or ignore into video_tags(video_id,tag_id,source,confirmed) values(?,?, 'voice',0)",(v,t))
-    c.commit();c.close();return {'ok':1}
+    c.commit();c.close();fts_dirty();return {'ok':1}
 class VT(BaseModel): tag_id:int
 @app.post('/api/video/{vid}/tags')
 def addtag(vid:str,b:VT):
     w("insert into video_tags(video_id,tag_id,source,confirmed) values(?,?, 'manual',1) on conflict(video_id,tag_id) do update set confirmed=1",(vid,b.tag_id))
-    w("delete from video_tags where video_id=? and tag_id in (select id from tags where name='Inbox') and ?!=(select id from tags where name='Inbox')",(vid,b.tag_id));return {'ok':1}
+    w("delete from video_tags where video_id=? and tag_id in (select id from tags where name='Inbox') and ?!=(select id from tags where name='Inbox')",(vid,b.tag_id));fts_dirty();return {'ok':1}
 @app.delete('/api/video/{vid}/tags/{tid}')
 def rmtag(vid:str,tid:int):
-    w("delete from video_tags where video_id=? and tag_id=?",(vid,tid));return {'ok':1}
+    w("delete from video_tags where video_id=? and tag_id=?",(vid,tid));fts_dirty();return {'ok':1}
 class Act(BaseModel): action:str; note:str|None=None
 @app.post('/api/video/{vid}/triage')
 def act(vid:str,a:Act):
@@ -196,7 +217,9 @@ def act(vid:str,a:Act):
         c.execute("update triage set status='done',triaged_at=datetime('now') where video_id=?",(vid,))
     elif a.action=='drop': c.execute("update triage set status='dropped',triaged_at=datetime('now') where video_id=?",(vid,))
     elif a.action=='reopen': c.execute("update triage set status='new' where video_id=?",(vid,))
-    c.commit();c.close();return {'ok':1}
+    c.commit();c.close()
+    if a.action=='confirm': fts_dirty()
+    return {'ok':1}
 _init_voice()
 import watch
 watch.setup(app,DB,video,AUDIO_DIR)

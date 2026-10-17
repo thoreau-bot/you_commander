@@ -4,27 +4,29 @@
 #wrap{display:grid;grid-template-columns:minmax(0,1.75fr) minmax(320px,1fr);gap:22px;padding:18px 22px 60px;max-width:1720px;margin:auto}
 #pl{position:relative}
 #fail{display:none;margin:10px 0;padding:10px 14px;border-radius:var(--r);background:var(--bad-s);border:1px solid color-mix(in srgb,var(--bad) 35%,transparent)}
-#kb{display:none;margin:10px 0;padding:8px 12px;border-radius:var(--r);background:var(--amb-s);color:var(--amb);font-size:12.5px}
+#kb{display:none;margin:10px 0;padding:8px 12px;border-radius:var(--r);background:var(--amb-s);color:var(--amb);font-size:12px}
 .ctl{display:flex;flex-wrap:wrap;align-items:center;gap:10px;margin:14px 0 8px}
+.tagwrap kbd{position:absolute;right:9px;top:50%;transform:translateY(-50%);pointer-events:none}.tagwrap:focus-within kbd{display:none}
+#none{max-width:560px;margin:60px auto}
 .ctl .group>button{padding:0 11px}
 #sv{font-weight:600}
-#lv{color:var(--amb);font-size:12.5px;font-variant-numeric:tabular-nums;padding-left:4px}
+#lv{color:var(--amb);font-size:12px;font-variant-numeric:tabular-nums;padding-left:4px}
 .acts{display:flex;flex-wrap:wrap;gap:6px;margin:0 0 14px}
 .acts button{color:var(--fg2)}
-#mkbox{display:none;margin:0 0 12px;padding:10px 12px;border-radius:var(--r);background:var(--sf);border:1px solid var(--ac);box-shadow:0 0 0 3px var(--ac-s)}
-#mkbox #mkl{margin-bottom:6px;font-size:12.5px}#mkbox input{width:100%}
-#ti{font-size:21px;margin-top:4px}#ch{margin-top:3px}#pls{font-size:12.5px;margin-top:3px;color:var(--mut)}
+#mkbox{display:none;margin:0 0 12px;padding:10px 12px;border-radius:var(--r);background:var(--sf);border:1px solid var(--bd);box-shadow:var(--sh)}
+#mkbox #mkl{margin-bottom:6px;font-size:12px}#mkbox input{width:100%}
+#ti{font-size:20px;margin-top:14px}#ch{margin-top:3px}#pls{font-size:12px;margin-top:3px;color:var(--mut)}
 .sec{margin-top:22px}
 #marks{display:flex;flex-direction:column;gap:2px}
 .mk{display:flex;gap:10px;padding:6px 8px;border-radius:var(--rs);cursor:pointer;align-items:baseline}.mk:hover{background:var(--sf2)}
 .mk .t{color:var(--ac);font-variant-numeric:tabular-nums;min-width:48px;font-weight:500}.mk .x{margin-left:auto;color:var(--mut);padding:0 6px;opacity:0}.mk:hover .x{opacity:1}
-#marks .mq{font-style:italic;color:var(--mut);border-left:2px solid var(--bd2);padding-left:8px;margin:2px 0 3px;font-size:12.5px}#marks .bd{display:inline-block}
+#marks .mq{font-style:italic;color:var(--mut);border-left:2px solid var(--bd2);padding-left:8px;margin:2px 0 3px;font-size:12px}#marks .bd{display:inline-block}
 #tx{margin-top:6px}
 #txh{display:flex;gap:6px;flex-wrap:wrap;align-items:center;padding:8px 10px;border-bottom:1px solid var(--bd)}
 #txh input:not([type=checkbox]){flex:1;min-width:140px;min-height:30px}#txh label{font-size:12.5px}#txh button{min-height:30px}
 #txl{max-height:46vh;overflow-y:auto;overscroll-behavior:contain;padding:6px;position:relative}
 .tl{display:flex;gap:10px;padding:4px 8px;border-radius:var(--rs);cursor:pointer;line-height:1.5}.tl:hover{background:var(--sf2)}
-.tl .t{color:var(--mut);font-variant-numeric:tabular-nums;min-width:48px;font-size:12.5px;padding-top:1px}.tl.now{background:var(--ac-s);color:var(--fg)}.tl.now .t{color:var(--ac)}
+.tl .t{color:var(--mut);font-variant-numeric:tabular-nums;min-width:48px;font-size:12px;padding-top:1px}.tl.now{background:var(--ac-s);color:var(--fg)}.tl.now .t{color:var(--ac)}
 .tl .p{margin-left:auto;opacity:0;color:var(--mut)}.tl:hover .p{opacity:1}.tl mark{background:var(--amb-s);color:inherit;box-shadow:0 0 0 1px var(--amb-s);border-radius:3px}
 #txl .tl ::selection{background:var(--ac-s2)}
 .side{display:flex;flex-direction:column;gap:16px;align-self:start;position:sticky;top:70px}
@@ -32,13 +34,13 @@
 #tg{min-height:30px;margin-bottom:6px}
 .tagwrap{position:relative}
 #note{width:100%;margin-top:4px}
-.decide{display:flex;align-items:center;gap:8px;margin-top:12px}#st{margin-left:auto;font-size:12.5px}
+.decide{display:flex;align-items:center;gap:8px;margin-top:12px}#st{margin-left:auto;font-size:12px}
 .qh{display:flex;align-items:center;gap:8px;padding:10px 12px;border-bottom:1px solid var(--bd)}
 .qh b{font-weight:600}.qh #qn{color:var(--mut);font-variant-numeric:tabular-nums}.qh .r{margin-left:auto;display:flex;gap:6px;align-items:center}
-.qh label{font-size:12.5px;margin-left:4px}
+.qh label{font-size:12px;margin-left:4px}
 #q{max-height:42vh;overflow:auto;padding:4px}
 #q div{padding:6px 10px;border-radius:var(--rs);cursor:pointer;display:flex;gap:8px;align-items:center;color:var(--fg2)}#q div:hover{background:var(--sf2)}
-#q div .h{color:var(--bd2);cursor:grab;user-select:none;letter-spacing:-2px}#q div:hover .h{color:var(--mut)}#q div.dragging{opacity:.5}
+#q div .h{color:var(--bd2);cursor:grab;user-select:none;font-size:11px;line-height:1}#q div:hover .h{color:var(--mut)}#q div.dragging{opacity:.5}
 #q div.ot{box-shadow:inset 0 2px 0 var(--ac)}#q div.ob{box-shadow:inset 0 -2px 0 var(--ac)}
 #q div span:nth-child(2){flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 #q div.qf{outline:2px solid var(--ac);outline-offset:-2px}#q div.qflash{animation:qfl .7s ease-in-out 2}@keyframes qfl{50%{background:var(--ac-s2)}}
@@ -49,21 +51,21 @@
 .qf2 .r{margin-left:auto;display:flex;gap:6px}
 @media(max-width:1000px){#wrap{grid-template-columns:1fr;padding:14px}.side{position:static}}
 </style>
-<div class=topbar><a class=brand href="/" title="Back to Commander"><svg width=24 height=24 viewBox="0 0 32 32" role=img aria-label=YouCommander><rect width=32 height=32 rx=8 fill="var(--ac)"/><g fill=none stroke="var(--ac-fg)" stroke-width=2.6 stroke-linecap=round stroke-linejoin=round><polyline points="9,13 16,7.5 23,13"/><polyline points="9,20 16,14.5 23,20"/><line x1=12 y1=26 x2=20 y2=26 /></g></svg></a><nav><a href="/">Commander</a><a class=here>Watch</a><a href="/history" title="Everything you've opened or watched in the app (H)">History</a></nav><span class=fill></span><span id=pos class=meta></span><span id=cnt class=meta></span><button class="ghost help" data-help title="Keyboard shortcuts (?)">?</button></div>
+<div class=topbar><a class=brand href="/" title="Back to Commander"><svg width=24 height=24 viewBox="0 0 32 32" role=img aria-label=YouCommander><rect width=32 height=32 rx=8 fill="var(--ac)"/><g fill=none stroke="var(--ac-fg)" stroke-width=2.6 stroke-linecap=round stroke-linejoin=round><polyline points="9,13 16,7.5 23,13"/><polyline points="9,20 16,14.5 23,20"/><line x1=12 y1=26 x2=20 y2=26 /></g></svg></a><nav><a href="/">Commander</a><a href="/triage" title="Sort the inbox one video at a time">Triage</a><a class=here>Watch</a><a href="/history" title="Everything you've opened or watched in the app (H)">History</a></nav><span class=fill></span><span id=pos class=meta></span><span id=cnt class=meta></span><button class="ghost help" data-help title="Keyboard shortcuts (?)">?</button></div>
 <div id=wrap>
 <section>
 <div id=pl class=stage><div id=yt></div></div>
 <div id=fail></div><div id=kb>The video has focus, so YouTube’s own keys apply. Click anywhere outside the video to get the app shortcuts back.</div>
+<h2 id=ti></h2><div class=mut id=ch></div><div id=pls></div>
 <div class=ctl id=ctl>
  <span class=group><button id=b10m title="Back 10 seconds (J)">−10<kbd>J</kbd></button><button id=bpp title="Play or pause (Space / K)">Play / Pause<kbd>Space</kbd></button><button id=b10p title="Forward 10 seconds (L)">+10<kbd>L</kbd></button></span>
  <span class=group><button id=sdn title="Slower (&lt;)">−</button><b id=sv>1×</b><button id=sup title="Faster (&gt;)">+</button></span>
  <span class=group><button id=ba title="Set loop start here ([)">Loop start<kbd>[</kbd></button><button id=bb title="Set loop end here (])">Loop end<kbd>]</kbd></button><button id=bcl title="Clear the loop (\)">Clear<kbd>\</kbd></button></span><span id=lv></span>
 </div>
 <div class=acts>
- <button id=bmk title="Add a typed note at this moment, or on the text you have selected in the transcript (B)">Note at this time<kbd>B</kbd></button><button id=bvm title="Record a spoken note at this moment, or on the selected transcript text (V)">Voice note<kbd>V</kbd></button><button id=byt title="Open this moment on YouTube for likes, comments, subscribe and the transcript (G)">Open on YouTube at this time<kbd>G</kbd></button><button id=bcp title="Copy a link to this moment (C)">Copy timestamp link<kbd>C</kbd></button><button id=bsn class=ghost title="Sound on or off (M)">Sound<kbd>M</kbd></button><button id=bfs class=ghost title="Fullscreen (F or Enter)">Fullscreen<kbd>F</kbd></button>
+ <button id=bmk title="Add a typed note at this moment, or on the text you have selected in the transcript (B)">Note at this time<kbd>B</kbd></button><button id=bvm title="Record a spoken note at this moment, or on the selected transcript text (V)">Voice note<kbd>V</kbd></button><button id=byt title="Open this moment on YouTube for likes, comments, subscribe and the transcript (G)">Open on YouTube at this time<kbd>G</kbd></button><button id=bcp title="Copy a link to this moment (C)">Copy timestamp link<kbd>C</kbd></button><button id=bsn class=ghost title="Sound on or off (M)">Sound on<kbd>M</kbd></button><button id=bfs class=ghost title="Fullscreen (F or Enter)">Fullscreen<kbd>F</kbd></button>
 </div>
-<div id=mkbox><div class=mut id=mkl></div><input id=mkin placeholder="What happens here? Enter saves, Esc cancels" autocomplete=off></div>
-<h2 id=ti></h2><div class=mut id=ch></div><div id=pls></div>
+<div id=mkbox><div class=mut id=mkl></div><input id=mkin placeholder="What happens here? Enter saves, Esc cancels" autocomplete=off aria-label="Note text"></div>
 <div class=sec><div class=lbl>Notes at times<small>click one to jump there</small></div><div id=marks></div></div>
 <div class=sec><div class=lbl>Transcript<small id=txs></small></div>
 <div id=tx class=panel><div id=txh></div><div id=txl><span class=mut style="padding:6px">Loading…</span></div></div></div>
@@ -71,17 +73,17 @@
 <aside class=side>
 <div class=panel><div class=in>
  <div class=lbl>Tags<small>dashed = suggested, not yet confirmed</small></div><div id=tg></div>
- <div class=tagwrap><input id=ti2 placeholder="Add a tag…  (T)" style="width:100%" autocomplete=off><div id=sugg style="display:none"></div></div>
+ <div class=tagwrap><input id=ti2 placeholder="Add a tag…" style="width:100%" autocomplete=off aria-label="Add a tag"><kbd>T</kbd><div id=sugg style="display:none" role=listbox></div></div>
  <div class=lbl style="margin-top:14px">Note<small>N to focus · Esc leaves · saved when you leave the box</small></div><textarea id=note rows=3></textarea>
  <div class=decide><button class=ok id=bc title="Confirm all shown tags and mark this video triaged">Confirm tags</button><button class=bad id=bd title="Drop: leave out of every published playlist">Drop</button><span id=st class=mut></span></div>
 </div></div>
 <div class=panel>
- <div class=qh><b>Queue</b><span id=qn></span><button id=qrs class="ghost sm" style="display:none" title="Go back to the original order for this queue">Reset order</button><span class=r><button id=bpv2 class=sm title="Previous in the queue (PageUp)">Previous<kbd>PgUp</kbd></button><button id=bnx2 class=sm title="Next in the queue (PageDown)">Next<kbd>PgDn</kbd></button><label title="Play the next video when this one ends"><input type=checkbox id=auto checked> Autoplay</label></span></div>
+ <div class=qh><b>Queue</b><span id=qn></span><button id=qrs class="ghost sm" style="display:none" title="Go back to the original order for this queue">Reset order</button><span class=r><button id=bpv class=sm title="Previous in the queue (PageUp)">Previous<kbd>PgUp</kbd></button><button id=bnx class=sm title="Next in the queue (PageDown)">Next<kbd>PgDn</kbd></button><label title="Play the next video when this one ends"><input type=checkbox id=auto checked> Autoplay</label></span></div>
  <div id=q></div>
- <div class=qf2><button id=bpv class="ghost sm" title="Previous in queue (PageUp)">Previous</button><button id=bnx class="ghost sm" title="Next in queue (PageDown)">Next</button><span class=r><button id=bcq class=sm title="Copy a youtube.com link that opens the next 50 videos as a temporary YouTube queue, which you can save from YouTube">Copy as YouTube queue</button><button id=boq class=sm title="Open that queue on YouTube now">Open on YouTube</button></span></div>
+ <div class=qf2><span class=mut style="font-size:12px;align-self:center">Q then ↑↓ chooses · drag or Alt+↑↓ reorders</span><span class=r><button id=bcq class=sm title="Copy a youtube.com link that opens the next 50 videos as a temporary YouTube queue, which you can save from YouTube">Copy as YouTube queue</button><button id=boq class=sm title="Open that queue on YouTube now">Open on YouTube</button></span></div>
 </div>
 </aside></div>
-<div id=toast></div>
+<div id=none style="display:none"></div><div id=toast></div>
 <div id=help><div class=card>
  <h2>Keyboard shortcuts<span class=mut>Esc or ? closes</span></h2>
  <div class=cols>
@@ -134,11 +136,12 @@ setInterval(()=>{if(LOOP.a!=null&&LOOP.b!=null&&pl()&&pl().getPlayerState()===1)
 addEventListener('pagehide',()=>{saveNote();flush(true)});document.addEventListener('visibilitychange',()=>{if(document.hidden)flush(true)});
 // ---------- load a video ----------
 async function loadVideo(id,startOverride){if(V){saveNote();flush(false)}
- const v=await J('/api/watch/'+id);if(v.error){toast('Unknown video');return}
+ let v=null;try{const rs=await fetch('/api/watch/'+id);v=rs.ok?await rs.json():null}catch(e){}
+ if(!v||v.error){if(!V){nothing('That video is not in your library','Nothing is known about “'+id+'”. Open a video from the Commander page instead.');return}toast('That video is not in your library',4000);return}
  V=v;const st=v.state||{};SP=st.speed||1;LOOP={a:st.loop_a==null?null:st.loop_a,b:st.loop_b==null?null:st.loop_b};delta=0;sinceFlush=0;
  let start=startOverride!=null?startOverride:(st.last_pos||0);if(startOverride==null&&!(start>5&&(!st.duration||start<st.duration-20)))start=0;
  qi=Math.max(0,Q.findIndex(x=>x.video_id==id));
- $('ti').textContent=v.title||'(title unavailable — private or removed)';$('ch').textContent=(v.channel||v.video_id)+(st.plays?`  —  opened ${st.plays}×, watched ${fmt(st.seconds)} in total`:'');
+ $('ti').textContent=v.title||'(title unavailable — private or removed)';const qe=Q.find(x=>x.video_id==id);if(qe&&!qe.title&&v.title)qe.title=v.title;$('ch').textContent=(v.channel||v.video_id)+(st.plays?`  —  opened ${st.plays}×, watched ${fmt(st.seconds)} in total`:'');
  $('pls').textContent='In '+v.playlists.map(p=>p.title+' ('+p.account_id+')').join(', ');
  $('note').value=v.note||'';$('st').textContent=v.status;document.title=(v.title||'Watch')+' · YouCommander';
  drawTags();drawMarks();drawQ();TX=null;TXVIEW=null;$('txl').innerHTML='<span class=mut style="padding:6px">Loading…</span>';loadTx();$('pos').textContent=Q.length>1?(qi+1)+' of '+Q.length:'';
@@ -147,7 +150,7 @@ async function loadVideo(id,startOverride){if(V){saveNote();flush(false)}
  startPlayer(id,start);if(start>5)toast('Resuming at '+fmt(start));syncUI()}
 function next(auto){if(qi<Q.length-1)loadVideo(Q[qi+1].video_id);else if(!auto)toast('End of the queue')}
 function prev(){if(qi>0)loadVideo(Q[qi-1].video_id);else toast('Start of the queue')}
-function drawQ(keep){$('qn').textContent=Q.length>1?Q.length+' videos':'';$('q').innerHTML=Q.map((x,k)=>`<div data-v="${x.video_id}" data-k=${k} draggable=true class="${k==qi?'cur':''}" title="Drag to reorder, or Alt+↑/↓ to move the playing video"><span class=h>⋮⋮</span><span>${esc(x.title||x.video_id)}</span><small>${x.last_pos>5&&x.duration?Math.round(100*x.last_pos/x.duration)+'%':''}</small></div>`).join('')||'<div class="empty mut">Just this video</div>';const c=$('q').querySelector('.cur');if(c&&!keep)c.scrollIntoView({block:'nearest'});paintQF()}
+function drawQ(keep){$('qn').textContent=Q.length>1?Q.length+' videos':'';$('q').innerHTML=Q.map((x,k)=>`<div data-v="${x.video_id}" data-k=${k} draggable=true class="${k==qi?'cur':''}" title="Drag to reorder, or Alt+↑/↓ to move the playing video"><span class=h aria-hidden=true>⋮⋮</span><span>${esc(x.title||(V&&V.video_id==x.video_id&&V.title)||x.video_id)}</span><small>${x.last_pos>5&&x.duration?Math.round(100*x.last_pos/x.duration)+'%':''}</small></div>`).join('')||'<div class="empty mut">Just this video</div>';const c=$('q').querySelector('.cur');if(c&&!keep)c.scrollIntoView({block:'nearest'});paintQF()}
 let QF=-1;
 function paintQF(flash){$('q').querySelectorAll('.qf,.qflash').forEach(x=>x.classList.remove('qf','qflash'));if(QF<0)return;const el=$('q').querySelector(`[data-k="${QF}"]`);if(!el){QF=-1;return}el.classList.add('qf');if(flash){void el.offsetWidth;el.classList.add('qflash')}el.scrollIntoView({block:'nearest'})}
 function qEnter(){if(Q.length<1)return;QF=Math.max(0,qi);$('q').scrollIntoView({block:'nearest'});paintQF(true);toast('Queue: ↑/↓ choose · Space/Enter play · Alt+↑/↓ move · Esc or Q back',3500)}
@@ -170,7 +173,7 @@ $('q').onclick=e=>{const d=e.target.closest('[data-v]');if(d){QF=-1;loadVideo(d.
 // ---------- tags, note ----------
 const byId=()=>Object.fromEntries(TAGS.map(t=>[t.id,t]));
 function pathOf(t){const m=byId(),p=[];let x=t,n=0;while(x&&n++<10){p.unshift(x.name);x=x.parent_id?m[x.parent_id]:null}return p.join(' / ')}
-function drawTags(){$('tg').innerHTML=V.tags.map(t=>`<span class="chip${t.confirmed?'':' s'}" title="${esc(t.description||t.name)}">${esc(pathOf(TAGS.find(x=>x.id==t.id)||t))}<b data-r=${t.id} title="Remove tag">×</b></span>`).join('')||'<span class=mut>No tags yet</span>'}
+function drawTags(){$('tg').innerHTML=V.tags.map(t=>`<span class="chip${t.confirmed?'':' s'}" title="${esc(t.description||t.name)}${t.confirmed?'':' (suggested; Confirm tags keeps it)'}">${esc(pathOf(TAGS.find(x=>x.id==t.id)||t))}<button data-r=${t.id} aria-label="Remove tag ${esc(t.name)}" title="Remove tag">×</button></span>`).join('')||'<span class=mut>No tags yet. Press T to add one.</span>'}
 $('tg').onclick=async e=>{const r=e.target.dataset.r;if(r){await J(`/api/video/${V.video_id}/tags/${r}`,{method:'DELETE'});await refreshV()}};
 async function refreshV(){const v=await J('/api/watch/'+V.video_id);V.tags=v.tags;V.status=v.status;$('st').textContent=v.status;drawTags()}
 const normq=q=>q.trim().replace(/\s*\/\s*/g,' / ').toLowerCase();
@@ -178,12 +181,12 @@ function matches(q){q=normq(q);return TAGS.filter(t=>t.name!='Inbox'&&pathOf(t).
 function opts(){const q=$('ti2').value.trim(),m=matches(q);if(q){const nq=normq(q);if(!TAGS.some(t=>pathOf(t).toLowerCase()==nq||t.name.toLowerCase()==q.toLowerCase()))m.push({create:1,name:q})}return m}
 function drawS(){const m=opts();$('sugg').style.display=$('ti2').value.trim()&&m.length?'block':'none';$('sugg').innerHTML=m.map((t,k)=>t.create?`<div class="${k==sel?'on':''}" data-new="1"><b>+ Create tag</b> “${esc(t.name.split('/').map(x=>x.trim()).filter(Boolean).join(' › '))}”</div>`:`<div class="${k==sel?'on':''}" data-id=${t.id} title="${esc(t.description||'')}">${esc(pathOf(t))} <span class=mut>${t.n}</span></div>`).join('')}
 $('ti2').oninput=()=>{sel=0;drawS()};
-async function pick(id){await P(`/api/video/${V.video_id}/tags`,{tag_id:id});await refreshV();$('ti2').value='';$('sugg').style.display='none';$('ti2').blur()}
+async function pick(id){await P(`/api/video/${V.video_id}/tags`,{tag_id:id});await refreshV();$('ti2').value='';$('sugg').style.display='none';const t=TAGS.find(x=>x.id==id);toast('Added “'+(t?t.name:'tag')+'”. Esc leaves the box.')}
 async function create(name){const r=await P('/api/tags/path',{path:name});TAGS=await J('/api/tags');await pick(r.id)}
 $('sugg').onmousedown=e=>{const d=e.target.closest('[data-id],[data-new]');if(!d)return;if(d.dataset.new)create($('ti2').value.trim());else pick(+d.dataset.id)};
-$('ti2').onkeydown=e=>{e.stopPropagation();const m=opts();if(e.key=='ArrowDown'){sel=Math.min(m.length-1,sel+1);drawS();e.preventDefault()}else if(e.key=='ArrowUp'){sel=Math.max(0,sel-1);drawS();e.preventDefault()}else if(e.key=='Enter'&&m[sel]){m[sel].create?create(m[sel].name):pick(m[sel].id);e.preventDefault()}else if(e.key=='Escape'){$('ti2').value='';$('sugg').style.display='none';$('ti2').blur()}};
+$('ti2').onkeydown=e=>{e.stopPropagation();const m=opts(),t=$('ti2');if(e.key=='ArrowDown'){sel=Math.min(m.length-1,sel+1);drawS();e.preventDefault()}else if(e.key=='ArrowUp'){sel=Math.max(0,sel-1);drawS();e.preventDefault()}else if(e.key=='Enter'){e.preventDefault();if(m[sel]){m[sel].create?create(m[sel].name):pick(m[sel].id)}else if(!t.value.trim())t.blur()}else if(e.key=='Escape'){e.preventDefault();if($('sugg').style.display!='none'){$('sugg').style.display='none'}else if(t.value){t.value='';drawS()}else t.blur()}};
 async function saveNote(){if(!V)return;const n=$('note').value;if(n!==(V.note||'')){V.note=n;await P(`/api/video/${V.video_id}/triage`,{action:'note',note:n})}}
-$('note').onblur=saveNote;$('note').onkeydown=e=>{e.stopPropagation();if(e.key=='Escape')$('note').blur()};
+$('note').onblur=saveNote;$('note').onkeydown=e=>{e.stopPropagation();if(e.key=='Escape'){e.preventDefault();$('note').blur()}};
 $('bc').onclick=async()=>{await saveNote();if(!V.tags.some(t=>t.name!='Inbox')){toast('Add at least one tag first (T)');$('ti2').focus();return}await P(`/api/video/${V.video_id}/triage`,{action:'confirm',note:$('note').value});await refreshV();toast('Tags confirmed')};
 $('bd').onclick=async()=>{await P(`/api/video/${V.video_id}/triage`,{action:'drop',note:$('note').value});await refreshV();toast('Dropped')};
 // ---------- timestamped notes ----------
@@ -209,6 +212,7 @@ let ANCH=null;
 function noteAt(a){if(REC)return;ANCH=a;if(pl())pl().pauseVideo();$('mkbox').style.display='block';$('mkl').textContent='Note at '+fmt(a.t)+(a.quote?' on '+a.label+': “'+a.quote.slice(0,90)+(a.quote.length>90?'…':'')+'”':'');$('mkin').value='';$('mkin').focus();hideSp()}
 function endNote(){$('mkbox').style.display='none';$('mkin').blur();ANCH=null;if(pl())pl().playVideo()}
 $('mkin').onkeydown=async e=>{e.stopPropagation();if(e.key=='Escape')endNote();
+ else if(e.key=='Enter'&&!$('mkin').value.trim()){toast('Type the note first, or Esc to cancel')}
  else if(e.key=='Enter'&&$('mkin').value.trim()){const a=ANCH,body=$('mkin').value.trim();const r=await P(`/api/watch/${V.video_id}/marks`,{t:a.t,body,quote:a.quote});V.marks.push({id:r.id,t:a.t,body,quote:a.quote,source:'typed',status:'ok'});V.marks.sort((x,y)=>x.t-y.t);drawMarks();getSelection().removeAllRanges();endNote();toast('Note saved at '+fmt(a.t))}};
 // ---- voice note ----
 let REC=null,RCH=[],RSTREAM=null;
@@ -247,24 +251,24 @@ $('ba').onclick=setA;$('bb').onclick=setB;$('bcl').onclick=clearLoop;$('bmk').on
 function toggleMute(){if(!pl())return;const m=pl().isMuted();m?pl().unMute():pl().mute();try{localStorage.setItem('muted',m?'0':'1')}catch(e){}setTimeout(syncUI,100);toast(m?'Sound on':'Muted')}
 $('bsn').onclick=toggleMute;
 function fullscreen(){const f=document.querySelector('#pl iframe');if(f&&f.requestFullscreen)f.requestFullscreen()}
-$('bfs').onclick=fullscreen;$('bpv').onclick=prev;$('bnx').onclick=()=>next(false);$('bpv2').onclick=prev;$('bnx2').onclick=()=>next(false);
+$('bfs').onclick=fullscreen;$('bpv').onclick=prev;$('bnx').onclick=()=>next(false);
 // ---------- keys ----------
 function leave(){saveNote();flush(true);let same=false;try{same=document.referrer&&new URL(document.referrer).origin==location.origin}catch(e){}if(same&&history.length>1)history.back();else location.href='/'}
 addEventListener('keydown',e=>{
- if(QF>=0&&!e.ctrlKey&&!e.metaKey){const a1=document.activeElement;if(!(a1&&(a1.tagName=='TEXTAREA'||(a1.tagName=='INPUT'&&a1.type!='checkbox')))){const kk=e.key,n=Q.length;let h=true;
+ if(QF>=0&&!e.ctrlKey&&!e.metaKey){const a1=document.activeElement;if(!yc.typing(a1)&&!yc.onControl(e)){const kk=e.key,n=Q.length;let h=true;
   if(e.altKey&&(kk=='ArrowUp'||kk=='ArrowDown')){const to=QF+(kk=='ArrowUp'?-1:1);if(moveQ(QF,to)){QF=to;paintQF(true);toast('Moved to position '+(to+1)+' of '+n)}else toast(kk=='ArrowUp'?'Already first':'Already last')}
   else if(e.altKey){h=false}
   else if(kk=='ArrowUp'){QF=Math.max(0,QF-1);paintQF(true)}else if(kk=='ArrowDown'){QF=Math.min(n-1,QF+1);paintQF(true)}
   else if(kk=='Home'){QF=0;paintQF(true)}else if(kk=='End'){QF=n-1;paintQF(true)}
-  else if(kk==' '||kk=='Enter'){if(Q[QF])loadVideo(Q[QF].video_id)}
+  else if(kk==' '||kk=='Enter'){if(Q[QF])loadVideo(Q[QF].video_id);qExit()}
   else if(kk=='Escape'||kk=='ArrowLeft'||kk.toLowerCase()=='q'){qExit()}
   else if(kk=='ArrowRight'){}else h=false;
   if(h){e.preventDefault();return}}}
  if(e.altKey&&!e.ctrlKey&&!e.metaKey&&(e.key=='ArrowUp'||e.key=='ArrowDown')){const a0=document.activeElement;if(a0&&(a0.tagName=='TEXTAREA'||(a0.tagName=='INPUT'&&a0.type!='checkbox')))return;e.preventDefault();const dir=e.key=='ArrowUp'?-1:1;if(Q.length<2)return;if(!moveQ(qi,qi+dir))toast(dir<0?'Already first in the queue':'Already last in the queue');else{toast('Moved to position '+(qi+1)+' of '+Q.length)}return}
  if(REC){const kk=e.key;if(kk==' '||kk.toLowerCase()=='v'){e.preventDefault();stopRec(false)}else if(kk=='Escape'){e.preventDefault();stopRec(true)}else e.preventDefault();return}
- const a=document.activeElement;if(a&&(a.tagName=='TEXTAREA'||(a.tagName=='INPUT'&&a.type!='checkbox')))return;if(e.ctrlKey||e.metaKey||e.altKey)return;
+ const a=document.activeElement;if(yc.typing(a))return;if(e.ctrlKey||e.metaKey||e.altKey)return;if(yc.onControl(e))return;
  const k=e.key,kl=k.toLowerCase(),eat=()=>e.preventDefault();
- if(k==' '||kl=='k'){eat();if(a&&a.tagName=='BUTTON')a.blur();toggle()}
+ if(k==' '||kl=='k'){eat();toggle()}
  else if(k=='ArrowLeft'){eat();seek(-5)}else if(k=='ArrowRight'){eat();seek(5)}
  else if(kl=='j'){eat();seek(-10)}else if(kl=='l'){eat();seek(10)}
  else if(k=='ArrowUp'&&pl()){eat();const v=Math.min(100,pl().getVolume()+5);pl().setVolume(v);if(v>0&&pl().isMuted())pl().unMute();toast('Volume '+v+'%')}
@@ -273,7 +277,7 @@ addEventListener('keydown',e=>{
  else if(/^[0-9]$/.test(k)&&pl()){eat();const d=pl().getDuration();if(d)pl().seekTo(d*(+k)/10,true)}
  else if(k=='<'){eat();stepSpeed(-1)}else if(k=='>'){eat();stepSpeed(1)}
  else if(k=='['){eat();setA()}else if(k==']'){eat();setB()}else if(k=='\\'){eat();clearLoop()}
- else if(kl=='b'){eat();noteAt(e.shiftKey?(lineAnchor()||timeAnchor()):autoAnchor())}else if(kl=='v'){eat();voiceAt(e.shiftKey?(lineAnchor()||timeAnchor()):autoAnchor())}else if(kl=='t'){eat();$('ti2').focus()}else if(kl=='n'){eat();$('note').focus()}
+ else if(kl=='b'||kl=='v'){eat();let an;if(e.shiftKey){an=lineAnchor();if(!an){toast('No transcript line is highlighted; play with Follow along on, or use '+kl.toUpperCase()+' without Shift');return}}else an=autoAnchor();kl=='b'?noteAt(an):voiceAt(an)}else if(kl=='t'){eat();$('ti2').focus()}else if(kl=='n'){eat();$('note').focus()}
  else if(k=='PageDown'){eat();next(false)}else if(k=='PageUp'){eat();prev()}
  else if(kl=='g'){eat();openYT()}else if(kl=='c'){eat();$('bcp').onclick()}
  else if(kl=='q'){eat();qEnter()}
@@ -311,10 +315,10 @@ $('txh').onclick=async e=>{const b=e.target.closest('button,input');if(!b)return
  else if(b.id=='txln'){const a=lineAnchor();a?noteAt(a):toast('Play the video with Follow Along on to highlight a line first')}
  else if(b.id=='txlv'){const a=lineAnchor();a?voiceAt(a):toast('Play the video with Follow Along on to highlight a line first')}
  else if(b.id=='txcp'){copyText(TX[TXVIEW].cues.map(c=>`[${fmt(c[0])}] ${c[1]}`).join('\n'),KIND[TXVIEW]+' transcript copied')}
- else if(b.id=='txrm'){if(confirm('Delete the '+KIND[TXVIEW]+' transcript for this video?')){await J('/api/transcript/'+V.video_id+'?kind='+TXVIEW,{method:'DELETE'});TXVIEW=null;loadTx()}}
+ else if(b.id=='txrm'){if(await yc.confirm({anchor:b,message:'Delete the '+KIND[TXVIEW]+' transcript for this video from this computer?',ok:'Delete',danger:true})){await J('/api/transcript/'+V.video_id+'?kind='+TXVIEW,{method:'DELETE'});TXVIEW=null;loadTx();toast('Transcript deleted')}}
  else if(b.id=='txf'){txF=b.checked;TXNOW=-1}};
 $('txh').oninput=e=>{if(e.target.id=='txq')drawTxList()};
-$('txh').onkeydown=e=>{if(e.target.id=='txq'){e.stopPropagation();if(e.key=='Escape'){e.target.value='';e.target.blur();drawTxList()}}};
+$('txh').onkeydown=e=>{if(e.target.id=='txq'){e.stopPropagation();if(e.key=='Escape'){e.preventDefault();if(e.target.value){e.target.value='';drawTxList()}else e.target.blur()}}};
 $('txl').addEventListener('wheel',()=>{TXHOLD=Date.now()+5000},{passive:true});$('txl').addEventListener('touchmove',()=>{TXHOLD=Date.now()+5000},{passive:true});
 $('txl').onclick=async e=>{const pin=e.target.dataset.pin;if(pin!=null){const c=TX[TXVIEW].cues[+pin];const r=await P(`/api/watch/${V.video_id}/marks`,{t:c[0],body:c[1].slice(0,160)});V.marks.push({id:r.id,t:c[0],body:c[1].slice(0,160)});V.marks.sort((a,b)=>a.t-b.t);drawMarks();toast('Pinned at '+fmt(c[0]));return}
  clearTimeout(SEEKT);if(e.detail>1)return;const sg=getSelection();if(sg&&!sg.isCollapsed&&compact(sg.toString()))return;
@@ -323,13 +327,14 @@ let SEEKT=0;
 // Follow Along: the transcript scrolls inside its own box (never the page) and keeps the current line at the top.
 setInterval(()=>{if(!TX||!TXVIEW||!pl()||!txF||($('txq')&&$('txq').value))return;const cues=TX[TXVIEW].cues,t=cur();let k=-1;for(let i=0;i<cues.length;i++){if(cues[i][0]<=t+0.3)k=i;else break}
  if(k!=TXNOW&&k>=0){TXNOW=k;const box=$('txl');box.querySelectorAll('.now').forEach(x=>x.classList.remove('now'));const el=box.querySelector(`[data-k="${k}"]`);if(el){el.classList.add('now');if(Date.now()>TXHOLD){const r=el.getBoundingClientRect(),b=box.getBoundingClientRect();box.scrollTo({top:box.scrollTop+(r.top-b.top)-4,behavior:'smooth'})}}}},400);
+function nothing(title,text){document.getElementById('wrap').style.display='none';const n=$('none');n.style.display='block';n.innerHTML=`<div class=empty><b>${esc(title)}</b>${esc(text)}<div class=acts><a href="/"><button class=pri>Back to Commander<kbd>Esc</kbd></button></a><a href="/history"><button class=ghost>History<kbd>H</kbd></button></a></div></div>`;document.title='Watch · YouCommander'}
 // ---------- boot ----------
 (async function(){
  TAGS=await J('/api/tags');const v0=seg.get('v');let ids=null;
  if(seg.get('q')){try{ids=JSON.parse(localStorage.getItem('watchIds')||'null')}catch(e){}}
  if(ids&&ids.length)Q=await P('/api/watch/queue',{ids});else if(TAGQ){Q=await P('/api/watch/queue',{tag:+TAGQ});applySaved();$('qrs').style.display=qkey()&&localStorage.getItem(qkey())?'':'none'}
  let start=v0||(Q[0]&&Q[0].video_id);
- if(!start){$('ti').textContent='Nothing to watch yet';$('ch').textContent='Open a video from the Commander page and press W.';$('txl').innerHTML='';return}
+ if(!start){nothing('Nothing to watch yet','Open a video from the Commander page and press W, or tick several and press W to play them in order.');return}
  if(!Q.some(x=>x.video_id==start))Q=[{video_id:start,title:null}].concat(Q);
  $('cnt').textContent='';await loadVideo(start)})();
 </script>

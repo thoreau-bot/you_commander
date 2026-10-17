@@ -16,7 +16,7 @@ Start the app, open **Import**, and choose the zip (or a folder). Re-importing i
 - Select several rows and press `T` to start a **batch triage**.
 
 ## 4. Triage
-Step through videos with Keep (`Enter`), Skip (`S`/→) or Drop (`X`). `T` focuses the tag box, `N` the note box, `M` / `G` jump to related actions. Every change goes to a log and can be undone.
+Step through videos with Confirm (`Enter`), Skip (`S`/→) or Drop (`X`). `T` focuses the tag box, `N` the note box, `M` / `G` jump to related actions. Bulk changes on the Commander page can be undone with **Undo last bulk**; a Drop in Triage is reversed by pressing `←` Back on it.
 
 Batch triage shows the selected videos as accordions with per-video tags, a bulk tag box and *Confirm* / *Drop All*. Use ↑/↓ to highlight a video, `Space` to preview, `R` to remove it from the batch, `Enter` to fold it, `Esc` or ← to return, and `F` to focus the player.
 

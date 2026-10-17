@@ -1,6 +1,6 @@
 # Keyboard Shortcuts
 
-Press `?` on any page for an overlay with that page's shortcuts (`Esc` or `?` closes it).
+Press `?` on any page for an overlay with that page's shortcuts (`Esc` or `?` closes it). When a button or link has keyboard focus, `Enter` and `Space` act on that control, not on the page.
 
 ## Commander
 | Key | Action |
@@ -21,17 +21,17 @@ Press `?` on any page for an overlay with that page's shortcuts (`Esc` or `?` cl
 ## Triage
 | Key | Action |
 |---|---|
-| `Enter` | Keep and go to next |
+| `Enter` | Confirm the tags and go to the next video |
 | `→` or `S` | Skip |
-| `←` | Previous |
+| `←` | Back one video (reopens it if you had dropped it) |
 | `X` | Drop |
 | `T` / `N` | Focus tag / note box |
-| `V` or `Space` | Start/stop voice note |
+| `V` or `Space` | Start/stop voice note (`V` only in batch triage, where `Space` previews) |
 | `F` | Player mode (same keys as above) |
 | `J` `K` `L` | Back 10 s / play-pause / forward 10 s |
 
 ### Batch triage
-`↑/↓` highlight a video · `Space` preview · `R` remove from batch · `Enter` fold/unfold · `Esc` or `←` back to the page · `F` focus the player.
+With nothing highlighted: `Enter` confirms all (asks first when there are two or more), `X` drops all. `↑/↓` highlight a video · `Space` preview · `R` remove from batch · `Enter` fold/unfold · `Esc` or `←` back to the controls · `F` focus the player.
 
 ## Watch
 | Key | Action |
@@ -51,7 +51,7 @@ Press `?` on any page for an overlay with that page's shortcuts (`Esc` or `?` cl
 | `Q` | Focus the queue |
 | `Y` | Captions / transcript |
 | `G` | Open on YouTube |
-| `C` | Copy as YouTube queue |
+| `C` | Copy a link to this moment |
 | `F` / `Enter` | Fullscreen |
 | `H` | History |
 | `Esc` | Leave the page |
@@ -61,3 +61,9 @@ Press `?` on any page for an overlay with that page's shortcuts (`Esc` or `?` cl
 
 ## History
 `/` search · `↑/↓` move · `Enter` open · `Esc` leave field.
+
+## Import
+| Key | Action |
+|---|---|
+| `Enter` | Run the import once files are staged; open Commander once it is done |
+| `Esc` | Back a step; from the drop zone, back to Commander |
