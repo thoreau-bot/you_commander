@@ -27,15 +27,16 @@ main{display:flex;flex-direction:column;min-width:0;min-height:0;overflow:hidden
 header{flex:none;display:flex;align-items:center;gap:10px;height:52px;padding:0 16px;border-bottom:1px solid var(--bd);background:var(--bg)}
 .search{flex:1;position:relative;display:flex;align-items:center;min-width:160px}
 .search svg{position:absolute;left:11px;color:var(--mut);pointer-events:none}
-.search input{width:100%;padding-left:34px;padding-right:44px;height:34px;border-radius:var(--r);background:var(--sf)}
+.search input{width:100%;padding-left:34px;padding-right:44px;height:32px;border-radius:var(--r);background:var(--sf)}
 .search kbd{position:absolute;right:9px;pointer-events:none}
 .search .clr{position:absolute;right:6px;display:none;min-height:24px;padding:0 7px;border:0;background:none;color:var(--mut)}
 .search.has .clr{display:inline-flex}.search.has kbd{display:none}
 #info{color:var(--mut);font-variant-numeric:tabular-nums;white-space:nowrap}
 #vt{flex:none;padding:10px 16px 4px}
 /* bulk bar: appears only while something is ticked */
-#bulk{flex:none;display:none;gap:8px;align-items:center;flex-wrap:wrap;padding:8px 16px;border-bottom:1px solid var(--bd);background:var(--ac-s)}
-#bulk.on{display:flex}#bulk b{color:var(--ac);font-variant-numeric:tabular-nums;margin-right:4px}
+#bulk{flex:none;display:flex;gap:8px;align-items:center;flex-wrap:wrap;min-height:48px;padding:7px 16px;border-bottom:1px solid var(--bd);background:var(--ac-s);visibility:hidden}
+#bulk.on{visibility:visible}
+#bulk:not(.on)::before{content:'Tick videos to tag, trash or triage several at once';color:var(--mut);visibility:visible}#bulk b{color:var(--ac);font-variant-numeric:tabular-nums;margin-right:4px}
 #bulk .tagwrap{position:relative;width:260px}#bulk .tagwrap input{width:100%}
 #bulk .sp{flex:1}
 /* list */
@@ -73,16 +74,16 @@ header{flex:none;display:flex;align-items:center;gap:10px;height:52px;padding:0 
 @media(max-width:700px){body{grid-template-columns:1fr;grid-template-rows:auto minmax(0,1fr)}aside{max-height:30vh;overflow:auto;border-right:0;border-bottom:1px solid var(--bd);padding-top:8px}.brand{padding-bottom:8px}aside>#tags{flex:none;overflow:visible}#ed{order:-1;border-top:0;border-bottom:1px solid var(--bd);padding:6px 12px}#ed .edrow{display:none}#ed details[open] .edrow{display:flex}#ed summary{cursor:pointer;font-weight:600;list-style:none;padding:4px 0}#ed summary::before{content:'Edit tag ▸ '}#ed details[open] summary::before{content:'Edit tag ▾ '}}
 #ed summary{display:none}@media(max-width:700px){#ed summary{display:block}}
 </style>
-<aside>
+<aside role=navigation aria-label="Library rail">
  <div class=brand><svg class=logo width=28 height=28 viewBox="0 0 32 32" role=img aria-label=YouCommander><rect width=32 height=32 rx=8 fill="var(--ac)"/><g fill=none stroke="var(--ac-fg)" stroke-width=2.6 stroke-linecap=round stroke-linejoin=round><polyline points="9,13 16,7.5 23,13"/><polyline points="9,20 16,14.5 23,20"/><line x1=12 y1=26 x2=20 y2=26 /></g></svg>YouCommander</div>
  <nav class=side>
-  <a class=si href="/triage" title="Step through the inbox one video at a time (T). Esc in Triage comes back here."><svg width=14 height=14 viewBox="0 0 16 16" fill=currentColor><path d="M4 2.5v11l9-5.5z"/></svg>Start triage<kbd>T</kbd></a>
+  <a class=si href="/triage" title="Step through every unsorted video, one at a time (T). Esc in Triage comes back here."><svg width=14 height=14 viewBox="0 0 16 16" fill=currentColor><path d="M4 2.5v11l9-5.5z"/></svg>Start triage<kbd>T</kbd></a>
   <a class=si href="/history" title="Everything you've opened or watched in the app (H)"><svg width=14 height=14 viewBox="0 0 16 16" fill=none stroke=currentColor stroke-width=1.7 stroke-linecap=round><circle cx="8" cy="8" r="6"/><path d="M8 4.5V8l2.5 1.5"/></svg>History<kbd>H</kbd></a>
  </nav>
  <div class=sec>Library</div><div class=tag id=all role=button title="Every video, in title order">All videos<small id=alln></small></div>
  <div class=sec title="Views that find videos needing attention">Audits</div><div id=aud></div>
  <div class=sec>Playlists</div><div class=tag id=pl role=button title="Your playlists from YouTube: owner, visibility and size">Owners &amp; visibility<small id=pln></small></div>
- <div class=sec>Tags <button id=addtag class=ghost aria-label="Create a tag" title="Create a tag">+</button></div><div id=tags></div>
+ <div class=sec id=tagsec>Tags <button id=addtag class=ghost aria-label="Create a tag" title="Create a tag">+</button></div><div id=tags></div>
  <div class=rfoot><a class=si href="/import" title="Add or refresh playlists from a Google Takeout"><svg width=14 height=14 viewBox="0 0 16 16" fill=none stroke=currentColor stroke-width=1.7 stroke-linecap=round stroke-linejoin=round><path d="M8 11V3M4.5 6.5 8 3l3.5 3.5M3 13h10"/></svg>Import from Takeout</a></div>
 </aside>
 <main>
@@ -95,7 +96,7 @@ header{flex:none;display:flex;align-items:center;gap:10px;height:52px;padding:0 
  </header>
  <div id=bulk><b id=bn></b><span id=btlab class=mut>Tag</span><span class=tagwrap><input id=bt placeholder="tag, or a new path to create" aria-label="Tag to add or remove" autocomplete=off><div id=bsugg class=sugg style="display:none"></div></span><button id=bad title="Add the chosen tag to the ticked videos">Add</button><button id=brm title="Remove the chosen tag from the ticked videos">Remove</button><button id=btx title="Fetch captions as text for the ticked videos, one at a time in the background. Skips videos that already have a transcript or no captions.">Get transcripts</button><button id=btg style="display:none" title="Open all ticked videos on one Triage page (T)">Triage together<kbd>T</kbd></button><span class=sp></span><button class=bad id=btr title="Tag the ticked videos Trash (never published)">Trash</button><button id=bcl class=ghost title="Untick everything">Clear</button></div>
  <h1 id=vt class=vt aria-live=polite></h1>
- <div id=list></div>
+ <div id=list role=listbox aria-label="Videos"></div>
  <div id=fhint></div><div id=ed></div>
 </main>
 <div id=help><div class=card>
@@ -154,9 +155,9 @@ pl.onclick=async()=>{setView({});window.__pl=true;pl.classList.add('on');all.cla
  list.innerHTML=`<div class="prow phead"><span>Playlist</span><span>Owner</span><span>Visibility</span><span class=num>Videos</span></div>`+r.map(p=>`<div class=prow><span class=t>${esc(p.title)}</span><span class="mut t">${esc(p.owner)}</span><span class=mut>${esc(p.visibility)}</span><span class=num>${p.item_count}</span></div>`).join('')};
 tags.onclick=e=>{const d=e.target.closest('[data-t]');if(d){setView({tag:+d.dataset.t});load();edit(+d.dataset.t)}};
 tags.ondblclick=async e=>{const d=e.target.closest('[data-t]');if(!d)return;const t=TAGS.find(x=>x.id==d.dataset.t);const n=await yc.prompt({anchor:d,label:'Rename tag',value:t.name,ok:'Rename'});if(n&&n!=t.name){await J('/api/tags/'+t.id,{method:'PATCH',headers:{'content-type':'application/json'},body:JSON.stringify({name:n})});await init();if(cur.tag==t.id){setView({tag:t.id,keepSearch:true});viewTitle(OFF,false);edit(t.id)}say('Renamed to “'+n+'”')}};
-addtag.onclick=async()=>{const n=await yc.prompt({anchor:addtag,label:'New tag name',ok:'Create'});if(n){const r=await J('/api/tags',{method:'POST',headers:{'content-type':'application/json'},body:JSON.stringify({name:n})});await init();say('Tag “'+n+'” created');const el=tags.querySelector(`[data-t="${r.id}"]`);if(el){el.classList.add('flash');setTimeout(()=>el.classList.remove('flash'),2300)}}};
+addtag.onclick=async()=>{const n=await yc.prompt({anchor:addtag,label:'New tag name',ok:'Create'});if(n){const r=await J('/api/tags',{method:'POST',headers:{'content-type':'application/json'},body:JSON.stringify({name:n})});if(r.error){say(r.error,4000);return}await init();say('Tag “'+n+'” created');const el=tags.querySelector(`[data-t="${r.id}"]`);if(el){el.classList.add('flash');setTimeout(()=>el.classList.remove('flash'),2300)}}};
 function edit(id){const t=TAGS.find(x=>x.id==id);if(!t)return;ed.style.display='block';
- ed.innerHTML=`<details open><summary></summary><div class=edrow><span class=name><input id=tname value="${esc(t.name)}" aria-label="Tag name" title="Tag name; Save renames it"></span><label>Parent <select id=par><option value="">(top level)</option>${TAGS.filter(x=>x.id!=id).map(x=>`<option value=${x.id} ${x.id==t.parent_id?'selected':''}>${esc(x.name)}</option>`).join('')}</select></label>
+ ed.innerHTML=`<details open><summary></summary><div class=edrow><span class=name title="Tag settings"><input id=tname value="${esc(t.name)}" aria-label="Tag name" title="Tag name; Save renames it"></span><label>Parent <select id=par><option value="">(top level)</option>${TAGS.filter(x=>x.id!=id).map(x=>`<option value=${x.id} ${x.id==t.parent_id?'selected':''}>${esc(x.name)}</option>`).join('')}</select></label>
  <label title="topic: what the video is about · role: what it is for you (reference, exemplar…) · status: workflow marker">Kind <select id=kind>${['topic','role','exemplar','status'].map(k=>`<option ${k==t.kind?'selected':''}>${k}</option>`).join('')}</select></label>
  <label title="Publishing is planned for a later version; this only marks the tag"><input type=checkbox id=pub ${t.publish?'checked':''}> Publish as playlist</label><button id=save class=pri>Save</button><span class=sp></span><a href="/triage?tag=${id}" target=_blank>Triage this tag</a></div>
  <div class=edrow><label>Merge into <select id=mg><option value=''>choose a tag…</option>${TAGS.filter(x=>x.id!=id).map(x=>`<option value=${x.id}>${esc(x.name)}</option>`).join('')}</select></label><button id=domerge class=sm>Merge</button><span class=mut>Its videos move to the chosen tag and this tag is removed.</span></div></details>`;
@@ -168,7 +169,7 @@ function edit(id){const t=TAGS.find(x=>x.id==id);if(!t)return;ed.style.display='
 var CUR=-1,ANCH=-1;let OFF=0;
 async function load(more){bsa.style.display='';if(!more){OFF=0;CUR=-1;ANCH=-1;RUN=null}const p=new URLSearchParams();p.set('offset',OFF);p.set('limit',PAGE+1);if(cur.tag)p.set('tag',cur.tag);if(cur.audit)p.set('audit',cur.audit);if(s.value)p.set('search',s.value);
  const r0=await J('/api/videos?'+p);const hasMore=r0.length>PAGE,r=r0.slice(0,PAGE);OFF+=r.length;viewTitle(OFF,hasMore);
- const h=r.map(v=>`<div class=item data-v="${v.video_id}"><div class=row><input type=checkbox class=sel data-v="${v.video_id}" aria-label="Tick ${esc((v.title||v.video_id).slice(0,60))}"${SEL.has(v.video_id)?' checked':''}><span class=t><a target=_blank href="https://youtu.be/${v.video_id}">${v.title?esc(v.title):'<i>(unavailable or private) '+v.video_id+'</i>'}</a></span><span class=tg>${v.tags?v.tags.split(', ').map(x=>'<span class=pill>'+esc(x)+'</span>').join(''):esc(v.added||v.title_source||'')}</span></div><div class=acc></div></div>`).join('')+(hasMore?'<div class=loadmore><button id=more>Load '+PAGE+' more</button></div>':'');
+ const h=r.map((v,k)=>`<div class=item id="it_${OFF-r.length+k}" role=option data-v="${v.video_id}"><div class=row><input type=checkbox class=sel data-v="${v.video_id}" aria-label="Tick ${esc((v.title||v.video_id).slice(0,60))}"${SEL.has(v.video_id)?' checked':''}><span class=t><a target=_blank href="https://youtu.be/${v.video_id}" title="${esc(v.title||'')}">${v.title?esc(v.title):'<i>(unavailable or private) '+v.video_id+'</i>'}</a></span><span class=tg>${v.tags?v.tags.split(', ').map(x=>'<span class=pill>'+esc(x)+'</span>').join(''):esc(v.added||v.title_source||'')}</span></div><div class=acc></div></div>`).join('')+(hasMore?'<div class=loadmore><button id=more>Load '+PAGE+' more</button></div>':'');
  if(more){list.querySelector('#more')?.parentElement.remove();list.insertAdjacentHTML('beforeend',h)}else list.innerHTML=h||'<div class=empty><b>Nothing here</b>'+(s.value?'No video, channel, tag or transcript matches “'+esc(s.value)+'”'+(cur.tag?' inside this tag.':'.')+'<div class=acts>'+(cur.tag?'<button id=sall>Search all videos instead</button>':'')+'<button class=ghost id=sclr2>Clear search<kbd>Esc</kbd></button></div>':'No videos in this view yet.')+'</div>';
  const sa=document.getElementById('sall');if(sa)sa.onclick=()=>{setView({search:true});load()};const sc=document.getElementById('sclr2');if(sc)sc.onclick=()=>{s.value='';s.oninput()};
  const m=document.getElementById('more');if(m)m.onclick=()=>{const at=rows().length;load(true).then(()=>{setCur(at)})}
@@ -187,7 +188,7 @@ const typing=el=>yc.typing(el);
 const rows=()=>[...list.querySelectorAll('.item')];
 function closeOpen(){destroyPlayer();document.querySelectorAll('.item.open').forEach(x=>{x.classList.remove('open');x.querySelector('.acc').innerHTML=''})}
 var RUN=null;   // an in-progress Shift range: anchor row + whether we are ticking or unticking + the ticks as they were. Survives tapping Shift; a plain move, Enter or a reload ends it.
-function setCur(i,extend){const r=rows();if(!r.length)return;i=Math.max(0,Math.min(r.length-1,i));if(!extend)RUN=null;
+function setCur(i,extend){const r=rows();if(!r.length)return;i=Math.max(0,Math.min(r.length-1,i));if(!extend)RUN=null;list.setAttribute('aria-activedescendant','it_'+i);
  closeOpen();r.forEach(x=>x.classList.remove('cur'));
  if(extend){if(!RUN){const a=CUR<0?i:CUR;const snap=r.map(x=>x.querySelector('.sel').checked);const lo0=Math.min(a,i),hi0=Math.max(a,i);const allOn=snap.slice(lo0,hi0+1).every(Boolean);RUN={a,mode:!allOn,snap}}
   const lo=Math.min(RUN.a,i),hi=Math.max(RUN.a,i);
@@ -200,10 +201,10 @@ addEventListener('keydown',e=>{const a=document.activeElement;
  if(typing(a)||e.ctrlKey||e.metaKey||e.altKey)return;
  const r=rows(),k=e.key;
  if(yc.onControl(e))return;   // Enter/Space on a focused button or link belong to that control
- if(k=='ArrowDown'||k=='ArrowUp'){if(!r.length)return;e.preventDefault();a&&a.blur&&a.blur();setCur(CUR<0?0:CUR+(k=='ArrowDown'?1:-1),e.shiftKey);return}
- if((k=='PageDown'||k=='PageUp')&&r.length){e.preventDefault();const rh=(r[Math.max(CUR,0)]||r[0]).offsetHeight||30,pg=Math.max(1,Math.floor(Math.min(list.clientHeight,innerHeight)/rh)-1);setCur(CUR<0?0:Math.max(0,Math.min(r.length-1,CUR+(k=='PageDown'?pg:-pg))),e.shiftKey);return}
+ if(k=='ArrowDown'||k=='ArrowUp'){if(!r.length)return;e.preventDefault();a&&a.blur&&a.blur();if(k=='ArrowDown'&&CUR==r.length-1&&document.getElementById('more')){document.getElementById('more').click();return}setCur(CUR<0?0:CUR+(k=='ArrowDown'?1:-1),e.shiftKey);return}
+ if((k=='PageDown'||k=='PageUp')&&r.length){e.preventDefault();const rh=((r[Math.max(CUR,0)]||r[0]).querySelector('.row')||r[0]).offsetHeight||30,pg=Math.max(1,Math.floor(Math.min(list.clientHeight,innerHeight)/rh)-1);setCur(CUR<0?0:Math.max(0,Math.min(r.length-1,CUR+(k=='PageDown'?pg:-pg))),e.shiftKey);return}
  if(k=='Home'&&r.length){e.preventDefault();setCur(0,e.shiftKey);return}
- if(k=='End'&&r.length){e.preventDefault();setCur(r.length-1,e.shiftKey);return}
+ if(k=='End'&&r.length){e.preventDefault();setCur(r.length-1,e.shiftKey);if(document.getElementById('more'))say(r.length+' of '+(SM.videos||'')+' loaded · Tab then Enter loads more',3000);return}
  const it=document.querySelector('.item.open')||r[CUR];
  if(k=='ArrowRight'&&!e.shiftKey&&r.length&&CUR<0){e.preventDefault();setCur(0);return}
  if(k=='Enter'&&r[CUR]){e.preventDefault();RUN=null;const cb=r[CUR].querySelector('.sel');cb.checked=!cb.checked;cb.checked?SEL.add(cb.dataset.v):SEL.delete(cb.dataset.v);bulkUI();return}
@@ -221,10 +222,11 @@ const selInOrder=()=>{const seen=new Set(),out=[];rows().forEach(x=>{const v=x.d
 const pathOf=t=>{const m=Object.fromEntries(TAGS.map(x=>[x.id,x])),p=[];let x=t,n=0;while(x&&n++<10){p.unshift(x.name);x=x.parent_id?m[x.parent_id]:null}return p.join(' / ')};
 let HASU=false;
 function watchNow(){const r=rows(),it=document.querySelector('.item.open')||r[CUR]||r[0];let ids,v;
+ if(!it&&SEL.size<2){say('Nothing to watch here: move onto a video first');return}
  if(SEL.size>=2){ids=selInOrder().slice(0,300);v=ids[0]}else if(it){v=it.dataset.v;if(cur.tag&&!s.value&&!cur.audit){saveState();location.href='/watch?v='+v+'&tag='+cur.tag;return}ids=r.map(x=>x.dataset.v).slice(0,500)}else return;
  try{localStorage.setItem('watchIds',JSON.stringify(ids))}catch(e){}saveState();location.href='/watch?q=1&v='+v}
 function startTriage(){if(SEL.size>=2){const ids=selInOrder().slice(0,300);try{localStorage.setItem('batchIds',JSON.stringify(ids))}catch(e){}saveState();location.href='/triage?batch=1'+(ids.join(',').length<1500?'&ids='+ids.join(','):'')}else{saveState();location.href='/triage'}}
-function bulkUI(){bn.textContent=SEL.size+' selected';bulk.classList.toggle('on',SEL.size>0);[bcl,btlab,bt,bad,brm,btr,btx].forEach(x=>x.style.display=SEL.size?'':'none');btg.style.display=SEL.size>=2?'':'none';btg.innerHTML='Triage these '+Math.min(SEL.size,300)+' together<kbd>T</kbd>';bun.style.display=HASU?'':'none'}
+function bulkUI(){const inView=rows().filter(x=>SEL.has(x.dataset.v)).length;bn.textContent=SEL.size+' selected'+(SEL.size&&inView<SEL.size?' · '+inView+' in view':'');bn.title=SEL.size&&inView<SEL.size?'Ticks stay while you change views; bulk actions apply to all '+SEL.size:'';bulk.classList.toggle('on',SEL.size>0);[bcl,btlab,bt,bad,brm,btr,btx].forEach(x=>x.style.display=SEL.size?'':'none');btg.style.display=SEL.size>=2?'':'none';btg.innerHTML='Triage these '+Math.min(SEL.size,300)+' together<kbd>T</kbd>';bun.style.display=HASU?'':'none'}
 list.addEventListener('change',e=>{if(!e.target.classList.contains('sel'))return;e.target.checked?SEL.add(e.target.dataset.v):SEL.delete(e.target.dataset.v);bulkUI()});
 btg.onclick=startTriage;
 btx.onclick=async()=>{const r=await P('/api/transcripts/queue',{ids:[...SEL]});if(r.error){say(r.error,5000);return}say(r.queued?'Getting captions for '+r.queued+' video'+(r.queued==1?'':'s')+' in the background'+(r.skipped?' ('+r.skipped+' already done)':''):'Nothing to do: those videos already have a transcript or were checked.',4000);txPoll()};
@@ -233,7 +235,7 @@ bcl.onclick=()=>{SEL.clear();document.querySelectorAll('.sel').forEach(x=>x.chec
 bsa.onclick=async()=>{const p=new URLSearchParams();p.set('limit',50000);if(cur.tag)p.set('tag',cur.tag);if(cur.audit)p.set('audit',cur.audit);if(s.value)p.set('search',s.value);
  const r=await J('/api/videos?'+p);r.forEach(v=>SEL.add(v.video_id));document.querySelectorAll('.sel').forEach(x=>x.checked=SEL.has(x.dataset.v));bulkUI();if(SEL.size)say(SEL.size+' selected across the whole view');else say('Nothing to select in this view');bsa.blur()};
 let BTAG=null;   // the tag chosen in the bulk picker
-yc.tagPicker(bt,bsugg,{tags:()=>TAGS,pathOf,onPick:async id=>{BTAG=TAGS.find(t=>t.id==id);bt.value=BTAG?pathOf(BTAG):'';say('“'+pathOf(BTAG)+'” chosen: Add or Remove applies it to the ticked videos')},onCreate:async name=>{const r=await P('/api/tags/path',{path:name});TAGS=await J('/api/tags');drawTags();bulkUI();BTAG=TAGS.find(t=>t.id==r.id);bt.value=BTAG?pathOf(BTAG):'';say('Tag “'+pathOf(BTAG)+'” created; Add applies it to the ticked videos')}});
+yc.tagPicker(bt,bsugg,{tags:()=>TAGS,pathOf,onEnter:()=>{if(chosenTag()){bad.click();return true}return false},onPick:async id=>{BTAG=TAGS.find(t=>t.id==id);say('“'+pathOf(BTAG)+'” chosen: Enter or Add applies it to the ticked videos');return pathOf(BTAG)},onCreate:async name=>{const r=await P('/api/tags/path',{path:name});if(r.error){say(r.error,4000);return ''}TAGS=await J('/api/tags');drawTags();bulkUI();BTAG=TAGS.find(t=>t.id==r.id);say('Tag “'+pathOf(BTAG)+'” created; Enter or Add applies it to the ticked videos');return pathOf(BTAG)}});
 bt.addEventListener('input',()=>{BTAG=null});
 function chosenTag(){if(BTAG&&pathOf(BTAG)==bt.value.trim())return BTAG;const q=bt.value.trim().toLowerCase().replace(/\s*\/\s*/g,' / ');return TAGS.find(t=>pathOf(t).toLowerCase()==q)||TAGS.find(t=>t.name.toLowerCase()==bt.value.trim().toLowerCase())}
 const plural=(n,w)=>n+' '+w+(n==1?'':'s');
@@ -241,12 +243,12 @@ async function runBulk(action,tag,anchor){const ids=[...SEL];if(!ids.length)retu
  const label=action=='trash'?'Tag '+plural(ids.length,'video')+' Trash?':action=='add'?'Add “'+pathOf(tag)+'” to '+plural(ids.length,'video')+'?':'Remove “'+pathOf(tag)+'” from '+plural(ids.length,'video')+'?';
  if(!await yc.confirm({anchor,message:label+(action!='remove'?' Videos still in Watch later leave it.':'')+' You can undo the last bulk change.',ok:action=='trash'?'Trash':action=='add'?'Add tag':'Remove tag',danger:action=='trash'}))return;
  const r=await P('/api/bulk',{video_ids:ids,action,tag_id:tag?tag.id:null});HASU=(r.changed||0)>0;SEL.clear();bt.value='';TAGS=await J('/api/tags');SM=await J('/api/summary');drawTags();bulkUI();await load();
- const what=action=='trash'?'Tagged Trash':action=='add'?'Added “'+pathOf(tag)+'” to':'Removed “'+pathOf(tag)+'” from';say(r.changed?what+' '+plural(r.changed,'video')+(action!='remove'?' (Inbox cleared where it applied)':'')+'. Undo last bulk is in the top bar.':'Nothing changed: those videos were already that way.',5000)}
+ const what=action=='trash'?'Tagged Trash':action=='add'?'Added “'+pathOf(tag)+'” to':'Removed “'+pathOf(tag)+'” from';if(r.changed)yc.toast(what+' '+plural(r.changed,'video')+(action!='remove'?'; they leave Watch later.':'.'),7000,{undo:()=>bun.onclick()});else say('Nothing changed: those videos were already that way.',4000)}
 bad.onclick=()=>{const t=chosenTag();if(!t){say('Type a tag and pick it from the list (or “Create tag”) first.');bt.focus();return}runBulk('add',t,bad)};
 brm.onclick=()=>{const t=chosenTag();if(!t){say('Type a tag and pick it from the list first.');bt.focus();return}runBulk('remove',t,brm)};
 btr.onclick=()=>runBulk('trash',null,btr);
 bun.onclick=async()=>{const l=await J('/api/bulk/last');if(!l.length){say('Nothing to undo.');HASU=false;bulkUI();return}if(!await yc.confirm({anchor:bun,message:'Undo the last bulk change ('+plural(l[0].n,'video')+')?',ok:'Undo'}))return;const r=await J('/api/bulk/undo',{method:'POST'});HASU=(await J('/api/bulk/last')).length>0;TAGS=await J('/api/tags');SM=await J('/api/summary');drawTags();bulkUI();await load();say(plural(r.restored||0,'video')+' restored.',4000)};
-bt.addEventListener('keydown',e=>{if(e.key=='Enter'&&bsugg.style.display!='block'&&chosenTag()){e.preventDefault();e.stopPropagation();bad.click()}});
+
 const P=(u,b)=>J(u,{method:'POST',headers:{'content-type':'application/json'},body:JSON.stringify(b||{})});
 // ---- remember the view across a trip to Watch/Triage/History (local, this tab only) ----
 function saveState(){try{sessionStorage.setItem('cmdState',JSON.stringify({cur:{tag:cur.tag,audit:cur.audit},s:s.value,CUR,top:list.scrollTop,pl:!!window.__pl,sel:[...SEL]}))}catch(e){}}
@@ -263,7 +265,7 @@ function restoreOnce(){const p=PENDING;if(!p)return;PENDING=null;if(p.CUR>=0){co
 (function(){
  let NAV=false,NI=-1;
  const items=()=>[...document.querySelectorAll('aside .tag[role=button]')];
- const mark=()=>{const L=items();L.forEach((x,k)=>x.classList.toggle('nav',NAV&&k==NI));if(NAV&&L[NI])L[NI].scrollIntoView({block:'nearest'})};
+ const mark=()=>{const L=items();L.forEach((x,k)=>{x.classList.toggle('nav',NAV&&k==NI);if(!x.id)x.id='rail_'+k});const aside=document.querySelector('aside');if(NAV&&L[NI]){L[NI].scrollIntoView({block:'nearest'});aside.setAttribute('aria-activedescendant',L[NI].id)}else aside.removeAttribute('aria-activedescendant')};
  let LAST=null;const exit=()=>{const L=items();if(NAV&&L[NI])LAST=L[NI].dataset.t||L[NI].id;NAV=false;mark();const rr=rows();if(CUR>=0&&rr[CUR]){rr.forEach(x=>x.classList.remove('cur'));rr[CUR].classList.add('cur')}};
  const enter=()=>{const L=items();if(!L.length)return;const a=document.activeElement;if(a&&a.blur)a.blur();document.querySelectorAll('.item.cur').forEach(x=>x.classList.remove('cur'));NAV=true;let k0=L.findIndex(x=>LAST&&(x.dataset.t==LAST||x.id==LAST));if(k0<0)k0=L.findIndex(x=>x.classList.contains('on'));NI=Math.max(0,k0);mark()};
  window.enterTagNav=enter;
@@ -273,7 +275,7 @@ function restoreOnce(){const p=PENDING;if(!p)return;PENDING=null;if(p.CUR>=0){co
   if(!NAV){
    const plain=!e.ctrlKey&&!e.metaKey&&!e.altKey&&!e.shiftKey;
    const atRest=!a||a===document.body||a===s;
-   if((e.key=='Tab'&&e.shiftKey&&!e.ctrlKey&&!e.metaKey&&!e.altKey&&atRest)||(e.key=='ArrowLeft'&&plain&&!typing(a)&&!yc.popOpen()&&!yc.isControl(a)&&!(window.__pmOn&&window.__pmOn()))){
+   if((e.key=='Tab'&&e.shiftKey&&!e.ctrlKey&&!e.metaKey&&!e.altKey&&atRest)||(e.key=='ArrowLeft'&&plain&&!typing(a)&&!yc.popOpen()&&(!yc.isControl(a)||(a.tagName=='INPUT'&&a.type=='checkbox'))&&!(window.__pmOn&&window.__pmOn()))){
     if(!items().length)return;
     e.preventDefault();e.stopImmediatePropagation();enter()}
    return}

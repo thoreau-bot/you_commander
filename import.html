@@ -27,7 +27,7 @@ footer{padding:10px 18px;color:var(--mut);font-size:var(--fs-s);text-align:cente
  <div class=word>YouCommander</div>
 
  <section id=s0>
-  <h1>Drop your Google Takeout playlists here</h1>
+  <h1 id=h0>Drop your Google Takeout playlists here</h1>
   <p>Drag in the Takeout <b>.zip</b>, the <b>playlists</b> folder, or any playlist <b>.csv</b> files.</p>
   <p class=sm style="margin-top:8px"><button id=pick class=pri>Choose files…</button></p>
   <p class=sm style="margin-top:8px">Everything stays on this computer. Only the playlist files are read: watch history, comments and everything else in a Takeout are never opened.</p>
@@ -36,7 +36,7 @@ footer{padding:10px 18px;color:var(--mut);font-size:var(--fs-s);text-align:cente
    <li>Tick <b>YouTube and YouTube Music</b>, then <b>All YouTube data included</b>, and keep only <b>playlists</b>.</li>
    <li>Create the export, download the .zip, and drop it here.</li>
    <li>Have more than one account? Import each one separately and give each its own name.</li></ol></details>
-  <input id=file type=file multiple accept=".csv,.zip" class=hide>
+  <input id=file type=file multiple accept=".csv,.zip" class=hide aria-label="Takeout files">
  </section>
 
  <section id=s1 class="hide"><h1 id=rd>Reading files…</h1><div class=bar style="margin:12px auto 0"><i id=rdb></i></div></section>
@@ -67,7 +67,7 @@ footer{padding:10px 18px;color:var(--mut);font-size:var(--fs-s);text-align:cente
 <script>
 const $=id=>document.getElementById(id),J=async(u,o)=>(await fetch(u,o)).json(),esc=s=>(s||'').replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
 const show=n=>['s0','s1','s2','s3'].forEach((k,i)=>$(k).classList.toggle('hide',i!=n));
-let HAS=false;J('/api/summary').then(s=>{HAS=s.videos>0;if(!HAS)$('ft').textContent='';else{$('tb0').style.display='';J('/api/playlists').then(p=>{const owners=[...new Set(p.map(x=>x.owner).filter(Boolean))];if(owners.length){$('label').value=owners[0];const d=document.createElement('p');d.className='sm';d.textContent='Importing again for '+owners.join(', ')+' refreshes those playlists; a new name adds another account.';$('label').closest('label').after(d)}}).catch(()=>{})}});
+let HAS=false;J('/api/summary').then(s=>{HAS=s.videos>0;if(!HAS)$('ft').textContent='';else{$('tb0').style.display='';$('h0').textContent='Add or refresh playlists from a Takeout';J('/api/playlists').then(p=>{const owners=[...new Set(p.map(x=>x.owner).filter(Boolean))];if(owners.length){$('label').value=owners[0];const d=document.createElement('p');d.className='sm';d.textContent='Importing again for '+owners.join(', ')+' refreshes those playlists; a new name adds another account.';$('label').closest('label').after(d)}}).catch(()=>{})}});
 const fmt=n=>(+n).toLocaleString();
 function err(t){$('msg').textContent=t;$('msg').classList.toggle('hide',!t)}
 
@@ -92,8 +92,8 @@ async function stage(list){
   $('rdb').style.width=Math.round(100*(todo.indexOf(x)+1)/todo.length)+'%'}
  const p=await J('/api/import/preview');
  if(!p.playlists){show(0);err("I couldn't find any YouTube playlists in those files. In Takeout choose YouTube and YouTube Music → playlists.");return}
- $('pv').innerHTML=`<b>${fmt(p.playlists)}</b> playlists (${fmt(p.non_empty)} with videos)<br><b>${fmt(p.unique_videos)}</b> unique videos &middot; <b>${fmt(p.items)}</b> playlist entries`
-  +(p.new_videos!=p.unique_videos?`<br><b>${fmt(p.new_videos)}</b> not already in YouCommander`:'')
+ $('pv').innerHTML=`<b>${fmt(p.playlists)}</b> playlist${p.playlists==1?'':'s'} (${fmt(p.non_empty)} with videos)<br><b>${fmt(p.unique_videos)}</b> unique video${p.unique_videos==1?'':'s'} &middot; <b>${fmt(p.items)}</b> playlist entries`
+  +(p.new_videos!=p.unique_videos?`<br><b>${fmt(p.new_videos)}</b> ${p.new_videos==0?'new to YouCommander (all of these are already in your library; importing refreshes them)':'new to YouCommander'}`:'')
   +'<div class="sm" style="margin-top:8px;color:var(--mut)">Largest: '+p.biggest.slice(0,4).map(b=>esc(b.title)+' ('+fmt(b.n)+')').join(', ')+'</div>'
   +(p.ignored.length?`<div class=sm style="margin-top:6px;color:var(--mut)">${p.ignored.length} other file(s) skipped</div>`:'');
  show(2);$('label').focus();$('label').select()}

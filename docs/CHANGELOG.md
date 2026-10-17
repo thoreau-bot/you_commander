@@ -1,5 +1,17 @@
 # Changelog
 
+## 1.5.0
+Review round 4 fixes (regression suite now 72 checks, all green).
+- Tag picker: picking a tag keeps its name in the box; Enter creates a tag only after ↓ onto the "Create tag" row (or when the query is a path); Enter with a chosen tag in Commander's bulk bar applies it; a re-opened list no longer closes on a stale blur
+- Double-fire guards: Triage's Confirm/Skip/Drop/Back and the batch actions ignore a second press while the first is in flight; Watch ignores a second queue step while a video is loading
+- Esc levels: the selection popup and the transcript ⋯ menu are "transients" that Esc closes before the page acts on Esc; Esc inside a text field never opens the context menu
+- Commander: the bulk bar keeps its height and shows a hint when nothing is ticked; "N selected · k in view" when ticks are off-screen; bulk results are undo toasts (Z); ↓ on the last loaded row loads more; End says how many are loaded; PgDn measures a real row; ← from a ticked checkbox enters the rail; W with nothing highlighted explains itself; listbox/option roles with aria-activedescendant on the list and the rail
+- Triage: the context menu shows key-caps and marks Drop as destructive; the counter reads "N to sort · N done"; chips share one class/tooltip source; the finished card is a full-height state with a glyph; aria-pressed on Sound
+- Watch: Sound and Fullscreen sit in one transport group with aria-pressed; timestamped notes get an Edit button and the delete ✕ stays faintly visible; transcript Find highlights are underline-style and distinct from the followed line; the transcript stops redrawing while Find is focused or when nothing changed; Find shows "k / n"; the empty state is full-height with a glyph; narrow screens reorder to player → notes → queue; one toast implementation (shared undo toasts)
+- History: a real page title with the summary beside it; "Plays" column; chips painted once. Import: file input labelled, plurals, "new to YouCommander" copy, returning users see "Add or refresh playlists from a Takeout"
+- Visual: primary buttons darken on hover instead of brightening; key-caps on green primaries darken to stay legible; selects show hover; popovers get a caret and flip with an .up class; checkbox focus ring is rounded; search bar 32px; empty states capped at 48ch
+- Shared layer: yc.busy (in-flight guard), yc.transient/closeTransient; the mouse-click hand-back rule covers row links and ignores non-element targets
+
 ## 1.4.0
 Review round 3 (29 confirmed findings). Also adds a regression suite of every confirmed finding so far (review/tools/regress.py in the review workspace).
 - Tab no longer loops inside an open video on Commander: the sentinels around the player pass focus through, and never scroll or blur

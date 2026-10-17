@@ -12,7 +12,7 @@ main{max-width:1120px;margin:auto;padding:18px 22px 60px}
 .tools{display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin:14px 0 10px}
 .search{position:relative;display:flex;align-items:center}
 .search input{width:280px;padding-right:34px}.search kbd{position:absolute;right:9px;pointer-events:none}
-#chips{display:flex;gap:4px}#chips button{min-height:30px}
+#chips{display:flex;gap:4px}
 #wq{margin-left:auto}
 .list{border:1px solid var(--bd);border-radius:var(--r);background:var(--sf);box-shadow:var(--sh);overflow:hidden}
 .row{display:grid;grid-template-columns:minmax(0,1fr) 150px 80px 56px;gap:12px;padding:9px 14px;border-bottom:1px solid var(--bd);align-items:center;cursor:pointer}
@@ -27,8 +27,8 @@ main{max-width:1120px;margin:auto;padding:18px 22px 60px}
 .row>div{min-width:0}
 </style>
 <div class=topbar><a class=brand href="/" title="Back to Commander"><svg width=24 height=24 viewBox="0 0 32 32" role=img aria-label=YouCommander><rect width=32 height=32 rx=8 fill="var(--ac)"/><g fill=none stroke="var(--ac-fg)" stroke-width=2.6 stroke-linecap=round stroke-linejoin=round><polyline points="9,13 16,7.5 23,13"/><polyline points="9,20 16,14.5 23,20"/><line x1=12 y1=26 x2=20 y2=26 /></g></svg></a><nav><a href="/">Commander</a><a href="/triage" title="Sort the inbox one video at a time">Triage</a><a href="/watch" title="The player with notes, loop and queue">Watch</a><a class=here>History</a></nav><span class=fill></span><span id=sum class=meta></span><button class="ghost help" data-help title="Keyboard shortcuts (?)">?</button></div>
-<main>
-<div class=lbl>Continue watching</div><div class=cw id=cw></div>
+<main><h1 class=vt>History<small id=hsum></small></h1>
+<div class=lbl style="margin-top:14px">Continue watching</div><div class=cw id=cw></div>
 <div class=tools><div class=search><input id=fq placeholder="Filter by title or channel" aria-label="Filter history"><kbd>/</kbd></div><span id=chips role=group aria-label="Show"></span><button id=wq title="Play everything listed, in this order, on the Watch page">Watch these in order</button></div>
 <div class=list id=list></div>
 <p class=mut style="font-size:var(--fs-s);margin-top:10px">Every video you open or play anywhere in YouCommander is listed here, newest first, and stored only on this computer.</p>
@@ -49,7 +49,7 @@ function shown(){const q=fq.value.trim().toLowerCase();return ALL.filter(MODES[M
 chips.innerHTML=Object.entries(MODES).map(([k,v])=>`<button data-m=${k} class="sm ${k==MODE?'on':'ghost'}" aria-pressed="${k==MODE}">${v[0]}</button>`).join('');
 function paintChips(){chips.querySelectorAll('[data-m]').forEach(b=>{const on=b.dataset.m==MODE;b.classList.toggle('on',on);b.classList.toggle('ghost',!on);b.setAttribute('aria-pressed',on)})}
 function draw(){const L=shown();FI=Math.min(FI,Math.max(0,L.length-1));paintChips();
- list.innerHTML=(L.length?'<div class="row head"><span>Video</span><span>Last opened</span><span>Watched</span><span>Opens</span></div>':'')+L.map((x,k)=>`<div class="row${k==FI?' f':''}" data-v="${x.video_id}"><div><div class=t>${esc(x.title||x.video_id)}</div><small>${esc(x.channel||'')}${x.marks?' · '+x.marks+' note'+(x.marks>1?'s':'')+' at times':''}${x.last_pos>5?' · <span class=tc>'+clock(x.last_pos)+'</span>':''}</small>${x.duration&&x.last_pos>5?`<div class=bar2><i style="width:${Math.min(100,100*x.last_pos/x.duration)}%"></i></div>`:''}</div><small>${when(x.last_watched)}</small><small>${x.seconds>5?fmt(x.seconds):'opened'}</small><small class=tc>${x.plays}×</small></div>`).join('')||(ALL.length?'<div class=empty><b>No history matches</b>'+(fq.value.trim()?'Nothing opened so far matches “'+esc(fq.value.trim())+'”. ':'')+'Try another filter or All.</div>':'<div class=empty><b>Nothing here yet</b>Open a video from Commander (Space) or press W to use the Watch page.</div>');
+ list.innerHTML=(L.length?'<div class="row head"><span>Video</span><span>Last opened</span><span>Watched</span><span>Plays</span></div>':'')+L.map((x,k)=>`<div class="row${k==FI?' f':''}" data-v="${x.video_id}"><div><div class=t>${esc(x.title||x.video_id)}</div><small>${esc(x.channel||'')}${x.marks?' · '+x.marks+' note'+(x.marks>1?'s':'')+' at times':''}${x.last_pos>5?' · <span class=tc>'+clock(x.last_pos)+'</span>':''}</small>${x.duration&&x.last_pos>5?`<div class=bar2><i style="width:${Math.min(100,100*x.last_pos/x.duration)}%"></i></div>`:''}</div><small>${when(x.last_watched)}</small><small>${x.seconds>5?fmt(x.seconds):'not played'}</small><small class=tc title="Plays on the Watch page">${x.plays}×</small></div>`).join('')||(ALL.length?'<div class=empty><b>No history matches</b>'+(fq.value.trim()?'Nothing opened so far matches “'+esc(fq.value.trim())+'”. ':'')+'Try another filter or All.</div>':'<div class=empty><b>Nothing here yet</b>Open a video from Commander (Space) or press W to use the Watch page.</div>');
  wq.disabled=!L.length;
  const f=list.querySelector('.f');if(f)f.scrollIntoView({block:'nearest'})}
 chips.onclick=e=>{if(e.target.dataset.m){MODE=e.target.dataset.m;FI=0;draw();const b=chips.querySelector(`[data-m=${MODE}]`);if(b&&e.detail===0)b.focus()}};fq.oninput=()=>{FI=0;draw()};
@@ -60,7 +60,7 @@ addEventListener('keydown',e=>{const a=document.activeElement;if(a&&a.tagName=='
  if(e.ctrlKey||e.metaKey||e.altKey||yc.onControl(e))return;if(e.key=='Escape'&&yc.escapeControl(e))return;
  const L=shown();if(e.key=='ArrowDown'){e.preventDefault();if(document.activeElement&&document.activeElement.blur)document.activeElement.blur();FI=Math.min(L.length-1,FI+1);draw()}else if(e.key=='ArrowUp'){e.preventDefault();FI=Math.max(0,FI-1);draw()}
  else if(e.key=='Enter'&&L[FI])location.href='/watch?v='+L[FI].video_id;else if(e.key=='Escape'&&yc.escapeControl(e))return;else if(e.key=='/'){e.preventDefault();fq.focus()}else if(e.key=='Escape')location.href='/'});
-(async()=>{const d=await J('/api/history?limit=2000');ALL=d.items;sum.textContent=d.videos+' videos opened, '+fmt(d.seconds)+' watched';
+(async()=>{const d=await J('/api/history?limit=2000');ALL=d.items;sum.textContent='';hsum.textContent=d.videos+' videos opened, '+fmt(d.seconds)+' watched';
  const c=ALL.filter(x=>x.duration>0&&x.last_pos>30&&x.last_pos<x.duration-20).slice(0,10);
  cw.innerHTML=c.map(x=>`<div data-v="${x.video_id}"><div class=ti>${esc(x.title||x.video_id)}</div><small>${esc(x.channel||'')} · ${clock(x.last_pos)} of ${clock(x.duration)}</small><div class=bar2><i style="width:${100*x.last_pos/x.duration}%"></i></div></div>`).join('')||'<div class=none>Nothing in progress. Videos you stop partway through show up here.</div>';
  draw()})();
