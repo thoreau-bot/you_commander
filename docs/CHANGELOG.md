@@ -1,5 +1,21 @@
 # Changelog
 
+## 1.4.0
+Review round 3 (29 confirmed findings). Also adds a regression suite of every confirmed finding so far (review/tools/regress.py in the review workspace).
+- Tab no longer loops inside an open video on Commander: the sentinels around the player pass focus through, and never scroll or blur
+- Enter in an empty tag box does nothing (it used to add the first tag); one shared tag picker now serves Commander's bulk bar, Triage, Watch and batch, with prefix match and "Create tag"
+- Shift+arrow from a ticked row extends the ticked range (unticks only when the whole range was already ticked)
+- A mouse click on any button or checkbox hands focus straight back, so arrows and Enter keep acting on what is highlighted
+- Player mode and the Triage context menu are modal: the menu takes ↑↓ Enter and closes on any other key; player mode swallows unhandled keys and says so
+- Esc hands focus back from a focused select; Enter on a focused checkbox ticks it
+- Undo: deleting a timestamped note and Drop on the Watch page show an undo toast (click Undo or press Z)
+- Search covers notes (video note and timestamped notes); duplicate tag names under one parent are refused; audit rows show their tags
+- Watch: Find in transcript with Enter/↑/↓; the transcript header is Find + Follow along + ⋯; one bordered transport row with ghost actions aligned beneath; Confirm tags is the primary
+- Triage: Back works from the finished card; the voice-setup note is a dismissible line under the panel; the Inbox marker looks like a marker
+- History: header row, four columns, position folded into the title line; Import: alert and progressbar roles, focus lands on Open when done
+- Visual: five type sizes by token, two control heights, monospace key-caps and timecodes, visible focus ring inside button groups, legible transcript highlights, raised dark surfaces for popovers and hover
+- Narrow (≤700px): rail capped at 30vh, tag editor behind an "Edit tag" disclosure, Triage decisions stick to the bottom
+
 ## 1.3.0
 Review round 2 (39 confirmed findings, none above severity 3).
 - Esc now has a "control focused" level on every page: the first Esc hands focus back, then transients close, and only from rest does Esc leave; a mouse click on a Triage decision button hands focus back so Enter keeps meaning Confirm

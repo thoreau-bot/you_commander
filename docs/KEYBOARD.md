@@ -14,6 +14,7 @@ Press `?` on any page for an overlay with that page's shortcuts (`Esc` or `?` cl
 | `T` | Start triage (with 2+ ticked: batch triage) |
 | `W` / `H` | Open Watch / History |
 | `Esc` | Close preview, or clear filters |
+| `Z` | Undo, while an undo toast is showing (Watch: note delete, Drop) |
 | In preview: `K` `J` `L` `M` | Play-pause, back 10 s, forward 10 s, mute |
 
 ## Preview "player mode"

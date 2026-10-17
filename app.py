@@ -27,14 +27,20 @@ def _fts_rebuild():
     try:
         c.execute('begin immediate')
         c.execute("drop table if exists video_fts")
-        c.execute("create virtual table video_fts using fts5(title,channel,tags,content='')")
-        c.execute("""insert into video_fts(rowid,title,channel,tags) select v.rowid,coalesce(v.title,''),coalesce(v.channel,''),
-          coalesce((select group_concat(t.name,' ') from video_tags vt join tags t on t.id=vt.tag_id where vt.video_id=v.video_id),'') from videos v""")
+        c.execute("create virtual table video_fts using fts5(title,channel,tags,notes,content='')")
+        c.execute("""insert into video_fts(rowid,title,channel,tags,notes) select v.rowid,coalesce(v.title,''),coalesce(v.channel,''),
+          coalesce((select group_concat(t.name,' ') from video_tags vt join tags t on t.id=vt.tag_id where vt.video_id=v.video_id),''),coalesce((select n.body from notes n where n.video_id=v.video_id),'')||' '||coalesce((select group_concat(m.body,' ') from video_marks m where m.video_id=v.video_id),'') from videos v""")
         c.execute('commit')
     except Exception:
         try: c.execute('rollback')
         except Exception: pass
     finally: c.close()
+def _fts_shape_ok():
+    try:
+        c=sqlite3.connect(DB);r=c.execute("select sql from sqlite_master where name='video_fts'").fetchone();c.close()
+        return bool(r and 'notes' in r[0])
+    except Exception: return False
+if not _fts_shape_ok(): threading.Thread(target=_fts_rebuild,daemon=True).start()
 def fts_dirty(delay=1.0):
     """Tags changed: rebuild the search index shortly (coalesces bursts such as triage confirms)."""
     global _FTS_T
@@ -48,7 +54,7 @@ def tags():
 def videos(tag:int|None=None,search:str|None=None,audit:str|None=None,limit:int=200,offset:int=0):
     if audit:
         if audit not in AUD: return []
-        return q(f"select * from audit_{audit} limit ? offset ?",(limit,offset))
+        return q(f"select a.*,(select group_concat(t.name,', ') from video_tags vt join tags t on t.id=vt.tag_id where vt.video_id=a.video_id) tags from audit_{audit} a limit ? offset ?",(limit,offset))
     where,a=[],[]
     sel="select v.video_id,v.title,v.channel,v.unavailable,(select group_concat(t.name,', ') from video_tags vt join tags t on t.id=vt.tag_id where vt.video_id=v.video_id) tags from videos v"
     if tag: where.append("v.video_id in (select video_id from video_tags where tag_id=?)");a.append(tag)
@@ -67,6 +73,7 @@ class TagIn(BaseModel):
     name:str|None=None;parent_id:int|None=None;publish:int|None=None;kind:str|None=None;description:str|None=None;set_parent:bool=False
 @app.post('/api/tags')
 def new(t:TagIn):
+    if q("select 1 from tags where lower(name)=lower(?) and coalesce(parent_id,0)=coalesce(?,0)",(t.name.strip(),t.parent_id)): return {'error':'A tag with that name already exists here'}
     s=re.sub(r'[^a-z0-9]+','-',t.name.lower()).strip('-');base=s;n=2
     while q("select 1 from tags where slug=?",(s,)): s=f'{base}-{n}';n+=1
     return {'id':w("insert into tags(name,slug,parent_id,kind) values(?,?,?,?)",(t.name,s,t.parent_id,t.kind or 'topic'))}
@@ -218,10 +225,11 @@ def act(vid:str,a:Act):
     elif a.action=='drop': c.execute("update triage set status='dropped',triaged_at=datetime('now') where video_id=?",(vid,))
     elif a.action=='reopen': c.execute("update triage set status='new' where video_id=?",(vid,))
     c.commit();c.close()
-    if a.action=='confirm': fts_dirty()
+    if a.action in('confirm','note') or a.note is not None: fts_dirty()
     return {'ok':1}
 _init_voice()
 import watch
+watch.on_change=lambda:fts_dirty()
 watch.setup(app,DB,video,AUDIO_DIR)
 import transcripts
 transcripts.setup(app,DB)

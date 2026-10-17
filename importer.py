@@ -37,7 +37,7 @@ def ensure_schema(path):
     c.executescript(SCHEMA)
     have_fts = c.execute("select 1 from sqlite_master where name='video_fts'").fetchone()
     if not have_fts:
-        c.execute("create virtual table video_fts using fts5(title,channel,tags,content='')")
+        c.execute("create virtual table video_fts using fts5(title,channel,tags,notes,content='')")
     if not c.execute("select 1 from tags where name='Inbox'").fetchone():
         c.execute("insert into tags(name,slug,kind,publish,description) values('Inbox','inbox','status',0,"
                   "'Marker for Watch later items still to be sorted. Never published.')")
@@ -46,9 +46,11 @@ def ensure_schema(path):
 def rebuild_fts(path):
     c = sqlite3.connect(path)
     c.execute("drop table if exists video_fts")
-    c.execute("create virtual table video_fts using fts5(title,channel,tags,content='')")
-    c.execute("""insert into video_fts(rowid,title,channel,tags) select v.rowid,coalesce(v.title,''),coalesce(v.channel,''),
-      coalesce((select group_concat(t.name,' ') from video_tags vt join tags t on t.id=vt.tag_id where vt.video_id=v.video_id),'') from videos v""")
+    c.execute("create table if not exists notes(video_id TEXT PRIMARY KEY, body TEXT, updated_at TEXT)")
+    c.execute("create table if not exists video_marks(id INTEGER PRIMARY KEY, video_id TEXT, t REAL, body TEXT, source TEXT DEFAULT 'typed', created_at TEXT DEFAULT (datetime('now')))")
+    c.execute("create virtual table video_fts using fts5(title,channel,tags,notes,content='')")
+    c.execute("""insert into video_fts(rowid,title,channel,tags,notes) select v.rowid,coalesce(v.title,''),coalesce(v.channel,''),
+      coalesce((select group_concat(t.name,' ') from video_tags vt join tags t on t.id=vt.tag_id where vt.video_id=v.video_id),''),coalesce((select n.body from notes n where n.video_id=v.video_id),'')||' '||coalesce((select group_concat(m.body,' ') from video_marks m where m.video_id=v.video_id),'') from videos v""")
     c.commit(); c.close()
 
 # ---------------------------------------------------------------- staging

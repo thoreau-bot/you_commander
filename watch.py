@@ -22,6 +22,7 @@ class MarkEdit(BaseModel): body: str
 class QueueIn(BaseModel):
     tag: int | None = None; ids: list[str] | None = None
 
+on_change=lambda:None
 def setup(app, DB, video_fn, audio_dir=None):
     c = sqlite3.connect(DB); c.executescript(SCHEMA)
     have = [r[1] for r in c.execute("pragma table_info(video_marks)")]
@@ -76,7 +77,7 @@ def setup(app, DB, video_fn, audio_dir=None):
     @app.post('/api/watch/{vid}/marks')
     def w_mark(vid: str, m: Mark):
         if not m.body.strip(): return {'error': 'empty'}
-        c = con(); i = c.execute("insert into video_marks(video_id,t,body,quote) values(?,?,?,?)", (vid, max(0, m.t), m.body.strip(), (m.quote or '').strip()[:600] or None)).lastrowid
+        c = con(); i = c.execute("insert into video_marks(video_id,t,body,quote) values(?,?,?,?)", (vid, max(0, m.t), m.body.strip(), (m.quote or '').strip()[:600] or None)).lastrowid; on_change()
         c.commit(); c.close(); return {'id': i}
 
     @app.post('/api/watch/{vid}/marks/voice')
@@ -112,11 +113,11 @@ def setup(app, DB, video_fn, audio_dir=None):
 
     @app.patch('/api/watch/marks/{mid}')
     def w_markedit(mid: int, b: MarkEdit):
-        c = con(); c.execute("update video_marks set body=? where id=?", (b.body.strip(), mid)); c.commit(); c.close(); return {'ok': 1}
+        c = con(); c.execute("update video_marks set body=? where id=?", (b.body.strip(), mid)); c.commit(); c.close(); on_change(); return {'ok': 1}
 
     @app.delete('/api/watch/marks/{mid}')
     def w_markdel(mid: int):
-        c = con(); c.execute("delete from video_marks where id=?", (mid,)); c.commit(); c.close(); return {'ok': 1}
+        c = con(); c.execute("delete from video_marks where id=?", (mid,)); c.commit(); c.close(); on_change(); return {'ok': 1}
 
     @app.post('/api/watch/queue')
     def w_queue(b: QueueIn):

@@ -6,17 +6,17 @@ body{display:grid;grid-template-columns:var(--rail) minmax(0,1fr);grid-template-
 /* ---- rail ---- */
 aside{display:flex;flex-direction:column;min-height:0;overflow:hidden;padding:14px 10px 10px;background:var(--sf);border-right:1px solid var(--bd)}
 aside>*{flex:none}aside>#tags{flex:1 1 auto;min-height:0;overflow-y:auto;overscroll-behavior:contain;padding-bottom:8px}
-.brand{display:flex;align-items:center;gap:10px;padding:2px 8px 16px;font-size:15px;font-weight:600;letter-spacing:-.01em}
+.brand{display:flex;align-items:center;gap:10px;padding:2px 8px 16px;font-size:var(--fs-l);font-weight:600;letter-spacing:-.01em}
 .brand svg{display:block;flex:none}
 .side{display:flex;flex-direction:column;gap:1px}
 .si{display:flex;align-items:center;gap:9px;padding:7px 10px;border-radius:var(--rs);color:var(--fg);font-weight:500}
 .si:hover{background:var(--sf2);text-decoration:none}.si svg{flex:none;color:var(--mut)}.si kbd{margin-left:auto}
-.sec{display:flex;align-items:center;gap:6px;margin:18px 10px 5px;font-size:12px;font-weight:600;color:var(--mut)}
-.sec button{min-height:22px;padding:0 6px;font-size:13.5px;line-height:1;border-radius:5px;color:var(--mut)}
+.sec{display:flex;align-items:center;gap:6px;margin:18px 10px 5px;font-size:var(--fs-s);font-weight:600;color:var(--mut)}
+.sec{min-height:20px}.sec button{height:20px;min-height:0;padding:0 6px;font-size:var(--fs);line-height:1;border-radius:5px;color:var(--mut)}
 .tag{display:flex;align-items:center;gap:8px;padding:5px 10px;border-radius:var(--rs);cursor:pointer;color:var(--fg2);line-height:1.35}
 .tag:hover{background:var(--sf2);color:var(--fg)}
 .tag.on{background:var(--ac-s);color:var(--ac);font-weight:600}
-.tag small{margin-left:auto;color:var(--mut);font-size:12px;font-variant-numeric:tabular-nums}
+.tag small{margin-left:auto;color:var(--mut);font-size:var(--fs-s);font-variant-numeric:tabular-nums}
 .tag.on small{color:var(--ac);opacity:.8}
 .tag.nav{outline:2px solid var(--ac);outline-offset:-2px;background:var(--sf2);color:var(--fg)}
 @keyframes navflash{0%,100%{background:var(--sf2)}50%{background:var(--ac-s2)}}.tag.flash{animation:navflash .7s ease-in-out 3}
@@ -24,10 +24,10 @@ aside>*{flex:none}aside>#tags{flex:1 1 auto;min-height:0;overflow-y:auto;overscr
 .rfoot{margin-top:8px;padding-top:8px;border-top:1px solid var(--bd)}
 /* ---- main ---- */
 main{display:flex;flex-direction:column;min-width:0;min-height:0;overflow:hidden}
-header{flex:none;display:flex;align-items:center;gap:10px;padding:10px 16px;border-bottom:1px solid var(--bd);background:var(--bg)}
+header{flex:none;display:flex;align-items:center;gap:10px;height:52px;padding:0 16px;border-bottom:1px solid var(--bd);background:var(--bg)}
 .search{flex:1;position:relative;display:flex;align-items:center;min-width:160px}
 .search svg{position:absolute;left:11px;color:var(--mut);pointer-events:none}
-.search input{width:100%;padding-left:34px;padding-right:44px;min-height:36px;border-radius:var(--r);background:var(--sf)}
+.search input{width:100%;padding-left:34px;padding-right:44px;height:34px;border-radius:var(--r);background:var(--sf)}
 .search kbd{position:absolute;right:9px;pointer-events:none}
 .search .clr{position:absolute;right:6px;display:none;min-height:24px;padding:0 7px;border:0;background:none;color:var(--mut)}
 .search.has .clr{display:inline-flex}.search.has kbd{display:none}
@@ -36,40 +36,42 @@ header{flex:none;display:flex;align-items:center;gap:10px;padding:10px 16px;bord
 /* bulk bar: appears only while something is ticked */
 #bulk{flex:none;display:none;gap:8px;align-items:center;flex-wrap:wrap;padding:8px 16px;border-bottom:1px solid var(--bd);background:var(--ac-s)}
 #bulk.on{display:flex}#bulk b{color:var(--ac);font-variant-numeric:tabular-nums;margin-right:4px}
-#bulk input{width:230px}
+#bulk .tagwrap{position:relative;width:260px}#bulk .tagwrap input{width:100%}
 #bulk .sp{flex:1}
 /* list */
 #list{flex:1;min-height:0;overflow:auto;overscroll-behavior:contain;padding:4px 0 24px}
 .item{margin:0 10px}
 .row{display:grid;grid-template-columns:22px minmax(0,1fr) fit-content(40%);align-items:center;gap:12px;min-height:38px;padding:0 10px 0 12px;border-radius:var(--rs);border-bottom:1px solid var(--bd)}
 .row:hover{background:var(--hov)}
-.row a{color:var(--fg);font-weight:450}.row a:hover{text-decoration:none;color:var(--ac)}
-.row a:focus-visible{outline-offset:-2px;border-radius:4px}
+.row a{color:var(--fg);font-weight:500;display:inline-block;max-width:100%;padding:2px 4px;margin:0 -4px;border-radius:4px;overflow:hidden;text-overflow:ellipsis;vertical-align:bottom}.row a:hover{text-decoration:none;color:var(--ac)}
+.row a:focus-visible{outline-offset:0}
 .t{min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;padding:2px 0}
-.tg{display:flex;gap:4px;justify-content:flex-end;min-width:0;color:var(--mut);font-size:12px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.tg{display:flex;gap:4px;justify-content:flex-end;min-width:0;color:var(--mut);font-size:var(--fs-s);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.acc .acts a.btn{font-size:var(--fs-s)}
 .tg .pill{flex:0 1 auto;min-width:0;overflow:hidden;text-overflow:ellipsis}
 .item.cur>.row{background:var(--ac-s);box-shadow:inset 3px 0 0 var(--ac);border-bottom-color:transparent}
 .item.open>.row{background:var(--sf2);border-bottom-color:transparent}.item.open>.row a{font-weight:600}
 .acc{display:none;margin:6px 0 10px;padding:14px;background:var(--sf);border:1px solid var(--bd);border-radius:var(--r);box-shadow:var(--sh)}
 .item.open>.acc{display:block}
-.acc .pw{max-width:780px}
-.acc .meta{display:flex;flex-wrap:wrap;align-items:center;gap:6px 12px;margin-top:10px;color:var(--mut);font-size:12px}
+.acc .pw{max-width:min(100%,900px)}
+.acc .meta{display:flex;flex-wrap:wrap;align-items:center;gap:6px 12px;margin-top:10px;color:var(--mut);font-size:var(--fs-s)}
 .acc .meta .tags{display:flex;flex-wrap:wrap;gap:4px}
 .acc .meta .acts{margin-left:auto;display:flex;gap:6px}
 .sel{cursor:pointer}
 .loadmore{display:flex;justify-content:center;padding:14px 10px}
 /* playlists view */
 .prow{display:grid;grid-template-columns:minmax(0,1fr) 150px 90px 56px;gap:12px;align-items:center;min-height:38px;padding:0 10px 0 34px;border-bottom:1px solid var(--bd);margin:0 10px}
-.prow .mut{font-size:12px}.prow .num{text-align:right}
-.phead{color:var(--mut);font-size:12px;font-weight:600;min-height:30px}
+.prow .mut{font-size:var(--fs-s)}.prow .num{text-align:right}
+.phead{color:var(--mut);font-size:var(--fs-s);font-weight:600;min-height:30px}
 /* tag editor sheet */
 #ed{flex:none;display:none;padding:12px 16px 14px;border-top:1px solid var(--bd);background:var(--sf)}
 #ed .edrow{display:flex;flex-wrap:wrap;align-items:center;gap:8px 14px}
 #ed .edrow+.edrow{margin-top:10px;padding-top:10px;border-top:1px solid var(--bd)}
 #ed .edrow label{gap:6px}#ed .edrow select{max-width:200px}
-#ed .edrow .name{font-weight:600;font-size:15px;margin-right:4px}#ed .edrow .name input{width:200px;height:28px}
+#ed .edrow .name{font-weight:600;margin-right:4px}#ed .edrow .name input{width:220px;height:32px;font-weight:600}
 #ed .edrow .sp{flex:1}
-@media(max-width:700px){body{grid-template-columns:1fr;grid-template-rows:auto minmax(0,1fr)}aside{max-height:38vh;overflow:auto;border-right:0;border-bottom:1px solid var(--bd)}aside>#tags{flex:none;overflow:visible}#ed{order:-1;border-top:0;border-bottom:1px solid var(--bd)}}
+@media(max-width:700px){body{grid-template-columns:1fr;grid-template-rows:auto minmax(0,1fr)}aside{max-height:30vh;overflow:auto;border-right:0;border-bottom:1px solid var(--bd);padding-top:8px}.brand{padding-bottom:8px}aside>#tags{flex:none;overflow:visible}#ed{order:-1;border-top:0;border-bottom:1px solid var(--bd);padding:6px 12px}#ed .edrow{display:none}#ed details[open] .edrow{display:flex}#ed summary{cursor:pointer;font-weight:600;list-style:none;padding:4px 0}#ed summary::before{content:'Edit tag ▸ '}#ed details[open] summary::before{content:'Edit tag ▾ '}}
+#ed summary{display:none}@media(max-width:700px){#ed summary{display:block}}
 </style>
 <aside>
  <div class=brand><svg class=logo width=28 height=28 viewBox="0 0 32 32" role=img aria-label=YouCommander><rect width=32 height=32 rx=8 fill="var(--ac)"/><g fill=none stroke="var(--ac-fg)" stroke-width=2.6 stroke-linecap=round stroke-linejoin=round><polyline points="9,13 16,7.5 23,13"/><polyline points="9,20 16,14.5 23,20"/><line x1=12 y1=26 x2=20 y2=26 /></g></svg>YouCommander</div>
@@ -85,14 +87,14 @@ header{flex:none;display:flex;align-items:center;gap:10px;padding:10px 16px;bord
 </aside>
 <main>
  <header>
-  <div class=search id=sw><svg width=15 height=15 viewBox="0 0 16 16" fill=none stroke=currentColor stroke-width=1.8 stroke-linecap=round><circle cx="7" cy="7" r="4.5"/><path d="m10.5 10.5 3 3"/></svg><input type=search id=s placeholder="Search titles, channels, tags, transcripts" autocomplete=off aria-label="Search"><button class=clr id=sclr aria-label="Clear search" title="Clear (Esc)">✕</button><kbd>/</kbd></div>
+  <div class=search id=sw><svg width=15 height=15 viewBox="0 0 16 16" fill=none stroke=currentColor stroke-width=1.8 stroke-linecap=round><circle cx="7" cy="7" r="4.5"/><path d="m10.5 10.5 3 3"/></svg><input type=search id=s placeholder="Search titles, channels, tags, notes, transcripts" autocomplete=off aria-label="Search"><button class=clr id=sclr aria-label="Clear search" title="Clear (Esc)">✕</button><kbd>/</kbd></div>
   <span id=info></span>
   <button id=bsa class="ghost sm" title="Tick every video in the current view, not just the ones loaded">Select all</button>
   <button id=bun class="ghost sm" title="Undo the last bulk change">Undo last bulk</button>
   <button class="ghost help" data-help title="Keyboard shortcuts (?)">?</button>
  </header>
- <div id=bulk><b id=bn></b><span id=btlab class=mut>Tag</span><input id=bt list=btl placeholder="existing tag, e.g. 3D Printing / Cameras" aria-label="Tag to add or remove"><datalist id=btl></datalist><button id=bad title="Add the chosen tag to the ticked videos">Add</button><button id=brm title="Remove the chosen tag from the ticked videos">Remove</button><button id=btx title="Fetch captions as text for the ticked videos, one at a time in the background. Skips videos that already have a transcript or no captions.">Get transcripts</button><button id=btg style="display:none" title="Open all ticked videos on one Triage page (T)">Triage together<kbd>T</kbd></button><span class=sp></span><button class=bad id=btr title="Tag the ticked videos Trash (never published)">Trash</button><button id=bcl class=ghost title="Untick everything">Clear</button></div>
- <div id=vt class=vt aria-live=polite></div>
+ <div id=bulk><b id=bn></b><span id=btlab class=mut>Tag</span><span class=tagwrap><input id=bt placeholder="tag, or a new path to create" aria-label="Tag to add or remove" autocomplete=off><div id=bsugg class=sugg style="display:none"></div></span><button id=bad title="Add the chosen tag to the ticked videos">Add</button><button id=brm title="Remove the chosen tag from the ticked videos">Remove</button><button id=btx title="Fetch captions as text for the ticked videos, one at a time in the background. Skips videos that already have a transcript or no captions.">Get transcripts</button><button id=btg style="display:none" title="Open all ticked videos on one Triage page (T)">Triage together<kbd>T</kbd></button><span class=sp></span><button class=bad id=btr title="Tag the ticked videos Trash (never published)">Trash</button><button id=bcl class=ghost title="Untick everything">Clear</button></div>
+ <h1 id=vt class=vt aria-live=polite></h1>
  <div id=list></div>
  <div id=fhint></div><div id=ed></div>
 </main>
@@ -102,7 +104,7 @@ header{flex:none;display:flex;align-items:center;gap:10px;padding:10px 16px;bord
   <div><h3>List</h3><dl>
    <dt><kbd>↑</kbd><kbd>↓</kbd></dt><dd>move</dd><dt><kbd>PgUp</kbd><kbd>PgDn</kbd></dt><dd>move a page</dd><dt><kbd>Home</kbd><kbd>End</kbd></dt><dd>first, last</dd>
    <dt><kbd>Enter</kbd></dt><dd>tick or untick</dd><dt><kbd>Shift</kbd>+<kbd>↑</kbd><kbd>↓</kbd></dt><dd>tick a range (tap or hold)</dd>
-   <dt><kbd>Space</kbd></dt><dd>play here</dd><dt><kbd>/</kbd></dt><dd>search</dd><dt><kbd>Esc</kbd></dt><dd>close video, then clear filters</dd></dl></div>
+   <dt><kbd>Space</kbd></dt><dd>play here</dd><dt><kbd>/</kbd></dt><dd>search</dd><dt><kbd>Esc</kbd></dt><dd>close video, then clear filters</dd><dt><kbd>Z</kbd></dt><dd>undo while an undo toast is showing</dd></dl></div>
   <div><h3>Tags rail</h3><dl>
    <dt><kbd>←</kbd></dt><dd>into the rail (library, audits, playlists, tags)</dd><dt><kbd>→</kbd></dt><dd>back to the videos</dd><dt><kbd>Enter</kbd></dt><dd>open that view</dd><dt><kbd>Shift</kbd>+<kbd>Tab</kbd></dt><dd>also enters the rail, from the list</dd><dt>double-click</dt><dd>rename a tag (or edit its name in the sheet below)</dd></dl></div>
   <div><h3>Open video</h3><dl>
@@ -137,7 +139,7 @@ function viewTitle(shown,more){let t,n;
  else if(cur.tag){const tg=TAGS.find(x=>x.id==cur.tag);t=tg?pathOf(tg):'Tag';n=(tg?tg.n:shown)+' videos'}
  else if(cur.audit){t=AL[cur.audit];n=(SM[cur.audit]??shown)+' videos'}
  else{t='All videos';n=(SM.videos??shown)+' videos'}
- vt.innerHTML=`${esc(t)}<small>${esc(n)}</small>`;info.textContent=shown+' shown'}
+ const crumb=s.value?'':cur.tag?'Tags':cur.audit?'Audits':'Library';vt.innerHTML=(crumb?`<span class=crumb>${crumb} / </span>`:'')+`${esc(t)}<small>${esc(n)}</small>`;info.textContent=shown+' shown'}
 async function init(){SM=await J('/api/summary');if(!SM.videos){location.href='/import';return}
  alln.textContent=SM.videos;pln.textContent=SM.playlists??'';
  aud.innerHTML=Object.keys(AL).map(k=>`<div class="tag${cur.audit==k?' on':''}" role=button data-a=${k} title="${AT[k]}">${AL[k]}<small>${SM[k]}</small></div>`).join('');
@@ -148,21 +150,21 @@ function drawTags(){const kids={};TAGS.forEach(t=>(kids[t.parent_id||0]=kids[t.p
  const f=(p,d)=>(kids[p]||[]).map(t=>`<div class="tag${cur.tag==t.id?' on':''}" role=button style="padding-left:${10+d*14}px" data-t=${t.id} title="${t.publish?'Published as a playlist. ':''}Double-click to rename">${esc(t.name)}${t.publish?' ↗':''}<small>${t.n}</small></div>`+f(t.id,d+1)).join('');
  tags.innerHTML=f(0,0)}
 pl.onclick=async()=>{setView({});window.__pl=true;pl.classList.add('on');all.classList.remove('on');bsa.style.display='none';const r=await J('/api/playlists');
- vt.innerHTML=`Playlists<small>${r.length} from your accounts</small>`;info.textContent=r.length+' playlists';
+ vt.innerHTML=`<span class=crumb>Library / </span>Playlists<small>${r.length} from your accounts</small>`;info.textContent=r.length+' playlists';
  list.innerHTML=`<div class="prow phead"><span>Playlist</span><span>Owner</span><span>Visibility</span><span class=num>Videos</span></div>`+r.map(p=>`<div class=prow><span class=t>${esc(p.title)}</span><span class="mut t">${esc(p.owner)}</span><span class=mut>${esc(p.visibility)}</span><span class=num>${p.item_count}</span></div>`).join('')};
 tags.onclick=e=>{const d=e.target.closest('[data-t]');if(d){setView({tag:+d.dataset.t});load();edit(+d.dataset.t)}};
 tags.ondblclick=async e=>{const d=e.target.closest('[data-t]');if(!d)return;const t=TAGS.find(x=>x.id==d.dataset.t);const n=await yc.prompt({anchor:d,label:'Rename tag',value:t.name,ok:'Rename'});if(n&&n!=t.name){await J('/api/tags/'+t.id,{method:'PATCH',headers:{'content-type':'application/json'},body:JSON.stringify({name:n})});await init();if(cur.tag==t.id){setView({tag:t.id,keepSearch:true});viewTitle(OFF,false);edit(t.id)}say('Renamed to “'+n+'”')}};
 addtag.onclick=async()=>{const n=await yc.prompt({anchor:addtag,label:'New tag name',ok:'Create'});if(n){const r=await J('/api/tags',{method:'POST',headers:{'content-type':'application/json'},body:JSON.stringify({name:n})});await init();say('Tag “'+n+'” created');const el=tags.querySelector(`[data-t="${r.id}"]`);if(el){el.classList.add('flash');setTimeout(()=>el.classList.remove('flash'),2300)}}};
 function edit(id){const t=TAGS.find(x=>x.id==id);if(!t)return;ed.style.display='block';
- ed.innerHTML=`<div class=edrow><span class=name><input id=tname value="${esc(t.name)}" aria-label="Tag name" title="Tag name; Save renames it"></span><label>Parent <select id=par><option value="">(top level)</option>${TAGS.filter(x=>x.id!=id).map(x=>`<option value=${x.id} ${x.id==t.parent_id?'selected':''}>${esc(x.name)}</option>`).join('')}</select></label>
+ ed.innerHTML=`<details open><summary></summary><div class=edrow><span class=name><input id=tname value="${esc(t.name)}" aria-label="Tag name" title="Tag name; Save renames it"></span><label>Parent <select id=par><option value="">(top level)</option>${TAGS.filter(x=>x.id!=id).map(x=>`<option value=${x.id} ${x.id==t.parent_id?'selected':''}>${esc(x.name)}</option>`).join('')}</select></label>
  <label title="topic: what the video is about · role: what it is for you (reference, exemplar…) · status: workflow marker">Kind <select id=kind>${['topic','role','exemplar','status'].map(k=>`<option ${k==t.kind?'selected':''}>${k}</option>`).join('')}</select></label>
  <label title="Publishing is planned for a later version; this only marks the tag"><input type=checkbox id=pub ${t.publish?'checked':''}> Publish as playlist</label><button id=save class=pri>Save</button><span class=sp></span><a href="/triage?tag=${id}" target=_blank>Triage this tag</a></div>
- <div class=edrow><label>Merge into <select id=mg><option value=''>choose a tag…</option>${TAGS.filter(x=>x.id!=id).map(x=>`<option value=${x.id}>${esc(x.name)}</option>`).join('')}</select></label><button id=domerge class=sm>Merge</button><span class=mut>Its videos move to the chosen tag and this tag is removed.</span></div>`;
+ <div class=edrow><label>Merge into <select id=mg><option value=''>choose a tag…</option>${TAGS.filter(x=>x.id!=id).map(x=>`<option value=${x.id}>${esc(x.name)}</option>`).join('')}</select></label><button id=domerge class=sm>Merge</button><span class=mut>Its videos move to the chosen tag and this tag is removed.</span></div></details>`;
  domerge.onclick=async()=>{if(!mg.value){say('Choose the tag to merge into first');mg.focus();return}const into=TAGS.find(x=>x.id==+mg.value);
   if(!await yc.confirm({anchor:domerge,message:`Merge “${t.name}” into “${into.name}”? Its ${t.n} video${t.n==1?'':'s'} move there and “${t.name}” is removed.`,ok:'Merge',danger:true}))return;
   await J('/api/tags/'+id+'/merge',{method:'POST',headers:{'content-type':'application/json'},body:JSON.stringify({into:+mg.value})});setView({tag:into.id});await init();load();edit(into.id);say('Merged into “'+into.name+'”')};
  tname.onkeydown=e=>{if(e.key=='Enter'){e.preventDefault();save.click()}else if(e.key=='Escape'){e.preventDefault();e.stopPropagation();if(tname.value!=t.name)tname.value=t.name;else tname.blur()}};
- save.onclick=async()=>{const body={set_parent:true,parent_id:par.value?+par.value:null,kind:kind.value,publish:pub.checked?1:0};const nn=tname.value.trim();if(nn&&nn!=t.name)body.name=nn;await J('/api/tags/'+id,{method:'PATCH',headers:{'content-type':'application/json'},body:JSON.stringify(body)});await init();setView({tag:id,keepSearch:true});await load();edit(id);say(body.name?'Renamed to “'+nn+'”':'Tag saved')}}
+ save.onclick=async()=>{const body={set_parent:true,parent_id:par.value?+par.value:null,kind:kind.value,publish:pub.checked?1:0};const nn=tname.value.trim();if(nn&&nn!=t.name)body.name=nn;await J('/api/tags/'+id,{method:'PATCH',headers:{'content-type':'application/json'},body:JSON.stringify(body)});await init();setView({tag:id,keepSearch:true});await load();edit(id);tname.focus();say(body.name?'Renamed to “'+nn+'”':'Tag saved')}}
 var CUR=-1,ANCH=-1;let OFF=0;
 async function load(more){bsa.style.display='';if(!more){OFF=0;CUR=-1;ANCH=-1;RUN=null}const p=new URLSearchParams();p.set('offset',OFF);p.set('limit',PAGE+1);if(cur.tag)p.set('tag',cur.tag);if(cur.audit)p.set('audit',cur.audit);if(s.value)p.set('search',s.value);
  const r0=await J('/api/videos?'+p);const hasMore=r0.length>PAGE,r=r0.slice(0,PAGE);OFF+=r.length;viewTitle(OFF,hasMore);
@@ -175,10 +177,10 @@ list.addEventListener('click',async e=>{const a=e.target.closest('.row a');if(!a
  const it=a.closest('.item');const was=it.classList.contains('open');
  destroyPlayer();document.querySelectorAll('.item.open').forEach(x=>{x.classList.remove('open');x.querySelector('.acc').innerHTML=''});
  if(was)return;const id=it.dataset.v,acc=it.querySelector('.acc');it.classList.add('open');
- acc.innerHTML=`<span class="pwret b4" tabindex=0 onfocus="retList()"></span><div class="pw stage"><div id="pl_${id}"></div></div><span class=pwret tabindex=0 onfocus="retList()"><kbd>F</kbd> video controls: Space, arrows, volume. F or Esc to finish.</span><div class=meta id=m${id}>Loading…</div>`;startPlayer(id);
+ acc.innerHTML=`<span class="pwret b4"></span><div class="pw stage"><div id="pl_${id}"></div></div><span class=pwret><kbd>F</kbd> video controls</span><div class=meta id=m${id}>Loading…</div>`;acc.querySelectorAll('.pwret').forEach(x=>yc.sentinel(x,retList));startPlayer(id);
  it.scrollIntoView({block:'nearest'});
  const v=await J('/api/video/'+id);const m=acc.querySelector('.meta');if(!m)return;m.dataset.v=id;
- m.innerHTML=`<span style="color:var(--fg)">${esc(v.channel||'')}</span><span class=tags>${v.tags.map(t=>`<span class="chip${t.confirmed?'':' s'}" style="margin:0">${esc(t.name)}</span>`).join('')||'<span>no tags</span>'}</span><span title="Playlists this video is in">in ${v.playlists.map(p=>esc(p.title)).join(', ')}</span><span class=acts><button class="wbtn sm" title="Open on the Watch page with notes, loop and queue (W)">Watch page<kbd>W</kbd></button><a target=_blank href="https://youtu.be/${id}" title="Some owners block embedding; it always plays on YouTube">Open on YouTube</a><button class="mbtn sm ghost" title="Sound on/off (M)">${muteLabel()}</button><button class="tbtn sm" id=tb${id} title="Triage only this video (E)">Triage this video<kbd>E</kbd></button></span>`});
+ m.innerHTML=`<span style="color:var(--fg)">${esc(v.channel||'')}</span><span class=tags>${v.tags.map(t=>`<span class="chip${t.confirmed?'':' s'}" style="margin:0" title="${t.confirmed?'':'Suggested from a playlist; not confirmed yet'}">${esc(t.name)}</span>`).join('')||'<span>no tags</span>'}</span><span title="Playlists this video is in">in ${v.playlists.map(p=>esc(p.title)).join(', ')}</span><span class=acts><button class="wbtn sm" title="Open on the Watch page with notes, loop and queue (W)">Watch page<kbd>W</kbd></button><a class=btn target=_blank href="https://youtu.be/${id}" title="Some owners block embedding; it always plays on YouTube">Open on YouTube</a><button class="mbtn sm ghost" title="Sound on/off (M)">${muteLabel()}</button><button class="tbtn sm" id=tb${id} title="Triage only this video (E)">Triage this video<kbd>E</kbd></button></span>`});
 let to;s.oninput=()=>{clearTimeout(to);sw.classList.toggle('has',!!s.value);to=setTimeout(()=>{LASTQ=s.value;if(s.value){cur.audit=null;setView({...cur,search:true})}else setView(cur);load()},250)};
 sclr.onclick=()=>{s.value='';s.oninput();s.focus()};
 const typing=el=>yc.typing(el);
@@ -187,7 +189,7 @@ function closeOpen(){destroyPlayer();document.querySelectorAll('.item.open').for
 var RUN=null;   // an in-progress Shift range: anchor row + whether we are ticking or unticking + the ticks as they were. Survives tapping Shift; a plain move, Enter or a reload ends it.
 function setCur(i,extend){const r=rows();if(!r.length)return;i=Math.max(0,Math.min(r.length-1,i));if(!extend)RUN=null;
  closeOpen();r.forEach(x=>x.classList.remove('cur'));
- if(extend){if(!RUN){const a=CUR<0?i:CUR;RUN={a,mode:!r[a].querySelector('.sel').checked,snap:r.map(x=>x.querySelector('.sel').checked)}}
+ if(extend){if(!RUN){const a=CUR<0?i:CUR;const snap=r.map(x=>x.querySelector('.sel').checked);const lo0=Math.min(a,i),hi0=Math.max(a,i);const allOn=snap.slice(lo0,hi0+1).every(Boolean);RUN={a,mode:!allOn,snap}}
   const lo=Math.min(RUN.a,i),hi=Math.max(RUN.a,i);
   r.forEach((x,k)=>{const cb=x.querySelector('.sel');if(!cb)return;const want=(k>=lo&&k<=hi)?RUN.mode:RUN.snap[k];cb.checked=want;want?SEL.add(cb.dataset.v):SEL.delete(cb.dataset.v)});bulkUI()}
  CUR=i;ANCH=i;r[i].classList.add('cur');r[i].scrollIntoView({block:'nearest'})}
@@ -222,26 +224,29 @@ function watchNow(){const r=rows(),it=document.querySelector('.item.open')||r[CU
  if(SEL.size>=2){ids=selInOrder().slice(0,300);v=ids[0]}else if(it){v=it.dataset.v;if(cur.tag&&!s.value&&!cur.audit){saveState();location.href='/watch?v='+v+'&tag='+cur.tag;return}ids=r.map(x=>x.dataset.v).slice(0,500)}else return;
  try{localStorage.setItem('watchIds',JSON.stringify(ids))}catch(e){}saveState();location.href='/watch?q=1&v='+v}
 function startTriage(){if(SEL.size>=2){const ids=selInOrder().slice(0,300);try{localStorage.setItem('batchIds',JSON.stringify(ids))}catch(e){}saveState();location.href='/triage?batch=1'+(ids.join(',').length<1500?'&ids='+ids.join(','):'')}else{saveState();location.href='/triage'}}
-function bulkUI(){bn.textContent=SEL.size+' selected';bulk.classList.toggle('on',SEL.size>0);[bcl,btlab,bt,bad,brm,btr,btx].forEach(x=>x.style.display=SEL.size?'':'none');btg.style.display=SEL.size>=2?'':'none';btg.innerHTML='Triage these '+Math.min(SEL.size,300)+' together<kbd>T</kbd>';bun.style.display=HASU?'':'none';btl.innerHTML=TAGS.filter(t=>t.name!='Inbox').map(t=>`<option value="${esc(pathOf(t))}">`).join('')}
+function bulkUI(){bn.textContent=SEL.size+' selected';bulk.classList.toggle('on',SEL.size>0);[bcl,btlab,bt,bad,brm,btr,btx].forEach(x=>x.style.display=SEL.size?'':'none');btg.style.display=SEL.size>=2?'':'none';btg.innerHTML='Triage these '+Math.min(SEL.size,300)+' together<kbd>T</kbd>';bun.style.display=HASU?'':'none'}
 list.addEventListener('change',e=>{if(!e.target.classList.contains('sel'))return;e.target.checked?SEL.add(e.target.dataset.v):SEL.delete(e.target.dataset.v);bulkUI()});
 btg.onclick=startTriage;
 btx.onclick=async()=>{const r=await P('/api/transcripts/queue',{ids:[...SEL]});if(r.error){say(r.error,5000);return}say(r.queued?'Getting captions for '+r.queued+' video'+(r.queued==1?'':'s')+' in the background'+(r.skipped?' ('+r.skipped+' already done)':''):'Nothing to do: those videos already have a transcript or were checked.',4000);txPoll()};
 async function txPoll(){const st=await J('/api/transcripts/status');const j=st.job;if(j.running){info.textContent='Transcripts: '+j.done+' of '+j.total+' ('+j.ok+' found, '+j.none+' without captions'+(j.err?', '+j.err+' failed':'')+')'+(j.note?' · '+j.note:'');setTimeout(txPoll,2000)}else if(j.total){say('Transcripts finished: '+j.ok+' found, '+j.none+' without captions'+(j.err?', '+j.err+' failed':'')+(j.note?' · '+j.note:''),6000)}}
 bcl.onclick=()=>{SEL.clear();document.querySelectorAll('.sel').forEach(x=>x.checked=false);bulkUI()};
 bsa.onclick=async()=>{const p=new URLSearchParams();p.set('limit',50000);if(cur.tag)p.set('tag',cur.tag);if(cur.audit)p.set('audit',cur.audit);if(s.value)p.set('search',s.value);
- const r=await J('/api/videos?'+p);r.forEach(v=>SEL.add(v.video_id));document.querySelectorAll('.sel').forEach(x=>x.checked=SEL.has(x.dataset.v));bulkUI();say(SEL.size+' selected across the whole view');bsa.blur()};
-function chosenTag(){const q=bt.value.trim().toLowerCase().replace(/\s*\/\s*/g,' / ');return TAGS.find(t=>pathOf(t).toLowerCase()==q)||TAGS.find(t=>t.name.toLowerCase()==bt.value.trim().toLowerCase())}
+ const r=await J('/api/videos?'+p);r.forEach(v=>SEL.add(v.video_id));document.querySelectorAll('.sel').forEach(x=>x.checked=SEL.has(x.dataset.v));bulkUI();if(SEL.size)say(SEL.size+' selected across the whole view');else say('Nothing to select in this view');bsa.blur()};
+let BTAG=null;   // the tag chosen in the bulk picker
+yc.tagPicker(bt,bsugg,{tags:()=>TAGS,pathOf,onPick:async id=>{BTAG=TAGS.find(t=>t.id==id);bt.value=BTAG?pathOf(BTAG):'';say('“'+pathOf(BTAG)+'” chosen: Add or Remove applies it to the ticked videos')},onCreate:async name=>{const r=await P('/api/tags/path',{path:name});TAGS=await J('/api/tags');drawTags();bulkUI();BTAG=TAGS.find(t=>t.id==r.id);bt.value=BTAG?pathOf(BTAG):'';say('Tag “'+pathOf(BTAG)+'” created; Add applies it to the ticked videos')}});
+bt.addEventListener('input',()=>{BTAG=null});
+function chosenTag(){if(BTAG&&pathOf(BTAG)==bt.value.trim())return BTAG;const q=bt.value.trim().toLowerCase().replace(/\s*\/\s*/g,' / ');return TAGS.find(t=>pathOf(t).toLowerCase()==q)||TAGS.find(t=>t.name.toLowerCase()==bt.value.trim().toLowerCase())}
 const plural=(n,w)=>n+' '+w+(n==1?'':'s');
 async function runBulk(action,tag,anchor){const ids=[...SEL];if(!ids.length)return;
  const label=action=='trash'?'Tag '+plural(ids.length,'video')+' Trash?':action=='add'?'Add “'+pathOf(tag)+'” to '+plural(ids.length,'video')+'?':'Remove “'+pathOf(tag)+'” from '+plural(ids.length,'video')+'?';
- if(!await yc.confirm({anchor,message:label+' You can undo the last bulk change.',ok:action=='trash'?'Trash':action=='add'?'Add tag':'Remove tag',danger:action=='trash'}))return;
+ if(!await yc.confirm({anchor,message:label+(action!='remove'?' Videos still in Watch later leave it.':'')+' You can undo the last bulk change.',ok:action=='trash'?'Trash':action=='add'?'Add tag':'Remove tag',danger:action=='trash'}))return;
  const r=await P('/api/bulk',{video_ids:ids,action,tag_id:tag?tag.id:null});HASU=(r.changed||0)>0;SEL.clear();bt.value='';TAGS=await J('/api/tags');SM=await J('/api/summary');drawTags();bulkUI();await load();
  const what=action=='trash'?'Tagged Trash':action=='add'?'Added “'+pathOf(tag)+'” to':'Removed “'+pathOf(tag)+'” from';say(r.changed?what+' '+plural(r.changed,'video')+(action!='remove'?' (Inbox cleared where it applied)':'')+'. Undo last bulk is in the top bar.':'Nothing changed: those videos were already that way.',5000)}
-bad.onclick=()=>{const t=chosenTag();if(!t){say('Pick an existing tag from the list first.');bt.focus();return}runBulk('add',t,bad)};
-brm.onclick=()=>{const t=chosenTag();if(!t){say('Pick an existing tag from the list first.');bt.focus();return}runBulk('remove',t,brm)};
+bad.onclick=()=>{const t=chosenTag();if(!t){say('Type a tag and pick it from the list (or “Create tag”) first.');bt.focus();return}runBulk('add',t,bad)};
+brm.onclick=()=>{const t=chosenTag();if(!t){say('Type a tag and pick it from the list first.');bt.focus();return}runBulk('remove',t,brm)};
 btr.onclick=()=>runBulk('trash',null,btr);
 bun.onclick=async()=>{const l=await J('/api/bulk/last');if(!l.length){say('Nothing to undo.');HASU=false;bulkUI();return}if(!await yc.confirm({anchor:bun,message:'Undo the last bulk change ('+plural(l[0].n,'video')+')?',ok:'Undo'}))return;const r=await J('/api/bulk/undo',{method:'POST'});HASU=(await J('/api/bulk/last')).length>0;TAGS=await J('/api/tags');SM=await J('/api/summary');drawTags();bulkUI();await load();say(plural(r.restored||0,'video')+' restored.',4000)};
-bt.addEventListener('keydown',e=>{if(e.key=='Escape'){e.preventDefault();e.stopPropagation();if(bt.value)bt.value='';else bt.blur()}else if(e.key=='Enter'){e.preventDefault();bad.click()}});
+bt.addEventListener('keydown',e=>{if(e.key=='Enter'&&bsugg.style.display!='block'&&chosenTag()){e.preventDefault();e.stopPropagation();bad.click()}});
 const P=(u,b)=>J(u,{method:'POST',headers:{'content-type':'application/json'},body:JSON.stringify(b||{})});
 // ---- remember the view across a trip to Watch/Triage/History (local, this tab only) ----
 function saveState(){try{sessionStorage.setItem('cmdState',JSON.stringify({cur:{tag:cur.tag,audit:cur.audit},s:s.value,CUR,top:list.scrollTop,pl:!!window.__pl,sel:[...SEL]}))}catch(e){}}
@@ -301,10 +306,10 @@ s.addEventListener('keydown',e=>{if(e.key=='ArrowDown'||e.key=='Enter'){e.preven
 let LASTQ='';
 
 // ---- F: move keyboard focus into the embedded player (native controls); Tab / Shift+Tab past its controls returns here ----
-function retList(){try{const a=document.activeElement;if(a&&a.blur)a.blur()}catch(e){}const f=document.getElementById('fhint');if(f)f.style.display='none';window.onPlayerReturn&&window.onPlayerReturn()}
+function retList(){const f=document.getElementById('fhint');if(f)f.style.display='none';window.onPlayerReturn&&window.onPlayerReturn()}
 function focusPlayer(sel){const fr=document.querySelector(sel);if(!fr)return false;fr.focus();const f=document.getElementById('fhint');if(f){f.textContent='Video focused: use its native controls. Tab or Shift+Tab past the first/last control to come back. (F inside the player is YouTube\u2019s fullscreen.)';f.style.display='block'}return true}
 addEventListener('focus',()=>{const f=document.getElementById('fhint');if(f)f.style.display='none'});
-window.onPlayerReturn=()=>{const it=document.querySelector('.item.open');if(it){const r=rows();rows().forEach(x=>x.classList.remove('cur'));const i=r.indexOf(it);if(i>=0){CUR=i;ANCH=i;it.classList.add('cur');it.scrollIntoView({block:'nearest'})}}};
+window.onPlayerReturn=()=>{const it=document.querySelector('.item.open');if(it){const r=rows();rows().forEach(x=>x.classList.remove('cur'));const i=r.indexOf(it);if(i>=0){CUR=i;ANCH=i;it.classList.add('cur')}}};
 window.__getPlayer=()=>PLAYER;window.__pmBox='.item.open .pw';window.__pmFrame='.item.open iframe';
 // ---- Player mode (F): keys control the embedded video through the YouTube API while keyboard focus stays on this page,
 //      so F (or Esc) can toggle it back. Tab hands focus to YouTube's own controls (Tab/Shift+Tab past them returns). ----
@@ -346,6 +351,7 @@ window.__getPlayer=()=>PLAYER;window.__pmBox='.item.open .pw';window.__pmFrame='
   else if(k=='Tab'){eat();set(false);focusPlayer(window.__pmFrame)}
   else if(k=='Home'){eat();p.seekTo(0,true)}
   else if(k=='End'){eat();const d=p.getDuration?p.getDuration():0;if(d)p.seekTo(Math.max(0,d-1),true)}
+  else if(!['Shift','Control','Alt','Meta','CapsLock'].includes(k)){eat();flash('Video controls are on: F or Esc finishes, then the page keys work again')}
  },true);
 })();
 </script>
