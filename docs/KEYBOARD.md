@@ -1,6 +1,6 @@
 # Keyboard Shortcuts
 
-Press `?` on any page for an overlay with that page's shortcuts (`Esc` or `?` closes it). When a button or link has keyboard focus, `Enter` and `Space` act on that control, not on the page.
+Press `?` on any page for an overlay with that page's shortcuts (`Esc` or `?` closes it). When a button or link has keyboard focus, `Enter` and `Space` act on that control, not on the page, and the first `Esc` only hands focus back; `Esc` leaves a page only from rest.
 
 ## Commander
 | Key | Action |
@@ -9,7 +9,8 @@ Press `?` on any page for an overlay with that page's shortcuts (`Esc` or `?` cl
 | `↑ ↓ PgUp PgDn Home End` | Move through rows (with `Shift` to extend selection) |
 | `Enter` | Tick / untick the current row |
 | `Space` | Preview the current video |
-| `←` / `Shift+Tab` | Move into the tag list; `→` returns |
+| `←` / `Shift+Tab` | Move into the rail (library, audits, playlists, tags); `→` returns |
+| double-click a tag | Rename it (or edit the name in the tag sheet and Save) |
 | `T` | Start triage (with 2+ ticked: batch triage) |
 | `W` / `H` | Open Watch / History |
 | `Esc` | Close preview, or clear filters |

@@ -1,5 +1,14 @@
 # Changelog
 
+## 1.3.0
+Review round 2 (39 confirmed findings, none above severity 3).
+- Esc now has a "control focused" level on every page: the first Esc hands focus back, then transients close, and only from rest does Esc leave; a mouse click on a Triage decision button hands focus back so Enter keeps meaning Confirm
+- Commander: the ← rail walks every view (All videos, audits, playlists, tags), Shift+Tab only enters the rail from rest so reverse tabbing works; Enter/↓ in the search box no longer also tick row 1; leaving the rail keeps the current row; ticks survive a trip to another page; rename lives in the tag sheet; a Watch page action in the open video; narrow layout keeps the header in place
+- Triage: ← Back works from the finished card; an unknown `?v=` says so instead of "Done"; Confirm is the filled primary; the Inbox marker no longer looks like a tag; batch warnings persist across re-renders
+- Watch: the first Tab starts at the top (queue scrolling no longer moves the focus start point); Find in transcript seeks with Enter/↓/↑; Autoplay remembered; no key errors on the empty page; note delete is a real button
+- History: a no-match filter says so and disables "Watch these in order"; Import: returning users get their account name prefilled
+- Visual: one control height (32 / 28), opaque top bar, dark-mode hover on Confirm/Drop legible, help dialog without a stray ring, key-caps slightly stronger in light, popovers trap Tab
+
 ## 1.2.0
 Review round 1 of the adversarial panel (49 confirmed findings). Highlights:
 - Keyboard model: when a button or link has focus, Enter and Space act on it, never on the page (shared `yc.onControl`); Shift+arrow range ticking works whether Shift is tapped or held; typing `/` inside the bulk tag box no longer jumps to Search; ↓ or Enter in Search moves into the results

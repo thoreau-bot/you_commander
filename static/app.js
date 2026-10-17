@@ -9,8 +9,11 @@
  const yc=window.yc={};
  yc.typing=el=>!!el&&(el.tagName=='TEXTAREA'||el.tagName=='SELECT'||(el.tagName=='INPUT'&&el.type!='checkbox')||el.isContentEditable);
  yc.onControl=e=>{const a=document.activeElement;if(!a||a===document.body)return false;
-  if(e.key=='Enter'||e.key==' '){if(/^(BUTTON|A|SUMMARY)$/.test(a.tagName))return true;if(a.tagName=='INPUT'&&a.type=='checkbox'&&e.key==' ')return true}
+  if(e.key=='Enter'||e.key==' '){if(/^(BUTTON|SUMMARY)$/.test(a.tagName))return true;if(a.tagName=='A'&&e.key=='Enter')return true;if(a.tagName=='INPUT'&&a.type=='checkbox')return true}
   return false};
+ // Esc has levels: a focused control gives focus back first; then a page closes its transients; only from rest does it leave.
+ yc.escapeControl=e=>{const a=document.activeElement;if(!a||a===document.body||yc.typing(a))return false;if(a.blur){a.blur();e.preventDefault();return true}return false};
+ yc.isControl=el=>!!el&&el!==document.body&&(/^(BUTTON|A|SUMMARY|INPUT|SELECT|TEXTAREA)$/.test(el.tagName)||el.tabIndex>=0);
 
  // ---- status / toast ----
  let T=null;
@@ -30,14 +33,15 @@
   el.innerHTML=`<div class=pop-msg></div><div class=pop-acts><button class=ghost data-a=no>Cancel<kbd>Esc</kbd></button><button class="${o.danger?'bad':'pri'}" data-a=ok></button></div>`;
   el.querySelector('.pop-msg').textContent=o.message;el.querySelector('[data-a=ok]').innerHTML=(o.ok||'OK')+'<kbd>Enter</kbd>';
   el.onclick=e=>{const b=e.target.closest('[data-a]');if(b)closePop(b.dataset.a=='ok')};
-  el.onkeydown=e=>{e.stopPropagation();if(e.key=='Escape'){e.preventDefault();closePop(false)}else if(e.key=='Enter'){e.preventDefault();closePop(true)}};
+  el.onkeydown=e=>{e.stopPropagation();if(e.key=='Escape'){e.preventDefault();closePop(false)}else if(e.key=='Enter'){e.preventDefault();closePop(true)}else if(e.key=='Tab')cycle(el,e)};
   open(el,o.anchor,res,false);el.querySelector('[data-a=ok]').focus()});
+ function cycle(el,e){const f=[...el.querySelectorAll('button,input')];if(!f.length)return;const i=f.indexOf(document.activeElement);const n=e.shiftKey?(i<=0?f.length-1:i-1):(i<0||i==f.length-1?0:i+1);e.preventDefault();f[n].focus()}
  yc.prompt=o=>new Promise(res=>{const el=document.createElement('div');el.className='pop';el.setAttribute('role','dialog');el.setAttribute('aria-modal','true');
   el.innerHTML=`<label class=pop-msg><span></span><input type=text autocomplete=off></label><div class=pop-acts><button class=ghost data-a=no>Cancel<kbd>Esc</kbd></button><button class=pri data-a=ok></button></div>`;
   el.querySelector('span').textContent=o.label;const inp=el.querySelector('input');inp.value=o.value||'';el.querySelector('[data-a=ok]').innerHTML=(o.ok||'Save')+'<kbd>Enter</kbd>';
   const done=ok=>closePop(ok?inp.value.trim()||null:null);
   el.onclick=e=>{const b=e.target.closest('[data-a]');if(b)done(b.dataset.a=='ok')};
-  el.onkeydown=e=>{e.stopPropagation();if(e.key=='Escape'){e.preventDefault();done(false)}else if(e.key=='Enter'){e.preventDefault();done(true)}};
+  el.onkeydown=e=>{e.stopPropagation();if(e.key=='Escape'){e.preventDefault();done(false)}else if(e.key=='Enter'){e.preventDefault();done(true)}else if(e.key=='Tab')cycle(el,e)};
   open(el,o.anchor,res,null);inp.focus();inp.select()});
  yc.popOpen=()=>!!POP;
 
@@ -47,7 +51,7 @@
   h.setAttribute('role','dialog');h.setAttribute('aria-modal','true');h.setAttribute('aria-label','Keyboard shortcuts');
   const card=h.querySelector('.card');if(card){card.tabIndex=-1;if(!card.querySelector('.pop-close')){const b=document.createElement('button');b.className='ghost sm pop-close';b.setAttribute('aria-label','Close');b.innerHTML='Close<kbd>Esc</kbd>';b.onclick=()=>openHelp(false);card.querySelector('h2')?.appendChild(b)}}
   let prev=null;
-  const openHelp=o=>{const was=h.classList.contains('open');h.classList.toggle('open',o);if(o&&!was){prev=document.activeElement;card&&card.focus()}if(!o&&was){try{prev&&prev.focus&&prev.focus()}catch(e){}}};
+  const openHelp=o=>{const was=h.classList.contains('open');h.classList.toggle('open',o);if(o&&!was){prev=document.activeElement;card&&card.focus({preventScroll:true})}if(!o&&was){try{if(document.activeElement&&document.activeElement.blur)document.activeElement.blur();if(prev&&prev!==document.body&&prev.isConnected&&!/pop-close/.test(prev.className))prev.focus()}catch(e){}}};
   window.toggleHelp=()=>openHelp(!h.classList.contains('open'));
   addEventListener('keydown',e=>{
    if(h.classList.contains('open')){
@@ -61,7 +65,8 @@
   document.querySelectorAll('[data-help]').forEach(b=>{b.setAttribute('aria-label','Keyboard shortcuts');b.addEventListener('click',()=>{openHelp(true)})});
  }
  // a popover swallows page shortcuts while it is open
- addEventListener('keydown',e=>{if(POP&&!POP.el.contains(e.target)){if(e.key=='Escape'){closePop(POP.cancel)}e.stopImmediatePropagation();e.preventDefault()}},true);
+ addEventListener('keydown',e=>{if(POP&&!POP.el.contains(e.target)){if(e.key=='Escape')closePop(POP.cancel);else if(e.key=='Enter'){const ok=POP.el.querySelector('[data-a=ok]');ok&&ok.click()}else if(e.key=='Tab'){cycle(POP.el,e)}e.stopImmediatePropagation();e.preventDefault()}},true);
  // status nodes announce politely
- document.querySelectorAll('#info,#vs,#st,#pos').forEach(el=>{if(!el.getAttribute('role')){el.setAttribute('role','status');el.setAttribute('aria-live','polite')}});
+ if(!document.documentElement.lang)document.documentElement.lang='en';
+ document.querySelectorAll('#info,#vs,#st,#pos,#toast').forEach(el=>{if(!el.getAttribute('role')){el.setAttribute('role','status');el.setAttribute('aria-live','polite')}});
 })();

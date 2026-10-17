@@ -16,6 +16,7 @@
 .side{align-self:start;position:sticky;top:70px}
 @media(max-width:900px){#wrap{grid-template-columns:1fr;padding:14px}.side{position:static}}
 .side.done{display:none}
+.chip.inbox{background:var(--sf2);color:var(--mut);border:1px dashed var(--bd2)}
 #fin{display:none;max-width:1100px;margin:0 auto;padding:0 22px}
 .tagwrap kbd{position:absolute;right:9px;top:50%;transform:translateY(-50%);pointer-events:none}.tagwrap:focus-within kbd{display:none}
 /* batch */
@@ -35,14 +36,14 @@
 #batch details.warn{border-color:var(--bad);box-shadow:0 0 0 3px var(--bad-s)}
 #batch .bpv{max-width:640px;margin-top:10px}
 </style>
-<div class=topbar><a class=brand href="/" title="Back to Commander"><svg width=24 height=24 viewBox="0 0 32 32" role=img aria-label=YouCommander><rect width=32 height=32 rx=8 fill="var(--ac)"/><g fill=none stroke="var(--ac-fg)" stroke-width=2.6 stroke-linecap=round stroke-linejoin=round><polyline points="9,13 16,7.5 23,13"/><polyline points="9,20 16,14.5 23,20"/><line x1=12 y1=26 x2=20 y2=26 /></g></svg></a><nav><a href="/">Commander</a><a class=here>Triage</a><a href="/history" title="Everything you've opened or watched in the app">History</a></nav><span class=fill></span><span id=pos class=meta></span><span id=cnt class=meta></span><button class="ghost help" data-help title="Keyboard shortcuts (?)">?</button></div>
+<div class=topbar><a class=brand href="/" title="Back to Commander"><svg width=24 height=24 viewBox="0 0 32 32" role=img aria-label=YouCommander><rect width=32 height=32 rx=8 fill="var(--ac)"/><g fill=none stroke="var(--ac-fg)" stroke-width=2.6 stroke-linecap=round stroke-linejoin=round><polyline points="9,13 16,7.5 23,13"/><polyline points="9,20 16,14.5 23,20"/><line x1=12 y1=26 x2=20 y2=26 /></g></svg></a><nav><a href="/">Commander</a><a class=here>Triage</a><a href="/watch" title="The player with notes, loop and queue">Watch</a><a href="/history" title="Everything you've opened or watched in the app">History</a></nav><span class=fill></span><span id=pos class=meta></span><span id=cnt class=meta></span><button class="ghost help" data-help title="Keyboard shortcuts (?)">?</button></div>
 <div id=wrap>
 <section><span class="pwret b4" tabindex=-1 onfocus="retList()"></span><div id=pl class=stage><div id=yt></div></div><span class=pwret tabindex=-1 onfocus="retList()"><kbd>F</kbd> video controls: Space, arrows, volume. F or Esc to finish.</span><div id=fhint></div><h2 id=ti></h2><div class=mut id=ch></div><div id=pls></div></section>
 <section class=side><div class=panel><div class=in>
  <div class=lbl><span id=tglab>Tags</span><small>dashed = suggested from your playlists, not yet confirmed</small></div><div id=tg></div>
  <div class=tagwrap><input id=ti2 placeholder="Add a tag…" style="width:100%" autocomplete=off aria-label="Add a tag"><kbd>T</kbd><div id=sugg style="display:none" role=listbox></div></div>
  <div class=lbl style="margin-top:14px">Note<small>N to focus · Esc leaves</small></div><textarea id=note rows=4></textarea>
- <div class=decide><button class=ok id=bc title="Confirm all shown tags and go to the next video (Enter)">Confirm + next<kbd>Enter</kbd></button><button id=bs title="Skip without changing anything (→ or S)">Skip<kbd>→</kbd></button><button id=bp title="Previous video (←)">Back<kbd>←</kbd></button><span class=sp></span><button class=bad id=bd title="Drop: leave out of every published playlist (X)">Drop<kbd>X</kbd></button></div>
+ <div class=decide><button class="ok pri" id=bc title="Confirm all shown tags and go to the next video (Enter)">Confirm + next<kbd>Enter</kbd></button><button id=bs title="Skip without changing anything (→ or S)">Skip<kbd>→</kbd></button><button id=bp title="Previous video (←)">Back<kbd>←</kbd></button><span class=sp></span><button class=bad id=bd title="Drop: leave out of every published playlist (X)">Drop<kbd>X</kbd></button></div>
  <div class=more><button id=bv class=ghost title="Record a voice note (Space or V). Press again to stop. Everything stays on this computer.">Voice note<kbd>Space</kbd></button><button id=bm class=ghost title="Sound on/off (M). Starts muted.">Muted<kbd>M</kbd></button><button id=bo class=ghost title="Open on YouTube (G)">Open on YouTube<kbd>G</kbd></button></div>
  <div id=vs class=mut></div><div id=vsug></div>
 </div></div></section></div>
@@ -73,12 +74,15 @@ async function init(){TAGS=await J('/api/tags');if(window.BATCH){counts();return
 async function counts(){const c=await J('/api/triage/counts');cnt.textContent=c.map(x=>x.status+' '+x.n).join(' · ')}
 let DONE=false;
 function finish(){DONE=true;document.querySelector('#wrap').style.display='none';fin.style.display='block';pos.textContent='';
- fin.innerHTML=`<div class=empty style="padding-top:80px"><b>${window.SINGLE?'Done':'Queue finished'}</b>${window.SINGLE?'This video is sorted. You can close this tab.':'Nothing left to sort. New imports and anything you reopen show up here.'}<div class=acts><a href="/" class=pri id=finback><button class=pri>Back to Commander<kbd>Esc</kbd></button></a></div></div>`;
- if(window.SINGLE){try{window.close()}catch(e){}}}
+ const none=!Q.length;
+ fin.innerHTML=`<div class=empty style="padding-top:80px"><b>${none&&window.SINGLE?'That video is not in your library':window.SINGLE?'Done':none?'Nothing to sort':'Queue finished'}</b>${none&&window.SINGLE?'Nothing is known about it here. Open a video from the Commander page instead.':window.SINGLE?'This video is sorted. You can close this tab.':none?'Everything is sorted. New imports and anything you reopen show up here.':'Nothing left to sort. New imports and anything you reopen show up here.'}<div class=acts>${Q.length?'<button id=finback>Back to the last one<kbd>←</kbd></button>':''}<a href="/"><button class=pri>Back to Commander<kbd>Esc</kbd></button></a></div></div>`;
+ const fb=document.getElementById('finback');if(fb)fb.onclick=back;
+ if(window.SINGLE&&!none){try{window.close()}catch(e){}}}
+function unfinish(){DONE=false;fin.style.display='none';document.querySelector('#wrap').style.display=''}
 async function show(){vsug.innerHTML='';if(!Object.keys(VPROC).includes(Q[i]||''))vs.textContent='';if(i<0)i=0;if(i>=Q.length){finish();return}
  cur=await J('/api/video/'+Q[i]);try{fetch('/api/watch/'+cur.video_id+'/open',{method:'POST',headers:{'content-type':'application/json'},body:JSON.stringify({source:'triage'})})}catch(e){}pos.textContent=(i+1)+' of '+Q.length;ti.textContent=cur.title||'(title unavailable — private or removed)';ch.textContent=cur.channel||cur.video_id;
  pls.textContent='In '+cur.playlists.map(p=>p.title+' ('+p.account_id+')').join(', ');note.value=cur.note||'';drawTags();load(cur.video_id)}
-function drawTags(){tg.innerHTML=cur.tags.map(t=>`<span class="chip${t.confirmed?'':' s'}" title="${esc(t.description||t.name)}${t.confirmed?'':' (suggested from a playlist; Enter confirms it)'}">${esc(pathOf(TAGS.find(x=>x.id==t.id)||t))}<button data-r=${t.id} aria-label="Remove tag ${esc(t.name)}" title="Remove tag">×</button></span>`).join('')||'<span class=mut>No tags yet. Press T to add one.</span>'}
+function drawTags(){tg.innerHTML=cur.tags.map(t=>`<span class="chip${t.confirmed?'':' s'}${t.name=='Inbox'?' inbox':''}" title="${t.name=='Inbox'?'Still in Watch later; cleared when you confirm a real tag. ':''}"${esc(t.description||t.name)}${t.confirmed?'':' (suggested from a playlist; Enter confirms it)'}">${esc(pathOf(TAGS.find(x=>x.id==t.id)||t))}<button data-r=${t.id} aria-label="Remove tag ${esc(t.name)}" title="Remove tag">×</button></span>`).join('')||'<span class=mut>No tags yet. Press T to add one.</span>'}
 tg.onclick=async e=>{const r=e.target.dataset.r;if(r){await J(`/api/video/${cur.video_id}/tags/${r}`,{method:'DELETE'});cur=await J('/api/video/'+cur.video_id);drawTags()}};
 async function go(a){if(DONE||!cur||i>=Q.length)return;if(a=='confirm'&&VPROC[cur.video_id]){vstat('Waiting for the voice note to finish…');await VPROC[cur.video_id];cur=await J('/api/video/'+cur.video_id)}
  if(a=='confirm'&&!cur.tags.some(t=>t.name!='Inbox')){yc.toast('Add at least one tag first (T), or Drop (X).');ti2.focus();return}
@@ -86,8 +90,9 @@ async function go(a){if(DONE||!cur||i>=Q.length)return;if(a=='confirm'&&VPROC[cu
  if(a=='drop'){DROPPED.add(cur.video_id);yc.toast('Dropped. ← Back reopens it.',3500)}else if(a=='confirm')yc.toast('Confirmed',1400);
  i++;counts();show()}
 const DROPPED=new Set();
-async function back(){if(DONE||i<=0)return;i=Math.max(0,i-1);const vid=Q[i];if(DROPPED.has(vid)){await P(`/api/video/${vid}/triage`,{action:'reopen'});DROPPED.delete(vid);yc.toast('Reopened',1400);counts()}show()}
+async function back(){if(i<=0){if(!DONE)yc.toast('This is the first video');return}if(DONE)unfinish();i=Math.max(0,i-1);const vid=Q[i];if(DROPPED.has(vid)){await P(`/api/video/${vid}/triage`,{action:'reopen'});DROPPED.delete(vid);yc.toast('Reopened',1400);counts()}show()}
 bc.onclick=()=>go('confirm');bs.onclick=()=>go(null);bp.onclick=back;bd.onclick=()=>go('drop');
+[bc,bs,bp,bd,bm,bo,bv].forEach(b=>b.addEventListener('mouseup',()=>setTimeout(()=>b.blur(),0)));
 bm.onclick=()=>{muted=!muted;if(player){muted?player.mute():player.unMute()}bm.innerHTML=muted?'Muted<kbd>M</kbd>':'Sound on<kbd>M</kbd>'};bm.innerHTML='Muted<kbd>M</kbd>';bo.onclick=()=>window.open('https://youtu.be/'+cur.video_id);
 // tag picker
 const byId=()=>Object.fromEntries(TAGS.map(t=>[t.id,t]));
@@ -139,7 +144,7 @@ async function voiceDone(vid,a){if(!cur||cur.video_id!=vid)return;
 vsug.onclick=async e=>{const n=e.target.dataset.nt;if(!n)return;const r=await P('/api/tags/path',{path:n});TAGS=await J('/api/tags');await P(`/api/video/${cur.video_id}/tags`,{tag_id:r.id});cur=await J('/api/video/'+cur.video_id);drawTags();e.target.remove()};
 bv.onclick=toggleRec;
 addEventListener('keydown',e=>{if(yc.typing(document.activeElement)||e.ctrlKey||e.metaKey||e.altKey)return;const k=e.key.toLowerCase();if(k==' '&&yc.onControl(e))return;
- if(k=='v'||k==' '){e.preventDefault();toggleRec()}else if(k=='escape'&&REC){REC.onstop=()=>{STREAM.getTracks().forEach(t=>t.stop());REC=null;bv.innerHTML=window.BATCH?'Voice note<kbd>V</kbd>':'Voice note<kbd>Space</kbd>';bv.classList.remove('bad');vstat('Recording cancelled.')};REC.stop()}else if(k=='escape'&&!REC){if(yc.popOpen())return;leave()}});
+ if(k=='v'||k==' '){e.preventDefault();toggleRec()}else if(k=='escape'&&REC){REC.onstop=()=>{STREAM.getTracks().forEach(t=>t.stop());REC=null;bv.innerHTML=window.BATCH?'Voice note<kbd>V</kbd>':'Voice note<kbd>Space</kbd>';bv.classList.remove('bad');vstat('Recording cancelled.')};REC.stop()}else if(k=='escape'&&!REC){if(yc.popOpen())return;if(yc.escapeControl(e))return;if(sugg.style.display=='block'){sugg.style.display='none';return}leave()}});
 function leave(){if(window.SINGLE){try{window.close()}catch(e){}setTimeout(()=>{location.href='/'},200)}else location.href='/'}
 vcheck();init();
 
@@ -205,13 +210,14 @@ function brender(){
  batch.innerHTML=`<h2>Triaging ${BV.length} videos together</h2><div class=intro>Tags added or removed in the controls above apply to all of them; the × on a tag below changes only that video. Enter confirms all, X drops all. Press ? for the rest of the keys.</div>`+
   BV.map(v=>`<details open data-v="${v.video_id}"><summary><span>${esc(v.title||'(title unavailable — private or removed)')}</span><span class="mut x"><button data-prev="${v.video_id}" class="sm ghost" title="Show or hide the video here (Space while this video is highlighted)">Preview<kbd>Space</kbd></button><button data-out="${v.video_id}" class="sm ghost" title="Take this video out of the batch; it stays untouched (R while this video is highlighted)">Remove from batch<kbd>R</kbd></button></span></summary><div class=bin><div>${esc(v.channel||v.video_id)} <span class=mut>·</span> <a href="https://youtu.be/${v.video_id}" target=_blank rel=noopener>Open on YouTube</a></div><div class=chips>${bchips(v)}</div><div class=mut style="font-size:12px">In ${esc(v.playlists.map(p=>p.title+' ('+p.account_id+')').join(', ')||'—')}</div><div class="bpv stage" data-pv="${v.video_id}" style="display:none"></div></div></details>`).join('');
  open.forEach(id=>{const d=batch.querySelector(`details[data-v="${id}"]`);if(d)d.open=false});
+ WARN.forEach(id=>{const d=batch.querySelector(`details[data-v="${id}"]`);if(d&&BV.find(v=>v.video_id==id&&!v.tags.some(t=>t.name!='Inbox')))d.classList.add('warn');else WARN.delete(id)});
  // common tags
  const n=BV.length,cnt={};BV.forEach(v=>v.tags.forEach(t=>{(cnt[t.id]=cnt[t.id]||{t,n:0,c:0}).n++;if(t.confirmed)cnt[t.id].c++}));
  const all=Object.values(cnt).sort((a,b)=>b.n-a.n);
  tg.innerHTML=all.map(x=>`<span class="chip${x.c==n?'':' s'}" title="${x.n==n?'On every video':'On '+x.n+' of '+n+' videos — click + to add to all'}">${esc(pathOf(TAGS.find(y=>y.id==x.t.id)||x.t))}${x.n<n?` · ${x.n}/${n}`:''}${x.n<n?`<button data-a=${x.t.id} aria-label="Add ${esc(x.t.name)} to all ${n} videos" title="Add to all ${n} videos">+</button>`:''}<button data-r=${x.t.id} aria-label="Remove ${esc(x.t.name)} from all ${n} videos" title="Remove from all ${n} videos">×</button></span>`).join('')||'<span class=mut>No tags yet</span>';
  snap.forEach(x=>{if(BV.some(v=>v.video_id==x.id))openPrev(x.id,x.t)});bapply();pos.textContent='Batch of '+n;tglab.textContent='Tags on all '+n+' videos';
 }
-let BF=null,LASTP=null;const PL={},OP=new Set();
+let BF=null,LASTP=null;const PL={},OP=new Set(),WARN=new Set();
 const TARGET=()=>BF||LASTP;
 window.__getPlayer=()=>{const t=TARGET();return t&&OP.has(t)?PL[t]:null};
 Object.defineProperty(window,'__pmBox',{configurable:true,get:()=>`#batch [data-pv="${TARGET()}"]`});
@@ -242,7 +248,7 @@ addEventListener('keydown',async e=>{
  if(k==' '){eat();d.querySelector('[data-prev]').click();return}
  if(k=='Enter'){eat();d.open=!d.open;bapply(true);return}
  if(kl=='r'){eat();const ids=[...batch.querySelectorAll('details')].map(x=>x.dataset.v),at=ids.indexOf(BF);d.querySelector('[data-out]').click();ids.splice(at,1);BF=ids[Math.min(at,ids.length-1)]||null;return}
- if(['x','s','v','g','m','arrowright'].includes(kl))eat();
+ if(['x','s','v','g','m','arrowright'].includes(kl)){eat();yc.toast('That key is for the controls above; Esc or ← goes back to them',2200)}
 },true);
 async function brefresh(){BV=await P('/api/videos/batch',{ids:IDS});IDS=BV.map(v=>v.video_id);Q=IDS.slice();i=0;cur=BV[0]||null;brender();TAGS=await J('/api/tags')}
 window.binit=async function(){
@@ -272,7 +278,7 @@ go=async a=>{
  await brefresh();
  const bad=BV.filter(v=>!v.tags.some(t=>t.name!='Inbox'));
  batch.querySelectorAll('details').forEach(d=>d.classList.remove('warn'));
- if(bad.length){bad.forEach(v=>{const d=batch.querySelector(`details[data-v="${v.video_id}"]`);d.classList.add('warn');d.open=true});batch.querySelector('details.warn').scrollIntoView({block:'center'});vstat(bad.length+' video'+(bad.length>1?'s have':' has')+' no tag yet (outlined in red). Add a tag for all (T), or take them out of the batch.');return}
+ if(bad.length){bad.forEach(v=>{WARN.add(v.video_id);const d=batch.querySelector(`details[data-v="${v.video_id}"]`);d.classList.add('warn');d.open=true});batch.querySelector('details.warn').scrollIntoView({block:'center'});vstat(bad.length+' video'+(bad.length>1?'s have':' has')+' no tag yet (outlined in red). Add a tag for all (T), or take them out of the batch.');return}
  const nt=note.value.trim();
  for(const v of BV){const body=nt?((v.note||'').trim()?v.note.trim()+'\n'+nt:nt):null;await P(`/api/video/${v.video_id}/triage`,{action:'confirm',note:body})}
  bdone()};

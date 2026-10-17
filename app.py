@@ -62,7 +62,7 @@ def videos(tag:int|None=None,search:str|None=None,audit:str|None=None,limit:int=
 @app.get('/api/summary')
 def summary():
     r={k:q(f"select count(*) n from audit_{k}")[0]['n'] for k in AUD}
-    r['videos']=q("select count(*) n from videos")[0]['n'];r['tags']=q("select count(*) n from tags")[0]['n'];return r
+    r['videos']=q("select count(*) n from videos")[0]['n'];r['tags']=q("select count(*) n from tags")[0]['n'];r['playlists']=q("select count(*) n from playlists")[0]['n'];return r
 class TagIn(BaseModel):
     name:str|None=None;parent_id:int|None=None;publish:int|None=None;kind:str|None=None;description:str|None=None;set_parent:bool=False
 @app.post('/api/tags')
