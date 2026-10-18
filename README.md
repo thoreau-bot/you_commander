@@ -15,7 +15,7 @@ YouCommander imports your playlist exports from Google Takeout into a local SQLi
 - **Import** the playlist CSVs from a Google Takeout export (a `.zip` or an unpacked folder). Only playlist files are read; watch history, comments and subscriptions are ignored.
 - **Commander** – fast keyboard-driven list with full-text search, nested tags (`topic/sub/leaf`), multi-select and bulk tagging.
 - **Triage** – step through videos one at a time (or in a batch) to keep, tag, drop or skip, with undo and a change log.
-- **Watch page** – local player with resume, speed control, A–B loop, a reorderable queue, previous/next, and a "Copy As YouTube Queue" button.
+- **Watch page** – local player with resume, speed control, A–B loop, a reorderable queue, previous/next, and a "Copy as YouTube Queue" button.
 - **History** – everything you open or watch inside the app, with Continue Watching.
 - **Notes** – typed or voice notes at a timestamp, on the current transcript line, or on selected text.
 - **Transcripts** – read YouTube captions (via `yt-dlp`) and/or transcribe locally with Whisper, keep both versions, follow along, and search across all transcripts.

@@ -17,9 +17,12 @@
  addEventListener('keydown',e=>{const a=document.activeElement;if(e.key=='Escape'&&a&&a.tagName=='SELECT'&&!e.ctrlKey&&!e.metaKey){e.preventDefault();e.stopImmediatePropagation();a.blur()}},true);
  // a mouse click on a button or checkbox hands focus straight back, so the keyboard keeps meaning what the screen says
  document.addEventListener('mouseup',e=>{if(!(e.target instanceof Element))return;const b=e.target.closest('button,summary,input[type=checkbox],.row a');if(!b||b.closest('.pop')||b.closest('#help'))return;setTimeout(()=>{if(document.activeElement===b)b.blur()},0)});
- // the embedded player has focus: say so, since the app's keys are off while it does
- let IFT=null;addEventListener('blur',()=>{setTimeout(()=>{if(document.activeElement&&document.activeElement.tagName=='IFRAME'){IFT=yc.toast('The video has focus, so YouTube’s own keys apply. Click outside it or Tab past its controls to get the app shortcuts back.',60000)}},0)});
- addEventListener('focus',()=>{if(IFT){yc.toastHide();IFT=null}});
+ // the embedded player took the keyboard (a click or Tab into it). On pages with video controls (F) the player mode
+ // decides what happens; elsewhere, say so, since the app's keys are off while it has focus.
+ let IFT=null;addEventListener('blur',()=>{setTimeout(()=>{const a=document.activeElement;if(!a||a.tagName!='IFRAME')return;
+  if(PM){PM.frameFocused(a);return}
+  IFT=yc.toast('The video has focus, so YouTube’s own keys apply. Click outside it or Tab past its controls to get the app shortcuts back.',60000)},0)});
+ addEventListener('focus',()=>{if(PM)PM.pageFocused();if(IFT){yc.toastHide();IFT=null}});
  // sentinels around an embedded player: focus arriving by Tab passes through; focus returning from the iframe lands on the next real control
  const FOC='a[href],button:not([disabled]),input:not([disabled]):not([type=hidden]),select:not([disabled]),textarea:not([disabled]),iframe,[tabindex]:not([tabindex="-1"])';
  const visible=el=>!!(el.offsetWidth||el.offsetHeight||el.getClientRects().length);
@@ -32,15 +35,25 @@
   if(t)t.focus({preventScroll:true});else el.blur()})};
  yc.isControl=el=>!!el&&el!==document.body&&(/^(BUTTON|A|SUMMARY|INPUT|SELECT|TEXTAREA)$/.test(el.tagName)||el.tabIndex>=0);
 
- // ---- status / toast ----
- let T=null;
+ // ---- bubbles (bottom right): one standing hint (the video-controls card) and transient toasts.
+ //      A toast takes the hint's place for a while; with a hint standing, no toast stays longer than 10-15 s
+ //      (by length), and when it goes the hint comes back in whatever state it is in by then.
+ let T=null,TON=false,TEND=0,TLEN=0,HINT=null;
  function toastEl(){let t=document.getElementById('toast');if(!t){t=document.createElement('div');t.id='toast';document.body.appendChild(t)}
   if(!t.getAttribute('role')){t.setAttribute('role','status');t.setAttribute('aria-live','polite')}return t}
+ function hintEl(){let h=document.getElementById('fhint');if(!h){h=document.createElement('div');h.id='fhint';document.body.appendChild(h)}return h}
+ const capFor=n=>10000+5000*Math.max(0,Math.min(1,(n-60)/140));   // 10 s for a short line, up to 15 s for a long one
+ function paint(){const h=hintEl(),t=toastEl();t.style.display=TON?'block':'none';
+  const ht=!TON&&HINT?(typeof HINT=='function'?HINT():HINT):null;if(ht){if(h.innerHTML!==ht)h.innerHTML=ht;h.style.display='block'}else h.style.display='none'}
+ function arm(ms){clearTimeout(T);TEND=Date.now()+ms;T=setTimeout(()=>{yc.toastHide()},ms)}
  let UNDO=null;
  yc.toast=(msg,ms,o)=>{const t=toastEl();t.textContent='';UNDO=null;
   if(o&&o.undo){UNDO=o.undo;t.append(msg+' ');const b=document.createElement('button');b.className='sm';b.innerHTML='Undo<kbd>Z</kbd>';b.onclick=()=>{const f=UNDO;yc.toastHide();f&&f()};t.appendChild(b)}else t.textContent=msg;
-  t.style.display='block';clearTimeout(T);T=setTimeout(()=>{yc.toastHide()},ms||2600);return true};
- yc.toastHide=()=>{const t=toastEl();t.style.display='none';UNDO=null};
+  TON=true;TLEN=String(msg).length;let d=ms||2600;if(HINT)d=Math.min(d,capFor(TLEN));arm(d);paint();return true};
+ yc.toastHide=()=>{clearTimeout(T);TON=false;UNDO=null;paint()};
+ // hint: a string, or a function giving the current text (HTML), or null to clear. Showing it dismisses a plain
+ // status toast at once (the user just asked for the hint); an undo toast stays on top but is held to the cap.
+ yc.hint=src=>{const was=!!HINT;HINT=src||null;if(HINT&&!was&&TON){if(UNDO){const left=TEND-Date.now(),c=capFor(TLEN);if(left>c)arm(c)}else{clearTimeout(T);TON=false}}paint()};
  addEventListener('keydown',e=>{if(UNDO&&(e.key=='z'||e.key=='Z')&&!e.ctrlKey&&!e.metaKey&&!e.altKey&&!yc.typing(document.activeElement)){e.preventDefault();e.stopImmediatePropagation();const f=UNDO;yc.toastHide();f()}},true);
 
  // ---- popovers (replace prompt/confirm/alert) ----
@@ -69,6 +82,64 @@
  yc.busy=fn=>{let on=false;return async function(...a){if(on)return;on=true;try{return await fn.apply(this,a)}finally{on=false}}};
  // transients: things Esc closes before a page may act on Esc itself (register as {open:()=>bool, close:()=>void})
  const TR=[];yc.transient=t=>TR.push(t);yc.closeTransient=()=>{for(const t of TR){try{if(t.open()){t.close();return true}}catch(e){}}return false};
+
+ // ---- video controls (F): keys drive an embedded video through the YouTube API while the keyboard stays with the page.
+ //      Esc is the only way out. F or Enter = fullscreen, as inside YouTube itself. Tab hands the keyboard to YouTube's
+ //      own controls (Tab/Shift+Tab past them comes back). A mouse click into the video while controls are on hands the
+ //      keyboard straight back to the page, so W, F and Esc keep working.
+ //      o = {player:()=>YT.Player|null, box:()=>Element|null, frame:()=>HTMLIFrameElement|null,
+ //           keys:{w:{label:'Watch in Theater',run:p=>…}}, onReturn:()=>…}
+ let PM=null;
+ const KB=k=>'<kbd>'+k+'</kbd>';
+ yc.playerMode=o=>{
+  const st={on:false,yt:false};
+  const P=()=>o.player&&o.player(),box=()=>o.box&&o.box(),frame=()=>o.frame&&o.frame(),extra=o.keys||{};
+  const items=()=>[[KB('Space')+' '+KB('K'),'play / pause'],[KB('←')+KB('→'),'5 s'],[KB('J')+KB('L'),'10 s'],[KB('↑')+KB('↓'),'volume'],[KB('M'),'mute'],[KB('0')+'–'+KB('9'),'jump'],[KB('&lt;')+KB('&gt;'),'speed'],[KB('F'),'fullscreen'],
+   ...Object.keys(extra).map(k=>[KB(k.toUpperCase()),extra[k].label]),[KB('Tab'),'YouTube’s own controls'],[KB('Esc'),'done']];
+  const card=()=>st.on?'<b>Video controls on</b><div class=hk>'+items().map(x=>'<span>'+x[0]+' '+x[1]+'</span>').join('')+'</div>'
+   :st.yt?'<b>YouTube’s own controls have the keyboard</b><div>Tab or Shift+Tab past them, or click outside the video, to come back. '+KB('F')+' in there is YouTube’s fullscreen.</div>':null;
+  function mark(){document.querySelectorAll('.pmode').forEach(x=>x.classList.remove('pmode'));const b=box();if(st.on&&b)b.classList.add('pmode')}
+  function set(on){st.on=!!on;if(on)st.yt=false;mark();yc.hint(st.on||st.yt?card:null)}
+  st.set=set;
+  st.toYouTube=()=>{const fr=frame();if(!fr)return;st.on=false;st.yt=true;mark();yc.hint(card);fr.focus()};
+  st.back=()=>{if(!st.yt)return;st.yt=false;yc.hint(null);o.onReturn&&o.onReturn()};
+  // the iframe got focus: with controls on that was a mouse click, so the keyboard goes back to the page at once;
+  // otherwise (Tab into it, or a click with controls off) YouTube's keys apply and the hint says so
+  st.frameFocused=fr=>{if(st.on){try{fr.blur()}catch(e){}try{window.focus()}catch(e){}return}if(!st.yt){st.yt=true;yc.hint(card)}};
+  st.pageFocused=()=>{if(st.yt){const a=document.activeElement;if(!a||a.tagName!='IFRAME')st.back()}};
+  window.exitPlayerMode=()=>{if(st.on||st.yt){st.yt=false;set(false)}};window.__pmOn=()=>st.on;   // also when the player goes away
+  const flash=t=>yc.toast(t,1600);
+  const fs=()=>{try{if(document.fullscreenElement){document.exitFullscreen()}else{const fr=frame();if(fr&&fr.requestFullscreen){const r=fr.requestFullscreen();r&&r.catch&&r.catch(()=>{})}}}catch(e){}};
+  addEventListener('keydown',e=>{
+   if(e.ctrlKey||e.metaKey||e.altKey)return;
+   const p=P(),k=e.key,kl=k.toLowerCase(),a=document.activeElement;
+   if(!st.on){
+    if(kl=='f'&&!yc.typing(a)&&p&&p.getCurrentTime&&box()){e.preventDefault();e.stopImmediatePropagation();set(true)}
+    return}
+   if(yc.typing(a))return;
+   if(!p||!p.getCurrentTime||!box()){set(false);return}
+   const eat=()=>{e.preventDefault();e.stopImmediatePropagation()};
+   const seek=d=>{p.seekTo(Math.max(0,p.getCurrentTime()+d),true)};
+   const vol=d=>{const v=Math.max(0,Math.min(100,(p.getVolume?p.getVolume():100)+d));p.setVolume(v);if(v>0&&p.isMuted&&p.isMuted())p.unMute();flash('Volume '+v+'%')};
+   if(k=='Escape'){eat();set(false)}
+   else if(kl=='f'||k=='Enter'){eat();fs()}
+   else if(extra[kl]&&!e.shiftKey){eat();const x=extra[kl];set(false);x.run(p)}
+   else if(k==' '||kl=='k'){eat();p.getPlayerState()==1?p.pauseVideo():p.playVideo()}
+   else if(k=='ArrowLeft'){eat();seek(-5)}
+   else if(k=='ArrowRight'){eat();seek(5)}
+   else if(kl=='j'){eat();seek(-10)}
+   else if(kl=='l'){eat();seek(10)}
+   else if(k=='ArrowUp'){eat();vol(5)}
+   else if(k=='ArrowDown'){eat();vol(-5)}
+   else if(kl=='m'){eat();if(p.isMuted&&p.isMuted()){p.unMute();flash('Sound on')}else{p.mute();flash('Muted')}}
+   else if(/^[0-9]$/.test(k)){eat();const d=p.getDuration?p.getDuration():0;if(d)p.seekTo(d*(+k)/10,true)}
+   else if(k=='<'||k=='>'){eat();const r=(p.getAvailablePlaybackRates?p.getAvailablePlaybackRates():[0.25,0.5,0.75,1,1.25,1.5,1.75,2]),c=p.getPlaybackRate(),i=r.findIndex(x=>x>=c-1e-6);const n=r[Math.max(0,Math.min(r.length-1,(i<0?r.length-1:i)+(k=='>'?1:-1)))];p.setPlaybackRate(n);flash('Speed '+n+'×')}
+   else if(k=='Tab'){eat();st.toYouTube()}
+   else if(k=='Home'){eat();p.seekTo(0,true)}
+   else if(k=='End'){eat();const d=p.getDuration?p.getDuration():0;if(d)p.seekTo(Math.max(0,d-1),true)}
+   else if(!['Shift','Control','Alt','Meta','CapsLock'].includes(k)){eat();flash('Video controls are on: Esc finishes them, then the page keys work again')}
+  },true);
+  PM=st;return st};
 
  // ---- tag picker: prefix match on paths, create-if-missing, arrows, Enter picks only a visible choice, Esc = close list -> clear -> leave ----
  yc.tagPicker=(input,list,o)=>{let sel=0;const norm=q=>q.trim().replace(/\s*\/\s*/g,' / ').toLowerCase();

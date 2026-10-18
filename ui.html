@@ -43,7 +43,7 @@ header{flex:none;display:flex;align-items:center;gap:10px;height:52px;padding:0 
 #list{flex:1;min-height:0;overflow:auto;overscroll-behavior:contain;padding:4px 0 24px}
 .item{margin:0 10px}
 .row{display:grid;grid-template-columns:22px minmax(0,1fr) fit-content(40%);align-items:center;gap:12px;min-height:38px;padding:0 10px 0 12px;border-radius:var(--rs);border-bottom:1px solid var(--bd)}
-.row:hover{background:var(--hov)}
+.row{cursor:pointer}.row:hover{background:var(--hov)}
 .row a{color:var(--fg);font-weight:500;display:inline-block;max-width:100%;padding:2px 4px;margin:0 -4px;border-radius:4px;overflow:hidden;text-overflow:ellipsis;vertical-align:bottom}.row a:hover{text-decoration:none;color:var(--ac)}
 .row a:focus-visible{outline-offset:0}
 .t{min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;padding:2px 0}
@@ -77,12 +77,13 @@ header{flex:none;display:flex;align-items:center;gap:10px;height:52px;padding:0 
 <aside role=navigation aria-label="Library rail">
  <div class=brand><svg class=logo width=28 height=28 viewBox="0 0 32 32" role=img aria-label=YouCommander><rect width=32 height=32 rx=8 fill="var(--ac)"/><g fill=none stroke="var(--ac-fg)" stroke-width=2.6 stroke-linecap=round stroke-linejoin=round><polyline points="9,13 16,7.5 23,13"/><polyline points="9,20 16,14.5 23,20"/><line x1=12 y1=26 x2=20 y2=26 /></g></svg>YouCommander</div>
  <nav class=side>
-  <a class=si href="/triage" title="Step through every unsorted video, one at a time (T). Esc in Triage comes back here."><svg width=14 height=14 viewBox="0 0 16 16" fill=currentColor><path d="M4 2.5v11l9-5.5z"/></svg>Start triage<kbd>T</kbd></a>
+  <a class=si href="/triage" title="Step through every unsorted video, one at a time (T). Esc in Triage comes back here."><svg width=14 height=14 viewBox="0 0 16 16" fill=currentColor><path d="M4 2.5v11l9-5.5z"/></svg>Start Triage<kbd>T</kbd></a>
+  <a class=si href="/watch" id=railw title="Open the highlighted video on the Watch page, with notes, loop and the view as its queue (W). With two or more ticked, plays those in list order."><svg width=14 height=14 viewBox="0 0 16 16" fill=none stroke=currentColor stroke-width=1.6 stroke-linejoin=round><rect x="1.5" y="3" width="13" height="9" rx="1.6"/><path d="M6.7 5.6v3.8L9.9 7.5z" fill=currentColor stroke=none /><path d="M5 14.2h6" stroke-linecap=round /></svg>Watch in Theater<kbd>W</kbd></a>
   <a class=si href="/history" title="Everything you've opened or watched in the app (H)"><svg width=14 height=14 viewBox="0 0 16 16" fill=none stroke=currentColor stroke-width=1.7 stroke-linecap=round><circle cx="8" cy="8" r="6"/><path d="M8 4.5V8l2.5 1.5"/></svg>History<kbd>H</kbd></a>
  </nav>
- <div class=sec>Library</div><div class=tag id=all role=button title="Every video, in title order">All videos<small id=alln></small></div>
+ <div class=sec>Library</div><div class=tag id=all role=button title="Every video, in title order">All Videos<small id=alln></small></div>
  <div class=sec title="Views that find videos needing attention">Audits</div><div id=aud></div>
- <div class=sec>Playlists</div><div class=tag id=pl role=button title="Your playlists from YouTube: owner, visibility and size">Owners &amp; visibility<small id=pln></small></div>
+ <div class=sec>Playlists</div><div class=tag id=pl role=button title="Your playlists from YouTube: owner, visibility and size">Owners &amp; Visibility<small id=pln></small></div>
  <div class=sec id=tagsec>Tags <button id=addtag class=ghost aria-label="Create a tag" title="Create a tag">+</button></div><div id=tags></div>
  <div class=rfoot><a class=si href="/import" title="Add or refresh playlists from a Google Takeout"><svg width=14 height=14 viewBox="0 0 16 16" fill=none stroke=currentColor stroke-width=1.7 stroke-linecap=round stroke-linejoin=round><path d="M8 11V3M4.5 6.5 8 3l3.5 3.5M3 13h10"/></svg>Import from Takeout</a></div>
 </aside>
@@ -90,11 +91,11 @@ header{flex:none;display:flex;align-items:center;gap:10px;height:52px;padding:0 
  <header>
   <div class=search id=sw><svg width=15 height=15 viewBox="0 0 16 16" fill=none stroke=currentColor stroke-width=1.8 stroke-linecap=round><circle cx="7" cy="7" r="4.5"/><path d="m10.5 10.5 3 3"/></svg><input type=search id=s placeholder="Search titles, channels, tags, notes, transcripts" autocomplete=off aria-label="Search"><button class=clr id=sclr aria-label="Clear search" title="Clear (Esc)">✕</button><kbd>/</kbd></div>
   <span id=info></span>
-  <button id=bsa class="ghost sm" title="Tick every video in the current view, not just the ones loaded">Select all</button>
-  <button id=bun class="ghost sm" title="Undo the last bulk change">Undo last bulk</button>
+  <button id=bsa class="ghost sm" title="Tick every video in the current view, not just the ones loaded">Select All</button>
+  <button id=bun class="ghost sm" title="Undo the last bulk change">Undo Last Bulk</button>
   <button class="ghost help" data-help title="Keyboard shortcuts (?)">?</button>
  </header>
- <div id=bulk><b id=bn></b><span id=btlab class=mut>Tag</span><span class=tagwrap><input id=bt placeholder="tag, or a new path to create" aria-label="Tag to add or remove" autocomplete=off><div id=bsugg class=sugg style="display:none"></div></span><button id=bad title="Add the chosen tag to the ticked videos">Add</button><button id=brm title="Remove the chosen tag from the ticked videos">Remove</button><button id=btx title="Fetch captions as text for the ticked videos, one at a time in the background. Skips videos that already have a transcript or no captions.">Get transcripts</button><button id=btg style="display:none" title="Open all ticked videos on one Triage page (T)">Triage together<kbd>T</kbd></button><span class=sp></span><button class=bad id=btr title="Tag the ticked videos Trash (never published)">Trash</button><button id=bcl class=ghost title="Untick everything">Clear</button></div>
+ <div id=bulk><b id=bn></b><span id=btlab class=mut>Tag</span><span class=tagwrap><input id=bt placeholder="tag, or a new path to create" aria-label="Tag to add or remove" autocomplete=off><div id=bsugg class=sugg style="display:none"></div></span><button id=bad title="Add the chosen tag to the ticked videos">Add</button><button id=brm title="Remove the chosen tag from the ticked videos">Remove</button><button id=btx title="Fetch captions as text for the ticked videos, one at a time in the background. Skips videos that already have a transcript or no captions.">Get Transcripts</button><button id=btg style="display:none" title="Open all ticked videos on one Triage page (T)">Triage Together<kbd>T</kbd></button><span class=sp></span><button class=bad id=btr title="Tag the ticked videos Trash (never published)">Trash</button><button id=bcl class=ghost title="Untick everything">Clear</button></div>
  <h1 id=vt class=vt aria-live=polite></h1>
  <div id=list role=listbox aria-label="Videos"></div>
  <div id=fhint></div><div id=ed></div>
@@ -105,13 +106,13 @@ header{flex:none;display:flex;align-items:center;gap:10px;height:52px;padding:0 
   <div><h3>List</h3><dl>
    <dt><kbd>↑</kbd><kbd>↓</kbd></dt><dd>move</dd><dt><kbd>PgUp</kbd><kbd>PgDn</kbd></dt><dd>move a page</dd><dt><kbd>Home</kbd><kbd>End</kbd></dt><dd>first, last</dd>
    <dt><kbd>Enter</kbd></dt><dd>tick or untick</dd><dt><kbd>Shift</kbd>+<kbd>↑</kbd><kbd>↓</kbd></dt><dd>tick a range (tap or hold)</dd>
-   <dt><kbd>Space</kbd></dt><dd>play here</dd><dt><kbd>/</kbd></dt><dd>search</dd><dt><kbd>Esc</kbd></dt><dd>close video, then clear filters</dd><dt><kbd>Z</kbd></dt><dd>undo while an undo toast is showing</dd></dl></div>
+   <dt><kbd>Space</kbd></dt><dd>play here</dd><dt><kbd>/</kbd></dt><dd>search</dd><dt><kbd>Esc</kbd></dt><dd>close video, then clear filters</dd><dt><kbd>Z</kbd></dt><dd>undo while an undo toast is showing</dd><dt>click</dt><dd>a row’s empty space ticks or unticks it</dd></dl></div>
   <div><h3>Tags rail</h3><dl>
    <dt><kbd>←</kbd></dt><dd>into the rail (library, audits, playlists, tags)</dd><dt><kbd>→</kbd></dt><dd>back to the videos</dd><dt><kbd>Enter</kbd></dt><dd>open that view</dd><dt><kbd>Shift</kbd>+<kbd>Tab</kbd></dt><dd>also enters the rail, from the list</dd><dt>double-click</dt><dd>rename a tag (or edit its name in the sheet below)</dd></dl></div>
   <div><h3>Open video</h3><dl>
-   <dt><kbd>F</kbd></dt><dd>video controls on, then Space, arrows, J L, M, 0–9, &lt; &gt;</dd><dt><kbd>K</kbd></dt><dd>play, pause</dd><dt><kbd>J</kbd><kbd>L</kbd></dt><dd>−10s, +10s</dd><dt><kbd>M</kbd></dt><dd>sound</dd><dt><kbd>E</kbd></dt><dd>triage this video</dd></dl></div>
+   <dt><kbd>F</kbd></dt><dd>video controls on: Space, arrows, J L, M, 0–9, &lt; &gt;; then F is fullscreen, W Watch in Theater, Esc turns them off</dd><dt><kbd>K</kbd></dt><dd>play, pause</dd><dt><kbd>J</kbd><kbd>L</kbd></dt><dd>−10s, +10s</dd><dt><kbd>M</kbd></dt><dd>sound</dd><dt><kbd>E</kbd></dt><dd>triage this video</dd></dl></div>
   <div><h3>Pages</h3><dl>
-   <dt><kbd>T</kbd></dt><dd>Triage (all ticked videos together if 2+)</dd><dt><kbd>W</kbd></dt><dd>Watch page (all ticked in list order if 2+)</dd><dt><kbd>H</kbd></dt><dd>History</dd></dl></div>
+   <dt><kbd>T</kbd></dt><dd>Triage (all ticked videos together if 2+)</dd><dt><kbd>W</kbd></dt><dd>Watch in Theater (all ticked in list order if 2+)</dd><dt><kbd>H</kbd></dt><dd>History</dd></dl></div>
  </div>
 </div></div>
 <script src="/static/app.js"></script>
@@ -119,13 +120,13 @@ header{flex:none;display:flex;align-items:center;gap:10px;height:52px;padding:0 
 <script>
 var PLAYER=null,MUTED=(()=>{try{return localStorage.getItem('muted')==='1'}catch(e){return false}})();
 function destroyPlayer(){try{window.exitPlayerMode&&window.exitPlayerMode()}catch(e){}try{PLAYER&&PLAYER.destroy()}catch(e){}PLAYER=null}
-function muteLabel(){return MUTED?'Muted <kbd>M</kbd>':'Sound on <kbd>M</kbd>'}
+function muteLabel(){return MUTED?'Muted <kbd>M</kbd>':'Sound On <kbd>M</kbd>'}
 function setMuted(m){MUTED=m;try{localStorage.setItem('muted',m?'1':'0')}catch(e){}if(PLAYER&&PLAYER.mute){m?PLAYER.mute():PLAYER.unMute()}document.querySelectorAll('.mbtn').forEach(b=>b.innerHTML=muteLabel())}
 function logOpen(id,src){try{fetch('/api/watch/'+id+'/open',{method:'POST',headers:{'content-type':'application/json'},body:JSON.stringify({source:src})})}catch(e){}}
 function startPlayer(id){logOpen(id,'commander');destroyPlayer();const mk=()=>{PLAYER=new YT.Player('pl_'+id,{host:'https://www.youtube-nocookie.com',videoId:id,playerVars:{autoplay:1,mute:MUTED?1:0,rel:0,playsinline:1},events:{onReady:e=>{MUTED?e.target.mute():e.target.unMute();e.target.playVideo()}}})};if(window.YT&&YT.Player)mk();else{const t=setInterval(()=>{if(window.YT&&YT.Player){clearInterval(t);mk()}},200)}}
 let TAGS=[],SM={},cur={},J=async(u,o)=>(await fetch(u,o)).json();
 const esc=s=>(s||'').replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
-const AL={recent_adds:'Recent adds',duplicates:'In several playlists',unavailable:'Unavailable',untagged_inbox:'Watch later, not yet sorted'};
+const AL={recent_adds:'Recent Adds',duplicates:'In Several Playlists',unavailable:'Unavailable',untagged_inbox:'Watch Later, Not Yet Sorted'};
 const AT={recent_adds:'The 200 most recently added videos',duplicates:'Videos that sit in more than one playlist',unavailable:'Private, removed or otherwise unplayable videos',untagged_inbox:'Still in Watch later and not tagged yet'};
 const PAGE=200;
 const say=(m,ms)=>yc.toast(m,ms);
@@ -139,7 +140,7 @@ function viewTitle(shown,more){let t,n;
  if(s.value){const tg=cur.tag&&TAGS.find(x=>x.id==cur.tag);t='Search “'+s.value+'”'+(tg?' in '+pathOf(tg):' in all videos');n=(more?shown+'+':shown)+' shown'}
  else if(cur.tag){const tg=TAGS.find(x=>x.id==cur.tag);t=tg?pathOf(tg):'Tag';n=(tg?tg.n:shown)+' videos'}
  else if(cur.audit){t=AL[cur.audit];n=(SM[cur.audit]??shown)+' videos'}
- else{t='All videos';n=(SM.videos??shown)+' videos'}
+ else{t='All Videos';n=(SM.videos??shown)+' videos'}
  const crumb=s.value?'':cur.tag?'Tags':cur.audit?'Audits':'Library';vt.innerHTML=(crumb?`<span class=crumb>${crumb} / </span>`:'')+`${esc(t)}<small>${esc(n)}</small>`;info.textContent=shown+' shown'}
 async function init(){SM=await J('/api/summary');if(!SM.videos){location.href='/import';return}
  alln.textContent=SM.videos;pln.textContent=SM.playlists??'';
@@ -147,6 +148,7 @@ async function init(){SM=await J('/api/summary');if(!SM.videos){location.href='/
  aud.onclick=e=>{const d=e.target.closest('[data-a]');if(d){setView({audit:d.dataset.a});load()}};
  TAGS=await J('/api/tags');drawTags();}
 all.onclick=()=>{setView({});load()};
+railw.onclick=e=>{if(e.ctrlKey||e.metaKey||e.shiftKey||e.button)return;e.preventDefault();watchNow()};
 function drawTags(){const kids={};TAGS.forEach(t=>(kids[t.parent_id||0]=kids[t.parent_id||0]||[]).push(t));
  const f=(p,d)=>(kids[p]||[]).map(t=>`<div class="tag${cur.tag==t.id?' on':''}" role=button style="padding-left:${10+d*14}px" data-t=${t.id} title="${t.publish?'Published as a playlist. ':''}Double-click to rename">${esc(t.name)}${t.publish?' ↗':''}<small>${t.n}</small></div>`+f(t.id,d+1)).join('');
  tags.innerHTML=f(0,0)}
@@ -169,8 +171,8 @@ function edit(id){const t=TAGS.find(x=>x.id==id);if(!t)return;ed.style.display='
 var CUR=-1,ANCH=-1;let OFF=0;
 async function load(more){bsa.style.display='';if(!more){OFF=0;CUR=-1;ANCH=-1;RUN=null}const p=new URLSearchParams();p.set('offset',OFF);p.set('limit',PAGE+1);if(cur.tag)p.set('tag',cur.tag);if(cur.audit)p.set('audit',cur.audit);if(s.value)p.set('search',s.value);
  const r0=await J('/api/videos?'+p);const hasMore=r0.length>PAGE,r=r0.slice(0,PAGE);OFF+=r.length;viewTitle(OFF,hasMore);
- const h=r.map((v,k)=>`<div class=item id="it_${OFF-r.length+k}" role=option data-v="${v.video_id}"><div class=row><input type=checkbox class=sel data-v="${v.video_id}" aria-label="Tick ${esc((v.title||v.video_id).slice(0,60))}"${SEL.has(v.video_id)?' checked':''}><span class=t><a target=_blank href="https://youtu.be/${v.video_id}" title="${esc(v.title||'')}">${v.title?esc(v.title):'<i>(unavailable or private) '+v.video_id+'</i>'}</a></span><span class=tg>${v.tags?v.tags.split(', ').map(x=>'<span class=pill>'+esc(x)+'</span>').join(''):esc(v.added||v.title_source||'')}</span></div><div class=acc></div></div>`).join('')+(hasMore?'<div class=loadmore><button id=more>Load '+PAGE+' more</button></div>':'');
- if(more){list.querySelector('#more')?.parentElement.remove();list.insertAdjacentHTML('beforeend',h)}else list.innerHTML=h||'<div class=empty><b>Nothing here</b>'+(s.value?'No video, channel, tag or transcript matches “'+esc(s.value)+'”'+(cur.tag?' inside this tag.':'.')+'<div class=acts>'+(cur.tag?'<button id=sall>Search all videos instead</button>':'')+'<button class=ghost id=sclr2>Clear search<kbd>Esc</kbd></button></div>':'No videos in this view yet.')+'</div>';
+ const h=r.map((v,k)=>`<div class=item id="it_${OFF-r.length+k}" role=option data-v="${v.video_id}"><div class=row><input type=checkbox class=sel data-v="${v.video_id}" aria-label="Tick ${esc((v.title||v.video_id).slice(0,60))}"${SEL.has(v.video_id)?' checked':''}><span class=t><a target=_blank href="https://youtu.be/${v.video_id}" title="${esc(v.title||'')}">${v.title?esc(v.title):'<i>(unavailable or private) '+v.video_id+'</i>'}</a></span><span class=tg>${v.tags?v.tags.split(', ').map(x=>'<span class=pill>'+esc(x)+'</span>').join(''):esc(v.added||v.title_source||'')}</span></div><div class=acc></div></div>`).join('')+(hasMore?'<div class=loadmore><button id=more>Load '+PAGE+' More</button></div>':'');
+ if(more){list.querySelector('#more')?.parentElement.remove();list.insertAdjacentHTML('beforeend',h)}else list.innerHTML=h||'<div class=empty><b>Nothing here</b>'+(s.value?'No video, channel, tag or transcript matches “'+esc(s.value)+'”'+(cur.tag?' inside this tag.':'.')+'<div class=acts>'+(cur.tag?'<button id=sall>Search All Videos Instead</button>':'')+'<button class=ghost id=sclr2>Clear Search<kbd>Esc</kbd></button></div>':'No videos in this view yet.')+'</div>';
  const sa=document.getElementById('sall');if(sa)sa.onclick=()=>{setView({search:true});load()};const sc=document.getElementById('sclr2');if(sc)sc.onclick=()=>{s.value='';s.oninput()};
  const m=document.getElementById('more');if(m)m.onclick=()=>{const at=rows().length;load(true).then(()=>{setCur(at)})}
  restoreOnce()}
@@ -181,7 +183,7 @@ list.addEventListener('click',async e=>{const a=e.target.closest('.row a');if(!a
  acc.innerHTML=`<span class="pwret b4"></span><div class="pw stage"><div id="pl_${id}"></div></div><span class=pwret><kbd>F</kbd> video controls</span><div class=meta id=m${id}>Loading…</div>`;acc.querySelectorAll('.pwret').forEach(x=>yc.sentinel(x,retList));startPlayer(id);
  it.scrollIntoView({block:'nearest'});
  const v=await J('/api/video/'+id);const m=acc.querySelector('.meta');if(!m)return;m.dataset.v=id;
- m.innerHTML=`<span style="color:var(--fg)">${esc(v.channel||'')}</span><span class=tags>${v.tags.map(t=>`<span class="chip${t.confirmed?'':' s'}" style="margin:0" title="${t.confirmed?'':'Suggested from a playlist; not confirmed yet'}">${esc(t.name)}</span>`).join('')||'<span>no tags</span>'}</span><span title="Playlists this video is in">in ${v.playlists.map(p=>esc(p.title)).join(', ')}</span><span class=acts><button class="wbtn sm" title="Open on the Watch page with notes, loop and queue (W)">Watch page<kbd>W</kbd></button><a class=btn target=_blank href="https://youtu.be/${id}" title="Some owners block embedding; it always plays on YouTube">Open on YouTube</a><button class="mbtn sm ghost" title="Sound on/off (M)">${muteLabel()}</button><button class="tbtn sm" id=tb${id} title="Triage only this video (E)">Triage this video<kbd>E</kbd></button></span>`});
+ m.innerHTML=`<span style="color:var(--fg)">${esc(v.channel||'')}</span><span class=tags>${v.tags.map(t=>`<span class="chip${t.confirmed?'':' s'}" style="margin:0" title="${t.confirmed?'':'Suggested from a playlist; not confirmed yet'}">${esc(t.name)}</span>`).join('')||'<span>no tags</span>'}</span><span title="Playlists this video is in">in ${v.playlists.map(p=>esc(p.title)).join(', ')}</span><span class=acts><button class="wbtn sm" title="Open on the Watch page with notes, loop and queue, carrying on from this moment (W)">Watch in Theater<kbd>W</kbd></button><a class=btn target=_blank href="https://youtu.be/${id}" title="Some owners block embedding; it always plays on YouTube">Open on YouTube</a><button class="mbtn sm ghost" title="Sound on/off (M)">${muteLabel()}</button><button class="tbtn sm" id=tb${id} title="Triage only this video (E)">Triage This Video<kbd>E</kbd></button></span>`});
 let to;s.oninput=()=>{clearTimeout(to);sw.classList.toggle('has',!!s.value);to=setTimeout(()=>{LASTQ=s.value;if(s.value){cur.audit=null;setView({...cur,search:true})}else setView(cur);load()},250)};
 sclr.onclick=()=>{s.value='';s.oninput();s.focus()};
 const typing=el=>yc.typing(el);
@@ -215,18 +217,30 @@ addEventListener('keydown',e=>{const a=document.activeElement;
  if(k.toLowerCase()=='w'){e.preventDefault();watchNow();return}
  if(k.toLowerCase()=='h'){e.preventDefault();location.href='/history';return}
  if(k=='Escape'){if(yc.escapeControl(e))return;if(document.querySelector('.item.open')){closeOpen()}else resetFilters()}});
+// a click on a row's empty space ticks or unticks it: a large target for anyone who finds the small checkbox hard to hit.
+// The title link still opens the video; a double-click (or a tremor's second click) counts once; no text gets selected.
+list.addEventListener('mousedown',e=>{const row=e.target.closest('.row');if(row&&!e.target.closest('a,input,button')&&(e.detail>1||e.shiftKey))e.preventDefault()});
+list.addEventListener('click',e=>{const row=e.target.closest('.row');if(!row||e.button||e.ctrlKey||e.metaKey||e.target.closest('a,input,button,label'))return;if(e.detail>1)return;
+ const g=getSelection();if(g&&!g.isCollapsed&&row.contains(g.anchorNode))return;
+ const it=row.closest('.item'),cb=row.querySelector('.sel');if(!it||!cb)return;cb.checked=!cb.checked;cb.checked?SEL.add(cb.dataset.v):SEL.delete(cb.dataset.v);RUN=null;
+ const r=rows(),i=r.indexOf(it);if(i>=0&&i!=CUR){r.forEach(x=>x.classList.remove('cur'));CUR=i;ANCH=i;it.classList.add('cur');list.setAttribute('aria-activedescendant',it.id)}bulkUI()});
 list.addEventListener('click',e=>{if(e.target.closest('.mbtn')){setMuted(!MUTED);return}if(e.target.closest('.wbtn')){watchNow();return}const b=e.target.closest('.tbtn');if(b)window.open('/triage?v='+b.closest('.item').dataset.v,'_blank')});
 
 const SEL=new Set();
 const selInOrder=()=>{const seen=new Set(),out=[];rows().forEach(x=>{const v=x.dataset.v;if(SEL.has(v)){out.push(v);seen.add(v)}});SEL.forEach(v=>{if(!seen.has(v))out.push(v)});return out};
 const pathOf=t=>{const m=Object.fromEntries(TAGS.map(x=>[x.id,x])),p=[];let x=t,n=0;while(x&&n++<10){p.unshift(x.name);x=x.parent_id?m[x.parent_id]:null}return p.join(' / ')};
 let HASU=false;
-function watchNow(){const r=rows(),it=document.querySelector('.item.open')||r[CUR]||r[0];let ids,v;
+// W / "Watch in Theater": 2+ ticked play in list order; otherwise the open (or highlighted, or first) video, with the view as its queue.
+// t = where the open video is now, so the Watch page carries on from that moment.
+function watchNow(t){const r=rows(),op=document.querySelector('.item.open'),it=op||r[CUR]||r[0];let ids,v;
+ if(t==null&&op&&PLAYER&&PLAYER.getCurrentTime)t=PLAYER.getCurrentTime();
  if(!it&&SEL.size<2){say('Nothing to watch here: move onto a video first');return}
- if(SEL.size>=2){ids=selInOrder().slice(0,300);v=ids[0]}else if(it){v=it.dataset.v;if(cur.tag&&!s.value&&!cur.audit){saveState();location.href='/watch?v='+v+'&tag='+cur.tag;return}ids=r.map(x=>x.dataset.v).slice(0,500)}else return;
- try{localStorage.setItem('watchIds',JSON.stringify(ids))}catch(e){}saveState();location.href='/watch?q=1&v='+v}
+ if(SEL.size>=2){ids=selInOrder().slice(0,300);v=ids[0]}else if(it){v=it.dataset.v;ids=r.map(x=>x.dataset.v).slice(0,500)}else return;
+ const at=(op&&op.dataset.v==v&&t>3)?'&t='+Math.floor(t):'';
+ if(SEL.size<2&&cur.tag&&!s.value&&!cur.audit){saveState();location.href='/watch?v='+v+'&tag='+cur.tag+at;return}
+ try{localStorage.setItem('watchIds',JSON.stringify(ids))}catch(e){}saveState();location.href='/watch?q=1&v='+v+at}
 function startTriage(){if(SEL.size>=2){const ids=selInOrder().slice(0,300);try{localStorage.setItem('batchIds',JSON.stringify(ids))}catch(e){}saveState();location.href='/triage?batch=1'+(ids.join(',').length<1500?'&ids='+ids.join(','):'')}else{saveState();location.href='/triage'}}
-function bulkUI(){const inView=rows().filter(x=>SEL.has(x.dataset.v)).length;bn.textContent=SEL.size+' selected'+(SEL.size&&inView<SEL.size?' · '+inView+' in view':'');bn.title=SEL.size&&inView<SEL.size?'Ticks stay while you change views; bulk actions apply to all '+SEL.size:'';bulk.classList.toggle('on',SEL.size>0);[bcl,btlab,bt,bad,brm,btr,btx].forEach(x=>x.style.display=SEL.size?'':'none');btg.style.display=SEL.size>=2?'':'none';btg.innerHTML='Triage these '+Math.min(SEL.size,300)+' together<kbd>T</kbd>';bun.style.display=HASU?'':'none'}
+function bulkUI(){const inView=rows().filter(x=>SEL.has(x.dataset.v)).length;bn.textContent=SEL.size+' selected'+(SEL.size&&inView<SEL.size?' · '+inView+' in view':'');bn.title=SEL.size&&inView<SEL.size?'Ticks stay while you change views; bulk actions apply to all '+SEL.size:'';bulk.classList.toggle('on',SEL.size>0);[bcl,btlab,bt,bad,brm,btr,btx].forEach(x=>x.style.display=SEL.size?'':'none');btg.style.display=SEL.size>=2?'':'none';btg.innerHTML='Triage These '+Math.min(SEL.size,300)+' Together<kbd>T</kbd>';bun.style.display=HASU?'':'none'}
 list.addEventListener('change',e=>{if(!e.target.classList.contains('sel'))return;e.target.checked?SEL.add(e.target.dataset.v):SEL.delete(e.target.dataset.v);bulkUI()});
 btg.onclick=startTriage;
 btx.onclick=async()=>{const r=await P('/api/transcripts/queue',{ids:[...SEL]});if(r.error){say(r.error,5000);return}say(r.queued?'Getting captions for '+r.queued+' video'+(r.queued==1?'':'s')+' in the background'+(r.skipped?' ('+r.skipped+' already done)':''):'Nothing to do: those videos already have a transcript or were checked.',4000);txPoll()};
@@ -241,7 +255,7 @@ function chosenTag(){if(BTAG&&pathOf(BTAG)==bt.value.trim())return BTAG;const q=
 const plural=(n,w)=>n+' '+w+(n==1?'':'s');
 async function runBulk(action,tag,anchor){const ids=[...SEL];if(!ids.length)return;
  const label=action=='trash'?'Tag '+plural(ids.length,'video')+' Trash?':action=='add'?'Add “'+pathOf(tag)+'” to '+plural(ids.length,'video')+'?':'Remove “'+pathOf(tag)+'” from '+plural(ids.length,'video')+'?';
- if(!await yc.confirm({anchor,message:label+(action!='remove'?' Videos still in Watch later leave it.':'')+' You can undo the last bulk change.',ok:action=='trash'?'Trash':action=='add'?'Add tag':'Remove tag',danger:action=='trash'}))return;
+ if(!await yc.confirm({anchor,message:label+(action!='remove'?' Videos still in Watch later leave it.':'')+' You can undo the last bulk change.',ok:action=='trash'?'Trash':action=='add'?'Add Tag':'Remove Tag',danger:action=='trash'}))return;
  const r=await P('/api/bulk',{video_ids:ids,action,tag_id:tag?tag.id:null});HASU=(r.changed||0)>0;SEL.clear();bt.value='';TAGS=await J('/api/tags');SM=await J('/api/summary');drawTags();bulkUI();await load();
  const what=action=='trash'?'Tagged Trash':action=='add'?'Added “'+pathOf(tag)+'” to':'Removed “'+pathOf(tag)+'” from';if(r.changed)yc.toast(what+' '+plural(r.changed,'video')+(action!='remove'?'; they leave Watch later.':'.'),7000,{undo:()=>bun.onclick()});else say('Nothing changed: those videos were already that way.',4000)}
 bad.onclick=()=>{const t=chosenTag();if(!t){say('Type a tag and pick it from the list (or “Create tag”) first.');bt.focus();return}runBulk('add',t,bad)};
@@ -275,7 +289,7 @@ function restoreOnce(){const p=PENDING;if(!p)return;PENDING=null;if(p.CUR>=0){co
   if(!NAV){
    const plain=!e.ctrlKey&&!e.metaKey&&!e.altKey&&!e.shiftKey;
    const atRest=!a||a===document.body||a===s;
-   if((e.key=='Tab'&&e.shiftKey&&!e.ctrlKey&&!e.metaKey&&!e.altKey&&atRest)||(e.key=='ArrowLeft'&&plain&&!typing(a)&&!yc.popOpen()&&(!yc.isControl(a)||(a.tagName=='INPUT'&&a.type=='checkbox'))&&!(window.__pmOn&&window.__pmOn()))){
+   if((e.key=='Tab'&&e.shiftKey&&!e.ctrlKey&&!e.metaKey&&!e.altKey&&atRest&&!(window.__pmOn&&window.__pmOn()))||(e.key=='ArrowLeft'&&plain&&!typing(a)&&!yc.popOpen()&&(!yc.isControl(a)||(a.tagName=='INPUT'&&a.type=='checkbox'))&&!(window.__pmOn&&window.__pmOn()))){
     if(!items().length)return;
     e.preventDefault();e.stopImmediatePropagation();enter()}
    return}
@@ -307,53 +321,10 @@ s.addEventListener('keydown',e=>{if(e.key=='ArrowDown'||e.key=='Enter'){e.preven
  if(e.key!='Escape')return;e.preventDefault();e.stopPropagation();if(s.value){s.value='';s.oninput()}else s.blur()});
 let LASTQ='';
 
-// ---- F: move keyboard focus into the embedded player (native controls); Tab / Shift+Tab past its controls returns here ----
-function retList(){const f=document.getElementById('fhint');if(f)f.style.display='none';window.onPlayerReturn&&window.onPlayerReturn()}
-function focusPlayer(sel){const fr=document.querySelector(sel);if(!fr)return false;fr.focus();const f=document.getElementById('fhint');if(f){f.textContent='Video focused: use its native controls. Tab or Shift+Tab past the first/last control to come back. (F inside the player is YouTube\u2019s fullscreen.)';f.style.display='block'}return true}
-addEventListener('focus',()=>{const f=document.getElementById('fhint');if(f)f.style.display='none'});
+// ---- video controls (F), shared with Triage: see yc.playerMode in app.js. W hands the open video to the Watch page at the same moment.
 window.onPlayerReturn=()=>{const it=document.querySelector('.item.open');if(it){const r=rows();rows().forEach(x=>x.classList.remove('cur'));const i=r.indexOf(it);if(i>=0){CUR=i;ANCH=i;it.classList.add('cur')}}};
-window.__getPlayer=()=>PLAYER;window.__pmBox='.item.open .pw';window.__pmFrame='.item.open iframe';
-// ---- Player mode (F): keys control the embedded video through the YouTube API while keyboard focus stays on this page,
-//      so F (or Esc) can toggle it back. Tab hands focus to YouTube's own controls (Tab/Shift+Tab past them returns). ----
-(function(){
- let ON=false;
- const P=()=>window.__getPlayer&&window.__getPlayer();
- const box=()=>document.querySelector(window.__pmBox);
- const hint=document.getElementById('fhint');
- const typingEl=el=>el&&(el.tagName=='TEXTAREA'||el.tagName=='SELECT'||(el.tagName=='INPUT'&&el.type!='checkbox'));
- const say=t=>{hint.textContent=t;hint.style.display='block'};
- function set(on){ON=on;const b=box();document.querySelectorAll('.pmode').forEach(x=>x.classList.remove('pmode'));
-  if(on&&b){b.classList.add('pmode');say('Video controls ON — Space/K play·pause, ←/→ 5s, J/L 10s, ↑/↓ volume, M mute, 0–9 jump, < > speed, Enter fullscreen, Tab = YouTube’s own controls, F or Esc = done')}
-  else{ON=false;hint.style.display='none'}}
- window.exitPlayerMode=()=>{if(ON)set(false)};window.__pmOn=()=>ON;
- const flash=t=>{if(ON)say(t)};
- addEventListener('keydown',e=>{
-  if(e.ctrlKey||e.metaKey||e.altKey)return;
-  const p=P(),k=e.key,kl=k.toLowerCase();
-  if(!ON){
-   if(kl=='f'&&!typingEl(document.activeElement)&&p&&p.getCurrentTime&&box()){e.preventDefault();e.stopImmediatePropagation();set(true)}
-   return}
-  if(typingEl(document.activeElement)){return}
-  if(!p||!p.getCurrentTime||!box()){set(false);return}
-  const eat=()=>{e.preventDefault();e.stopImmediatePropagation()};
-  const seek=d=>{p.seekTo(Math.max(0,p.getCurrentTime()+d),true)};
-  const vol=d=>{const v=Math.max(0,Math.min(100,(p.getVolume?p.getVolume():100)+d));p.setVolume(v);if(v>0&&p.isMuted&&p.isMuted())p.unMute();flash('Volume '+v+'%')};
-  if(kl=='f'||k=='Escape'){eat();set(false)}
-  else if(k==' '||kl=='k'){eat();p.getPlayerState()==1?p.pauseVideo():p.playVideo()}
-  else if(k=='ArrowLeft'){eat();seek(-5)}
-  else if(k=='ArrowRight'){eat();seek(5)}
-  else if(kl=='j'){eat();seek(-10)}
-  else if(kl=='l'){eat();seek(10)}
-  else if(k=='ArrowUp'){eat();vol(5)}
-  else if(k=='ArrowDown'){eat();vol(-5)}
-  else if(kl=='m'){eat();if(p.isMuted&&p.isMuted()){p.unMute();flash('Sound on')}else{p.mute();flash('Muted')}}
-  else if(/^[0-9]$/.test(k)){eat();const d=p.getDuration?p.getDuration():0;if(d)p.seekTo(d*(+k)/10,true)}
-  else if(k=='<'||k=='>'){eat();const r=(p.getAvailablePlaybackRates?p.getAvailablePlaybackRates():[0.25,0.5,0.75,1,1.25,1.5,1.75,2]),c=p.getPlaybackRate(),i=r.findIndex(x=>x>=c-1e-6);const n=r[Math.max(0,Math.min(r.length-1,(i<0?r.length-1:i)+(k=='>'?1:-1)))];p.setPlaybackRate(n);flash('Speed '+n+'×')}
-  else if(k=='Enter'){eat();const fr=document.querySelector(window.__pmFrame);if(fr&&fr.requestFullscreen)fr.requestFullscreen()}
-  else if(k=='Tab'){eat();set(false);focusPlayer(window.__pmFrame)}
-  else if(k=='Home'){eat();p.seekTo(0,true)}
-  else if(k=='End'){eat();const d=p.getDuration?p.getDuration():0;if(d)p.seekTo(Math.max(0,d-1),true)}
-  else if(!['Shift','Control','Alt','Meta','CapsLock'].includes(k)){eat();flash('Video controls are on: F or Esc finishes, then the page keys work again')}
- },true);
-})();
+window.__getPlayer=()=>PLAYER;
+const PMC=yc.playerMode({player:()=>PLAYER,box:()=>document.querySelector('.item.open .pw'),frame:()=>document.querySelector('.item.open iframe'),
+ keys:{w:{label:'Watch in Theater',run:p=>watchNow(p&&p.getCurrentTime?p.getCurrentTime():0)}},onReturn:()=>window.onPlayerReturn()});
+function retList(){if(PMC.yt)PMC.back();else window.onPlayerReturn()}
 </script>

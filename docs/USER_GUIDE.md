@@ -11,20 +11,21 @@ Start the app, open **Import**, and choose the zip (or a folder). Re-importing i
 
 ## 3. Commander (main page)
 - `/` focuses search. Search covers titles, channels, tags, notes and transcripts.
-- Arrow keys move through results; `Enter` ticks a row; `Space` previews it.
+- Arrow keys move through results; `Enter` ticks a row; `Space` previews it. Clicking the empty part of a row also ticks or unticks it, a larger target than the checkbox.
+- In a preview, `F` turns on video controls (the keys are listed in a card at the bottom right); `Esc` turns them off.
 - Tags are hierarchical: `cooking/baking/bread`. Pick from the autocomplete or type a new path.
 - Select several rows and press `T` to start a **batch triage**.
 
 ## 4. Triage
-Step through videos with Confirm (`Enter`), Skip (`S`/→) or Drop (`X`). `T` focuses the tag box, `N` the note box, `M` / `G` jump to related actions. Bulk changes on the Commander page can be undone with **Undo last bulk**; a Drop in Triage is reversed by pressing `←` Back on it.
+Step through videos with Confirm (`Enter`), Skip (`S`/→) or Drop (`X`). `T` focuses the tag box, `N` the note box, `M` / `G` jump to related actions. Bulk changes on the Commander page can be undone with **Undo Last Bulk**; a Drop in Triage is reversed by pressing `←` Back on it.
 
 Batch triage shows the selected videos as accordions with per-video tags, a bulk tag box and *Confirm* / *Drop All*. Use ↑/↓ to highlight a video, `Space` to preview, `R` to remove it from the batch, `Enter` to fold it, `Esc` or ← to return, and `F` to focus the player.
 
 ## 5. Watch page
-Open a video with `W` from Commander or the Watch button. Features:
+Open a video with **Watch in Theater** (`W`) from the Commander rail, a preview, or Triage. From a playing preview it carries on from the same moment, and `Esc` takes you back. Features:
 - Resume where you left off; speed (`<` / `>`); A–B loop (`[`, `]`, `\`).
 - **Queue** built from a tag, a list of IDs or your history. Drag items, or focus the queue with `Q` and use `Alt+↑/↓`. `PgDn`/`PgUp` go to next/previous.
-- **Copy As YouTube Queue** copies a `watch_videos` link so the same list can be opened on YouTube itself.
+- **Copy as YouTube Queue** copies a `watch_videos` link so the same list can be opened on YouTube itself.
 - Videos that cannot be embedded show a fallback.
 
 ## 6. Notes
@@ -39,7 +40,7 @@ Open a video with `W` from Commander or the Watch button. Features:
 - `install_transcripts.bat` (or `pip install -U yt-dlp`) keeps the caption fetcher current.
 
 ## 8. History
-`H` opens History: everything opened or watched in the app, with filters, *Continue Watching*, and *Watch These In Order*.
+`H` opens History: everything opened or watched in the app, with filters, *Continue Watching*, and *Watch These in Order*.
 
 ## 9. Backup
 Everything is in one SQLite file (`organizer.db`) plus the `audio_notes` folder. Run `BACKUP.bat` or just copy those while the app is stopped.

@@ -29,7 +29,7 @@ main{max-width:1120px;margin:auto;padding:18px 22px 60px}
 <div class=topbar><a class=brand href="/" title="Back to Commander"><svg width=24 height=24 viewBox="0 0 32 32" role=img aria-label=YouCommander><rect width=32 height=32 rx=8 fill="var(--ac)"/><g fill=none stroke="var(--ac-fg)" stroke-width=2.6 stroke-linecap=round stroke-linejoin=round><polyline points="9,13 16,7.5 23,13"/><polyline points="9,20 16,14.5 23,20"/><line x1=12 y1=26 x2=20 y2=26 /></g></svg></a><nav><a href="/">Commander</a><a href="/triage" title="Sort the inbox one video at a time">Triage</a><a href="/watch" title="The player with notes, loop and queue">Watch</a><a class=here>History</a></nav><span class=fill></span><span id=sum class=meta></span><button class="ghost help" data-help title="Keyboard shortcuts (?)">?</button></div>
 <main><h1 class=vt>History<small id=hsum></small></h1>
 <div class=lbl style="margin-top:14px">Continue watching</div><div class=cw id=cw></div>
-<div class=tools><div class=search><input id=fq placeholder="Filter by title or channel" aria-label="Filter history"><kbd>/</kbd></div><span id=chips role=group aria-label="Show"></span><button id=wq title="Play everything listed, in this order, on the Watch page">Watch these in order</button></div>
+<div class=tools><div class=search><input id=fq placeholder="Filter by title or channel" aria-label="Filter history"><kbd>/</kbd></div><span id=chips role=group aria-label="Show"></span><button id=wq title="Play everything listed, in this order, on the Watch page">Watch These in Order</button></div>
 <div class=list id=list></div>
 <p class=mut style="font-size:var(--fs-s);margin-top:10px">Every video you open or play anywhere in YouCommander is listed here, newest first, and stored only on this computer.</p>
 </main>
@@ -44,7 +44,7 @@ const fmt=s=>{s=Math.max(0,Math.floor(s||0));const h=Math.floor(s/3600),m=Math.f
 const clock=s=>{s=Math.floor(s||0);return Math.floor(s/60)+':'+String(s%60).padStart(2,'0')};
 const when=s=>{if(!s)return'';const d=new Date(s.replace(' ','T')+'Z');return d.toLocaleDateString(undefined,{month:'short',day:'numeric'})+' '+d.toLocaleTimeString(undefined,{hour:'numeric',minute:'2-digit'})};
 let ALL=[],MODE='all',FI=0;
-const MODES={all:['All',x=>true],played:['Actually watched',x=>x.seconds>5],watch:['Watch page',x=>x.src=='watch'],commander:['Commander',x=>x.src=='commander'],triage:['Triage',x=>x.src=='triage']};
+const MODES={all:['All',x=>true],played:['Actually Watched',x=>x.seconds>5],watch:['Watch Page',x=>x.src=='watch'],commander:['Commander',x=>x.src=='commander'],triage:['Triage',x=>x.src=='triage']};
 function shown(){const q=fq.value.trim().toLowerCase();return ALL.filter(MODES[MODE][1]).filter(x=>!q||((x.title||'')+' '+(x.channel||'')).toLowerCase().includes(q))}
 chips.innerHTML=Object.entries(MODES).map(([k,v])=>`<button data-m=${k} class="sm ${k==MODE?'on':'ghost'}" aria-pressed="${k==MODE}">${v[0]}</button>`).join('');
 function paintChips(){chips.querySelectorAll('[data-m]').forEach(b=>{const on=b.dataset.m==MODE;b.classList.toggle('on',on);b.classList.toggle('ghost',!on);b.setAttribute('aria-pressed',on)})}

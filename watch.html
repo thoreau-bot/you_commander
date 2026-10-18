@@ -60,11 +60,11 @@
 <div class=ctl id=ctl>
  <span class=group><button id=b10m title="Back 10 seconds (J)">−10<kbd>J</kbd></button><button id=bpp title="Play or pause (Space / K)">Play / Pause<kbd>Space</kbd></button><button id=b10p title="Forward 10 seconds (L)">+10<kbd>L</kbd></button></span>
  <span class=group><button id=sdn title="Slower (&lt;)">−</button><b id=sv>1×</b><button id=sup title="Faster (&gt;)">+</button></span>
- <span class=group><button id=ba title="Set loop start here ([)">Loop start<kbd>[</kbd></button><button id=bb title="Set loop end here (])">Loop end<kbd>]</kbd></button><button id=bcl title="Clear the loop (\)">Clear<kbd>\</kbd></button></span><span id=lv></span>
- <span class=group><button id=bsn title="Sound on or off (M)" aria-pressed=false>Sound on<kbd>M</kbd></button><button id=bfs title="Fullscreen (F or Enter)">Fullscreen<kbd>F</kbd></button></span>
+ <span class=group><button id=ba title="Set loop start here ([)">Loop Start<kbd>[</kbd></button><button id=bb title="Set loop end here (])">Loop End<kbd>]</kbd></button><button id=bcl title="Clear the loop (\)">Clear<kbd>\</kbd></button></span><span id=lv></span>
+ <span class=group><button id=bsn title="Sound on or off (M)" aria-pressed=false>Sound On<kbd>M</kbd></button><button id=bfs title="Fullscreen (F or Enter)">Fullscreen<kbd>F</kbd></button></span>
 </div>
 <div class=acts>
- <button id=bmk class=ghost title="Add a typed note at this moment, or on the text you have selected in the transcript (B)">Note at this time<kbd>B</kbd></button><button id=bvm class=ghost title="Record a spoken note at this moment, or on the selected transcript text (V)">Voice note<kbd>V</kbd></button><button id=byt class=ghost title="Open this moment on YouTube for likes, comments, subscribe and the transcript (G)">YouTube at this time<kbd>G</kbd></button><button id=bcp class=ghost title="Copy a link to this moment (C)">Copy link here<kbd>C</kbd></button>
+ <button id=bmk class=ghost title="Add a typed note at this moment, or on the text you have selected in the transcript (B)">Note at This Time<kbd>B</kbd></button><button id=bvm class=ghost title="Record a spoken note at this moment, or on the selected transcript text (V)">Voice Note<kbd>V</kbd></button><button id=byt class=ghost title="Open this moment on YouTube for likes, comments, subscribe and the transcript (G)">YouTube at This Time<kbd>G</kbd></button><button id=bcp class=ghost title="Copy a link to this moment (C)">Copy Link Here<kbd>C</kbd></button>
 </div>
 <div id=mkbox><div class=mut id=mkl></div><input id=mkin placeholder="What happens here? Enter saves, Esc cancels" autocomplete=off aria-label="Note text"></div>
 <div class=sec><div class=lbl>Notes at times<small><kbd>B</kbd> typed · <kbd>V</kbd> voice</small></div><div id=marks></div></div>
@@ -76,12 +76,12 @@
  <div class=lbl title="Dashed tags are suggestions from your playlists; Confirm tags keeps them">Tags</div><div id=tg></div>
  <div class=tagwrap><input id=ti2 placeholder="Add a tag…" style="width:100%" autocomplete=off aria-label="Add a tag"><kbd>T</kbd><div id=sugg style="display:none" role=listbox></div></div>
  <div class=lbl style="margin-top:14px" title="Saved when you leave the box">Note<small><kbd>N</kbd></small></div><textarea id=note rows=3 aria-label="Note for this video"></textarea>
- <div class=decide><button class="ok pri" id=bc title="Confirm all shown tags and mark this video triaged">Confirm tags</button><button class=bad id=bd title="Drop: leave out of every published playlist">Drop</button><span id=st class=mut></span></div>
+ <div class=decide><button class="ok pri" id=bc title="Confirm all shown tags and mark this video triaged">Confirm Tags</button><button class=bad id=bd title="Drop: leave out of every published playlist">Drop</button><span id=st class=mut></span></div>
 </div></div>
 <div class=panel>
- <div class=qh><b>Queue</b><span id=qn aria-live=polite></span><button id=qrs class="ghost sm" style="display:none" title="Go back to the original order for this queue">Reset order</button><span class=r><button id=bpv class=sm title="Previous in the queue (PageUp)">Previous<kbd>PgUp</kbd></button><button id=bnx class=sm title="Next in the queue (PageDown)">Next<kbd>PgDn</kbd></button><label title="Play the next video when this one ends"><input type=checkbox id=auto checked aria-label="Autoplay next"> Autoplay</label></span></div>
+ <div class=qh><b>Queue</b><span id=qn aria-live=polite></span><button id=qrs class="ghost sm" style="display:none" title="Go back to the original order for this queue">Reset Order</button><span class=r><button id=bpv class=sm title="Previous in the queue (PageUp)">Previous<kbd>PgUp</kbd></button><button id=bnx class=sm title="Next in the queue (PageDown)">Next<kbd>PgDn</kbd></button><label title="Play the next video when this one ends"><input type=checkbox id=auto checked aria-label="Autoplay next"> Autoplay</label></span></div>
  <div id=q></div>
- <div class=qf2><span class=r><button id=bcq class=sm title="Copy a youtube.com link that opens the next 50 videos as a temporary YouTube queue, which you can save from YouTube">Copy as YouTube queue</button><button id=boq class=sm title="Open that queue on YouTube now">Open on YouTube</button></span></div>
+ <div class=qf2><span class=r><button id=bcq class=sm title="Copy a youtube.com link that opens the next 50 videos as a temporary YouTube queue, which you can save from YouTube">Copy as YouTube Queue</button><button id=boq class=sm title="Open that queue on YouTube now">Open on YouTube</button></span></div>
 </div>
 </aside></main>
 <div id=none style="display:none"></div><div id=toast></div>
@@ -121,13 +121,13 @@ function startPlayer(id,start){if(!ready){pending={id,start};return}
 function onState(e){if(e.data===1){applySpeed();lastTick=Date.now()}if(e.data===0){flush(true,0);if($('auto').checked&&!LOOP.b)next(true)}syncUI()}
 try{if(localStorage.getItem('autoplay')==='0')$('auto').checked=false}catch(e){}$('auto').onchange=()=>{try{localStorage.setItem('autoplay',$('auto').checked?'1':'0')}catch(e){}toast($('auto').checked?'Autoplay on':'Autoplay off')};
 function onErr(e){const c=e.data;const why={2:'invalid video id',5:'player problem',100:'video removed or private',101:'the owner disabled embedding',150:'the owner disabled embedding',152:'age-restricted or embedding blocked'}[c]||'playback error';
- const f=$('fail');f.style.display='block';f.innerHTML=`<b>This video can’t play here</b> (${esc(why)}, code ${c}). <a href="https://youtu.be/${V.video_id}" target=_blank rel=noopener>Open on YouTube</a>. Tags and notes still work. ${$('auto').checked&&Q.length>1?'<button id=skp class=sm style="margin-left:8px">Skip to next</button>':''}`;const s=$('skp');if(s)s.onclick=()=>next(true)}
+ const f=$('fail');f.style.display='block';f.innerHTML=`<b>This video can’t play here</b> (${esc(why)}, code ${c}). <a href="https://youtu.be/${V.video_id}" target=_blank rel=noopener>Open on YouTube</a>. Tags and notes still work. ${$('auto').checked&&Q.length>1?'<button id=skp class=sm style="margin-left:8px">Skip to Next</button>':''}`;const s=$('skp');if(s)s.onclick=()=>next(true)}
 const pl=()=>player&&player.getCurrentTime?player:null;
 function cur(){return pl()?pl().getCurrentTime():0}
 function applySpeed(){if(pl()&&pl().setPlaybackRate)try{pl().setPlaybackRate(SP)}catch(e){}$('sv').textContent=SP+'×'}
 function setSpeed(x){const r=[0.25,0.5,0.75,1,1.25,1.5,1.75,2,2.5,3];x=r.reduce((a,b)=>Math.abs(b-x)<Math.abs(a-x)?b:a);SP=x;applySpeed();flush(false);toast('Speed '+SP+'×')}
 function stepSpeed(d){const r=[0.25,0.5,0.75,1,1.25,1.5,1.75,2,2.5,3];let k=r.indexOf(SP);if(k<0)k=3;setSpeed(r[Math.max(0,Math.min(r.length-1,k+d))])}
-function syncUI(){const m=pl()&&pl().isMuted&&pl().isMuted();$('bsn').innerHTML=m?'Muted<kbd>M</kbd>':'Sound on<kbd>M</kbd>';$('bsn').setAttribute('aria-pressed',!!m);$('lv').textContent=LOOP.a!=null||LOOP.b!=null?'Looping '+(LOOP.a!=null?fmt(LOOP.a):'—')+' to '+(LOOP.b!=null?fmt(LOOP.b):'—'):''}
+function syncUI(){const m=pl()&&pl().isMuted&&pl().isMuted();$('bsn').innerHTML=m?'Muted<kbd>M</kbd>':'Sound On<kbd>M</kbd>';$('bsn').setAttribute('aria-pressed',!!m);$('lv').textContent=LOOP.a!=null||LOOP.b!=null?'Looping '+(LOOP.a!=null?fmt(LOOP.a):'—')+' to '+(LOOP.b!=null?fmt(LOOP.b):'—'):''}
 // ---------- history pings ----------
 function body(clear){return {pos:cur(),dur:pl()&&pl().getDuration?pl().getDuration():0,delta:delta,speed:SP,loop_a:LOOP.a,loop_b:LOOP.b,log_id:LOG,clear_loop:!!clear}}
 function flush(sync,posOverride){if(!V)return;const b=body(!LOOP.a&&!LOOP.b&&false);if(posOverride!=null)b.pos=posOverride;b.clear_loop=LOOP.a==null&&LOOP.b==null;delta=0;sinceFlush=0;
@@ -227,7 +227,7 @@ async function voiceAt(a){if(REC||ANCH)return;if(!navigator.mediaDevices){toast(
  REC.start();$('mkbox').style.display='block';$('mkl').textContent='Recording a note at '+fmt(a.t)+(a.quote?' on '+a.label:'')+'. Press V or Space to stop, Esc to cancel.';$('mkin').style.display='none'}
 function stopRec(cancel){if(!REC)return;REC._cancel=!!cancel;REC.stop();$('mkin').style.display=''}
 // ---- selection pop-up ----
-const sp=document.createElement('div');sp.id='sp';sp.style.cssText='position:fixed;display:none;z-index:30;background:var(--sf);border:1px solid var(--bd);border-radius:10px;padding:4px;box-shadow:var(--sh-lg);gap:4px';sp.innerHTML='<button data-a=note class=sm>Note on selection<kbd>B</kbd></button><button data-a=voice class=sm>Voice note on selection<kbd>V</kbd></button>';document.body.appendChild(sp);
+const sp=document.createElement('div');sp.id='sp';sp.style.cssText='position:fixed;display:none;z-index:30;background:var(--sf);border:1px solid var(--bd);border-radius:10px;padding:4px;box-shadow:var(--sh-lg);gap:4px';sp.innerHTML='<button data-a=note class=sm>Note on Selection<kbd>B</kbd></button><button data-a=voice class=sm>Voice Note on Selection<kbd>V</kbd></button>';document.body.appendChild(sp);
 let SPA=null;const hideSp=()=>{sp.style.display='none';SPA=null};
 sp.onmousedown=e=>e.preventDefault();
 sp.onclick=e=>{const a=e.target.dataset.a;if(!a||!SPA)return;const x=SPA;hideSp();a=='note'?noteAt(x):voiceAt(x)};
@@ -303,9 +303,9 @@ function txHead(){let h='';
  for(const k of ['captions','whisper']){const t=TX[k];
   if(t.status=='ok')h+=`<button data-view=${k} class="${TXVIEW==k?'on':''}" title="${k=='captions'?'The YouTube caption track':'Local Whisper ('+esc(t.model)+')'}. Click to view it.">${KIND[k]} <span class="mut num">${t.cues.length}</span></button>`;
   else if(t.active)h+=`<span class=mut>${KIND[k]} working…</span>`;
-  else h+=`<button data-get=${k} title="${k=='captions'?'Reads the video’s caption track as text. No audio is downloaded.':'Downloads the audio to a temporary file, transcribes it on this computer with Whisper, then deletes the file.'}">${k=='captions'?'Get captions':'Transcribe with Whisper'}</button>`+(t.status=='none'?'<span class=mut>No captions found.</span>':t.status=='error'?'<span style="color:var(--bad)">'+esc((t.error||'Failed').slice(0,120))+'</span>':'')}
+  else h+=`<button data-get=${k} title="${k=='captions'?'Reads the video’s caption track as text. No audio is downloaded.':'Downloads the audio to a temporary file, transcribes it on this computer with Whisper, then deletes the file.'}">${k=='captions'?'Get Captions':'Transcribe with Whisper'}</button>`+(t.status=='none'?'<span class=mut>No captions found.</span>':t.status=='error'?'<span style="color:var(--bad)">'+esc((t.error||'Failed').slice(0,120))+'</span>':'')}
  if(TXVIEW){const t=TX[TXVIEW];h+=`<input id=txq placeholder="Find…" style="flex:1;min-width:120px" aria-label="Find in transcript; Enter jumps to a match" title="Enter jumps to the next match, ↑ to the previous"><span id=txcount class="mut tc" aria-live=polite></span><label title="Keep the current line highlighted and in view (pauses while a filter is typed)"><input type=checkbox id=txf ${txF?'checked':''}> Follow along</label><button id=txmore class="ghost sm" aria-label="More transcript actions" aria-expanded="${TXMORE?'true':'false'}" title="Note on line, voice on line, copy, remove">⋯</button>`;
-  if(TXMORE)h+=`<span class=txmore><button id=txln class="ghost sm" title="Typed note on the line that Follow along is highlighting (Shift+B)">Note on line<kbd>⇧B</kbd></button><button id=txlv class="ghost sm" title="Spoken note on the highlighted line (Shift+V)">Voice on line<kbd>⇧V</kbd></button><button id=txcp class="ghost sm" title="Copy this transcript as text">Copy</button><button id=txrm class="ghost sm" title="Delete this version from this computer">Remove</button><span class=mut>${TXVIEW=='captions'?(t.model=='auto'?'Auto-captions':'Captions')+(t.language?', '+esc(t.language):''):'large model, local'}</span></span>`}
+  if(TXMORE)h+=`<span class=txmore><button id=txln class="ghost sm" title="Typed note on the line that Follow along is highlighting (Shift+B)">Note on Line<kbd>⇧B</kbd></button><button id=txlv class="ghost sm" title="Spoken note on the highlighted line (Shift+V)">Voice on Line<kbd>⇧V</kbd></button><button id=txcp class="ghost sm" title="Copy this transcript as text">Copy</button><button id=txrm class="ghost sm" title="Delete this version from this computer">Remove</button><span class=mut>${TXVIEW=='captions'?(t.model=='auto'?'Auto-captions':'Captions')+(t.language?', '+esc(t.language):''):'large model, local'}</span></span>`}
  $('txh').innerHTML=h}
 let txF=true,TXMORE=false;
 function drawTx(){const q0=$('txq')?$('txq').value:'';txHead();if($('txq'))$('txq').value=q0;drawTxList()}
@@ -346,5 +346,6 @@ function nothing(title,text){document.getElementById('wrap').style.display='none
  let start=v0||(Q[0]&&Q[0].video_id);
  if(!start){nothing('Nothing to watch yet','Open a video from the Commander page and press W, or tick several and press W to play them in order.');return}
  if(!Q.some(x=>x.video_id==start))Q=[{video_id:start,title:null}].concat(Q);
- $('cnt').textContent='';await loadVideo(start)})();
+ const t0=seg.get('t');if(t0!=null){try{const u=new URL(location.href);u.searchParams.delete('t');history.replaceState(history.state,'',u)}catch(e){}}
+ $('cnt').textContent='';await loadVideo(start,t0!=null&&start==v0?Math.max(0,parseInt(t0,10)||0):undefined)})();
 </script>

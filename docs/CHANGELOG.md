@@ -1,5 +1,15 @@
 # Changelog
 
+## 1.6.0
+Requested changes. Regression suite: 112 checks (40 new), all green.
+- Commander rail: **Watch in Theater** (`W`) sits between Start Triage and History. It opens the open, highlighted or first video on the Watch page with the current view as its queue; with two or more ticked, it plays those in list order
+- `W` works while video controls (`F`) are on, in a Commander preview and in Triage, and carries on from the same moment on the Watch page (`&t=` hand-over). Triage gains `W` everywhere (button, context menu, help); `Esc` on the Watch page comes back to the same Triage video. In batch triage, `W` watches the highlighted video with the batch as its queue
+- Video controls: `F` no longer turns them off. `Esc` is the only way out; with them on, `F` (or `Enter`) is fullscreen, as inside YouTube. A mouse click into the video while they are on hands the keyboard straight back to the page, so `W`, `F` and `Esc` keep working; `Tab` still hands it to YouTube's own controls on purpose
+- The video-controls card (bottom right) now lists its keys as key-caps. Any message that covers it goes away within 10–15 s at most (by length) and the card comes back; volume/speed/mute readouts no longer replace it for good, and switching windows no longer hides it. When YouTube's own controls have the keyboard, the card says so instead of a separate one-minute message
+- Commander list: a click on a row's empty space ticks or unticks it, a large target for anyone who finds the checkbox hard to hit. The title still opens the video; a double-click counts once
+- Title Case for every button, menu item and left-rail item ("Start Triage", "All Videos", "Watch Later, Not Yet Sorted", "Note at This Time"…). Tag names are left as you typed them
+- Video controls live once, in app.js (`yc.playerMode`), instead of a copy in Commander and in Triage; toasts and the standing card share one bubble manager (`yc.toast` / `yc.hint`)
+
 ## 1.5.0
 Review round 4 fixes (regression suite now 72 checks, all green).
 - Tag picker: picking a tag keeps its name in the box; Enter creates a tag only after ↓ onto the "Create tag" row (or when the query is a path); Enter with a chosen tag in Commander's bulk bar applies it; a re-opened list no longer closes on a stale blur

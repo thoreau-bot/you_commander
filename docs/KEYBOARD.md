@@ -8,17 +8,21 @@ Press `?` on any page for an overlay with that page's shortcuts (`Esc` or `?` cl
 | `/` | Focus search |
 | `↑ ↓ PgUp PgDn Home End` | Move through rows (with `Shift` to extend selection) |
 | `Enter` | Tick / untick the current row |
+| click a row's empty space | Tick / untick that row (a double-click counts once; the title still opens the video) |
 | `Space` | Preview the current video |
 | `←` / `Shift+Tab` | Move into the rail (library, audits, playlists, tags); `→` returns |
 | double-click a tag | Rename it (or edit the name in the tag sheet and Save) |
-| `T` | Start triage (with 2+ ticked: batch triage) |
-| `W` / `H` | Open Watch / History |
+| `T` | Start Triage (with 2+ ticked: batch triage) |
+| `W` | Watch in Theater: the open (or highlighted) video on the Watch page, carrying on from where it is; with 2+ ticked, those in list order. Also in the rail. |
+| `H` | History |
 | `Esc` | Close preview, or clear filters |
 | `Z` | Undo, while an undo toast is showing (Watch: note delete, Drop) |
 | In preview: `K` `J` `L` `M` | Play-pause, back 10 s, forward 10 s, mute |
 
-## Preview "player mode"
-`F` or `Esc` toggles. `Space`/`K` play, `←/→` ±5 s, `↑/↓` volume, `<` `>` speed, `Home`/`End` start/end, `Enter` fullscreen, `Tab` hand focus to the video.
+## Video controls (`F`)
+On a Commander preview and in Triage, `F` turns video controls on; `Esc` is the only way to turn them off (in fullscreen, the first `Esc` leaves fullscreen). While they are on: `Space`/`K` play-pause, `←/→` ±5 s, `J/L` ±10 s, `↑/↓` volume, `M` mute, `0`–`9` jump, `<` `>` speed, `Home`/`End` start/end, `F` or `Enter` fullscreen, `W` Watch in Theater from the same moment, `Tab` hands the keyboard to YouTube's own controls (`Tab`/`Shift+Tab` past them comes back).
+
+A card at the bottom right lists these keys. Other messages may cover it for a while (never more than 10–15 s, depending on their length); then it comes back. Clicking the video while controls are on keeps the app's keys working.
 
 ## Triage
 | Key | Action |
@@ -29,11 +33,14 @@ Press `?` on any page for an overlay with that page's shortcuts (`Esc` or `?` cl
 | `X` | Drop |
 | `T` / `N` | Focus tag / note box |
 | `V` or `Space` | Start/stop voice note (`V` only in batch triage, where `Space` previews) |
-| `F` | Player mode (same keys as above) |
+| `F` | Video controls (same keys as above, including `W`) |
+| `W` | Watch in Theater: this video, from the current moment; `Esc` there comes back to it |
+| `M` / `G` | Sound on/off / open on YouTube |
+| right-click | The same actions as a menu |
 | `J` `K` `L` | Back 10 s / play-pause / forward 10 s |
 
 ### Batch triage
-With nothing highlighted: `Enter` confirms all (asks first when there are two or more), `X` drops all. `↑/↓` highlight a video · `Space` preview · `R` remove from batch · `Enter` fold/unfold · `Esc` or `←` back to the controls · `F` focus the player.
+With nothing highlighted: `Enter` confirms all (asks first when there are two or more), `X` drops all. `↑/↓` highlight a video · `Space` preview · `R` remove from batch · `Enter` fold/unfold · `Esc` or `←` back to the controls · `F` video controls for the previewed video · `W` Watch in Theater, with the batch as the queue.
 
 ## Watch
 | Key | Action |

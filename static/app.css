@@ -147,7 +147,8 @@ label{display:inline-flex;align-items:center;gap:7px;color:var(--fg2)}
 /* toast / hints */
 .toast,#toast,#fhint{position:fixed;right:18px;bottom:18px;max-width:360px;padding:9px 13px;border-radius:var(--r);
   background:var(--sf3);color:var(--fg);border:1px solid var(--bd);box-shadow:var(--sh-lg);font-size:var(--fs-s);line-height:1.45;display:none;z-index:60}
-#fhint{bottom:62px}#toast button{margin-left:6px;vertical-align:middle}
+#fhint{max-width:420px}#toast button{margin-left:6px;vertical-align:middle}
+#fhint b{display:block;color:var(--fg);margin-bottom:6px}#fhint .hk{display:flex;flex-wrap:wrap;gap:5px 14px;color:var(--fg2)}#fhint .hk span{white-space:nowrap}#fhint kbd{margin:0 1px}
 .pwret{display:block;font-size:var(--fs-s);color:var(--mut);margin:6px 2px;outline:none}
 .pwret.b4{position:absolute;width:1px;height:1px;overflow:hidden;margin:0;opacity:0}
 
