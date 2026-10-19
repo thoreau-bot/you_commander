@@ -16,3 +16,5 @@ __pycache__/
 # Logs
 *.log
 voice_install_log.txt
+release-notes-*.md
+youcommander-*.zip

@@ -1,0 +1,20 @@
+name: Release
+# Every push to main: any version in docs/CHANGELOG.md that has no tag yet gets a tag, a source zip and a GitHub release.
+on:
+  push: { branches: [main] }
+permissions:
+  contents: write
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with: { fetch-depth: 0 }
+      - uses: actions/setup-python@v5
+        with: { python-version: '3.12' }
+      - run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          python tools/release.py
+        env:
+          GH_TOKEN: ${{ github.token }}
