@@ -70,7 +70,12 @@ const J=async(u,o)=>(await fetch(u,o)).json(),P=(u,b,m='POST')=>J(u,{method:m,he
 const esc=s=>(s||'').replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
 let Q=[],i=0,cur=null,TAGS=[],player=null,muted=true,ready=false,sel=0;
 window.onYouTubeIframeAPIReady=()=>{ready=true;if(cur)load(cur.video_id)};
-function load(id){if(!ready)return;document.querySelectorAll('#wrap .pwret').forEach(x=>{if(!x.dataset.s){x.dataset.s=1;yc.sentinel(x,retList)}});if(player){player.loadVideoById(id);muted?player.mute():player.unMute()}else player=new YT.Player('yt',{videoId:id,playerVars:{autoplay:1,mute:1,rel:0,playsinline:1},events:{onReady:e=>{muted?e.target.mute():0}}})}
+// ARRIVE: {t,playing} from a Commander preview (?from=acc&t=&p=): start there, in the same play state, once
+const SP0=new URLSearchParams(location.search);let ARRIVE=SP0.get('from')=='acc'?{t:parseInt(SP0.get('t')||'0',10)||0,playing:SP0.get('p')!=='0'}:null;window.FROM_ACC=!!ARRIVE;
+if(ARRIVE){try{const u=new URL(location.href);['from','t','p'].forEach(k=>u.searchParams.delete(k));history.replaceState(history.state,'',u)}catch(e){}}
+function load(id){if(!ready)return;document.querySelectorAll('#wrap .pwret').forEach(x=>{if(!x.dataset.s){x.dataset.s=1;yc.sentinel(x,retList)}});const ar=ARRIVE;ARRIVE=null;
+ if(player){if(ar&&player.cueVideoById)player.cueVideoById({videoId:id,startSeconds:ar.t});else player.loadVideoById(id);if(ar&&ar.playing)player.playVideo();muted?player.mute():player.unMute()}
+ else player=new YT.Player('yt',{videoId:id,playerVars:{autoplay:ar&&!ar.playing?0:1,start:ar?ar.t:0,mute:1,rel:0,playsinline:1},events:{onReady:e=>{muted?e.target.mute():0;if(ar&&!ar.playing){try{e.target.pauseVideo()}catch(x){}}}}})}
 window.BATCH=new URLSearchParams(location.search).has('batch');
 async function init(){TAGS=await J('/api/tags');if(window.BATCH){counts();return binit()}const sp=new URLSearchParams(location.search),tg0=sp.get('tag'),v0=sp.get('v');window.SINGLE=!!v0;Q=(await J('/api/triage/queue?limit=3000'+(v0?'&video='+encodeURIComponent(v0):'')+(tg0?'&tag='+tg0:''))).map(x=>x.video_id);i=0;
  try{const at=sessionStorage.getItem('triageAt'),nav=performance.getEntriesByType('navigation')[0];sessionStorage.removeItem('triageAt');if(at&&nav&&nav.type=='back_forward'){const k=Q.indexOf(at);if(k>=0)i=k}}catch(e){}
@@ -157,7 +162,8 @@ vsug.onclick=async e=>{const n=e.target.dataset.nt;if(!n)return;const r=await P(
 bv.onclick=toggleRec;
 addEventListener('keydown',e=>{if(yc.typing(document.activeElement)||e.ctrlKey||e.metaKey||e.altKey)return;const k=e.key.toLowerCase();if(k==' '&&yc.onControl(e))return;
  if(k=='v'||k==' '){e.preventDefault();toggleRec()}else if(k=='escape'&&REC){REC.onstop=()=>{STREAM.getTracks().forEach(t=>t.stop());REC=null;bv.innerHTML=window.BATCH?'Voice Note<kbd>V</kbd>':'Voice Note<kbd>Space</kbd>';bv.classList.remove('bad');vstat('Recording cancelled.')};REC.stop()}else if(k=='escape'&&!REC){if(yc.popOpen())return;if(yc.escapeControl(e))return;if(sugg.style.display=='block'){sugg.style.display='none';return}leave()}});
-function leave(){if(window.SINGLE){try{window.close()}catch(e){}setTimeout(()=>{location.href='/'},200)}else location.href='/'}
+function leave(){if(window.FROM_ACC&&cur){try{sessionStorage.setItem('watchBack',JSON.stringify({v:cur.video_id,t:Math.floor(player&&player.getCurrentTime?player.getCurrentTime():0),playing:!!(player&&player.getPlayerState&&player.getPlayerState()==1)}))}catch(e){}let same=false;try{same=document.referrer&&new URL(document.referrer).origin==location.origin}catch(e){}if(same&&history.length>1){history.back();return}location.href='/';return}
+ if(window.SINGLE){try{window.close()}catch(e){}setTimeout(()=>{location.href='/'},200)}else location.href='/'}
 vcheck();init();
 
 // ---- video controls (F), shared with Commander: see yc.playerMode in app.js. Batch mode re-points __getPlayer/__pmBox/__pmFrame.

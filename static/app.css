@@ -19,6 +19,7 @@
   --on-solid:#ffffff;
   --ac-s:rgba(43,91,220,.11);
   --ac-s2:rgba(43,91,220,.22);
+  --mag:#b8159a;--mag-s:rgba(184,21,154,.14);--mag-s2:rgba(184,21,154,.26);   /* attention flashes */
   --amb:#8a5607;
   --amb-s:rgba(226,167,59,.20);
   --ok:#15733d;
@@ -40,7 +41,7 @@
   --bg:#0f1116;--sf:#171a21;--sf2:#262b37;--pn:#262b37;--hov:#1c2029;--sf3:#2a3040;
   --fg:#e9ebf1;--fg2:#b6bbc9;--mut:#8f95a7;--bd:#272b36;--bd2:#353a48;
   --ac:#6b8dff;--ac-fg:#0b1020;--on-solid:#0b1020;--ac-s:rgba(107,141,255,.14);--ac-s2:rgba(107,141,255,.28);
-  --amb:#e2a73b;--amb-s:rgba(226,167,59,.14);
+  --amb:#e2a73b;--amb-s:rgba(226,167,59,.14);--mag:#f05ad6;--mag-s:rgba(240,90,214,.16);--mag-s2:rgba(240,90,214,.30);
   --ok:#46bd78;--ok-s:rgba(70,189,120,.13);
   --bad:#ee6b6b;--bad-s:rgba(238,107,107,.13);
   --kbd:#232733;
@@ -150,7 +151,7 @@ label{display:inline-flex;align-items:center;gap:7px;color:var(--fg2)}
 #fhint{max-width:420px}#toast button{margin-left:6px;vertical-align:middle}
 #fhint b{display:block;color:var(--fg);margin-bottom:6px}#fhint .hk{display:flex;flex-wrap:wrap;gap:5px 14px;color:var(--fg2)}#fhint .hk span{white-space:nowrap}#fhint kbd{margin:0 1px}
 .pwret{display:block;font-size:var(--fs-s);color:var(--mut);margin:6px 2px;outline:none}
-.pwret.fkey{display:inline-block;padding:2px 8px;margin:6px -6px;border-radius:var(--rs)}@keyframes fkflash{0%,100%{background:transparent;color:var(--mut)}50%{background:var(--ac-s2);color:var(--ac)}}.pwret.fkey.flash{animation:fkflash .7s ease-in-out 3}.pwret.fkey.on{color:var(--ac)}
+.pwret.fkey{display:inline-block;padding:2px 8px;margin:6px -6px;border-radius:var(--rs)}@keyframes fkflash{0%,100%{background:transparent;color:var(--mut);box-shadow:none}50%{background:var(--mag-s2);color:var(--mag);box-shadow:0 0 0 1px var(--mag-s2),0 0 14px var(--mag-s)}}.pwret.fkey.flash{animation:fkflash .7s ease-in-out 3}.pwret.fkey.flash kbd{animation:fkkbd .7s ease-in-out 3}@keyframes fkkbd{0%,100%{}50%{background:var(--mag);border-color:var(--mag);color:#fff}}.pwret.fkey.on{color:var(--ac)}
 .pwret.b4{position:absolute;width:1px;height:1px;overflow:hidden;margin:0;opacity:0}
 
 /* suggestion dropdown (tag picker) */

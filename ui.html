@@ -21,7 +21,8 @@ aside>*{flex:none}aside>#tags{flex:1 1 auto;min-height:0;overflow-y:auto;overscr
 .tag.nav{outline:2px solid var(--ac);outline-offset:-2px;background:var(--sf2);color:var(--fg)}
 @keyframes navflash{0%,100%{background:var(--sf2)}50%{background:var(--ac-s2)}}.tag.flash{animation:navflash .7s ease-in-out 3}
 .tag input{min-height:26px;padding:2px 8px;width:100%}
-.rfoot{margin-top:8px;padding-top:8px;border-top:1px solid var(--bd)}
+.rfoot{margin-top:8px;padding-top:10px;border-top:1px solid var(--bd)}
+.rbtn{justify-content:center;min-height:34px;border:1px solid var(--bd2);background:var(--sf);box-shadow:var(--sh);font-weight:500}.rbtn svg{color:var(--fg2)}.rbtn:hover{background:var(--sf2);border-color:var(--bd2)}.rbtn:focus-visible{outline:2px solid var(--ac);outline-offset:1px}
 /* ---- main ---- */
 main{display:flex;flex-direction:column;min-width:0;min-height:0;overflow:hidden}
 header{flex:none;display:flex;align-items:center;gap:10px;height:52px;padding:0 16px;border-bottom:1px solid var(--bd);background:var(--bg)}
@@ -85,7 +86,7 @@ header{flex:none;display:flex;align-items:center;gap:10px;height:52px;padding:0 
  <div class=sec title="Views that find videos needing attention">Audits</div><div id=aud></div>
  <div class=sec>Playlists</div><div class=tag id=pl role=button title="Your playlists from YouTube: owner, visibility and size">Owner &amp; Visibility<small id=pln></small></div>
  <div class=sec id=tagsec>Tags <button id=addtag class=ghost aria-label="Create a tag" title="Create a tag">+</button></div><div id=tags></div>
- <div class=rfoot><a class=si href="/import" title="Add or refresh playlists from a Google Takeout"><svg width=14 height=14 viewBox="0 0 16 16" fill=none stroke=currentColor stroke-width=1.7 stroke-linecap=round stroke-linejoin=round><path d="M8 11V3M4.5 6.5 8 3l3.5 3.5M3 13h10"/></svg>Import from Takeout</a></div>
+ <div class=rfoot><a class="si rbtn" href="/import" title="Add or refresh playlists from a Google Takeout"><svg width=14 height=14 viewBox="0 0 16 16" fill=none stroke=currentColor stroke-width=1.7 stroke-linecap=round stroke-linejoin=round><path d="M8 11V3M4.5 6.5 8 3l3.5 3.5M3 13h10"/></svg>Import from Takeout</a></div>
 </aside>
 <main>
  <header>
@@ -110,7 +111,7 @@ header{flex:none;display:flex;align-items:center;gap:10px;height:52px;padding:0 
   <div><h3>Tags rail</h3><dl>
    <dt><kbd>←</kbd></dt><dd>into the rail (library, audits, playlists, tags)</dd><dt><kbd>→</kbd></dt><dd>back to the videos</dd><dt><kbd>Enter</kbd></dt><dd>open that view</dd><dt><kbd>Shift</kbd>+<kbd>Tab</kbd></dt><dd>also enters the rail, from the list</dd><dt>double-click</dt><dd>rename a tag (or edit its name in the sheet below)</dd></dl></div>
   <div><h3>Open video</h3><dl>
-   <dt><kbd>F</kbd></dt><dd>video controls on: Space, arrows, J L, M, 0–9, &lt; &gt;; then F is fullscreen, W Watch in Theater, Esc turns them off</dd><dt><kbd>K</kbd></dt><dd>play, pause</dd><dt><kbd>J</kbd><kbd>L</kbd></dt><dd>−10s, +10s</dd><dt><kbd>M</kbd></dt><dd>sound</dd><dt><kbd>E</kbd></dt><dd>triage this video</dd></dl></div>
+   <dt><kbd>F</kbd></dt><dd>video controls on: Space, arrows, J L, M, 0–9, &lt; &gt;; then F is fullscreen, W Watch in Theater, Esc turns them off</dd><dt><kbd>K</kbd></dt><dd>play, pause</dd><dt><kbd>J</kbd><kbd>L</kbd></dt><dd>−10s, +10s</dd><dt><kbd>M</kbd></dt><dd>sound</dd><dt><kbd>Y</kbd></dt><dd>open on YouTube</dd><dt><kbd>E</kbd></dt><dd>triage this video, from this moment</dd></dl></div>
   <div><h3>Pages</h3><dl>
    <dt><kbd>T</kbd></dt><dd>Triage (all ticked videos together if 2+)</dd><dt><kbd>W</kbd></dt><dd>Watch in Theater (all ticked in list order if 2+)</dd><dt><kbd>H</kbd></dt><dd>History</dd></dl></div>
  </div>
@@ -120,11 +121,11 @@ header{flex:none;display:flex;align-items:center;gap:10px;height:52px;padding:0 
 <script>
 var PLAYER=null,MUTED=(()=>{try{return localStorage.getItem('muted')==='1'}catch(e){return false}})();
 function destroyPlayer(){try{window.exitPlayerMode&&window.exitPlayerMode()}catch(e){}try{PLAYER&&PLAYER.destroy()}catch(e){}PLAYER=null}
-function muteLabel(){return MUTED?'Muted <kbd>M</kbd>':'Sound On <kbd>M</kbd>'}
+function muteLabel(){return MUTED?'Muted<kbd>M</kbd>':'Sound On<kbd>M</kbd>'}
 function setMuted(m){MUTED=m;try{localStorage.setItem('muted',m?'1':'0')}catch(e){}if(PLAYER&&PLAYER.mute){m?PLAYER.mute():PLAYER.unMute()}document.querySelectorAll('.mbtn').forEach(b=>b.innerHTML=muteLabel())}
 function logOpen(id,src){try{fetch('/api/watch/'+id+'/open',{method:'POST',headers:{'content-type':'application/json'},body:JSON.stringify({source:src})})}catch(e){}}
 let PEND_OPEN=null;   // {start,paused}: open the next preview cued at a moment instead of playing (coming back from the Watch page)
-function startPlayer(id){logOpen(id,'commander');destroyPlayer();const po=PEND_OPEN;PEND_OPEN=null;const mk=()=>{PLAYER=new YT.Player('pl_'+id,{host:'https://www.youtube-nocookie.com',videoId:id,playerVars:{autoplay:po&&po.paused?0:1,start:po?Math.floor(po.start||0):0,mute:MUTED?1:0,rel:0,playsinline:1},events:{onReady:e=>{MUTED?e.target.mute():e.target.unMute();if(po&&po.paused){try{e.target.pauseVideo()}catch(x){}say('Paused at '+Math.floor((po.start||0)/60)+':'+String(Math.floor(po.start||0)%60).padStart(2,'0')+', where you left it on the Watch page',3500)}else e.target.playVideo()}}})};if(window.YT&&YT.Player)mk();else{const t=setInterval(()=>{if(window.YT&&YT.Player){clearInterval(t);mk()}},200)}}
+function startPlayer(id){logOpen(id,'commander');destroyPlayer();const po=PEND_OPEN;PEND_OPEN=null;const mk=()=>{PLAYER=new YT.Player('pl_'+id,{host:'https://www.youtube-nocookie.com',videoId:id,playerVars:{autoplay:po&&po.paused?0:1,start:po?Math.floor(po.start||0):0,mute:MUTED?1:0,rel:0,playsinline:1},events:{onReady:e=>{MUTED?e.target.mute():e.target.unMute();if(po&&po.paused){try{e.target.pauseVideo()}catch(x){}say('Paused at '+Math.floor((po.start||0)/60)+':'+String(Math.floor(po.start||0)%60).padStart(2,'0')+', where you left off',3500)}else e.target.playVideo()}}})};if(window.YT&&YT.Player)mk();else{const t=setInterval(()=>{if(window.YT&&YT.Player){clearInterval(t);mk()}},200)}}
 let TAGS=[],SM={},cur={},J=async(u,o)=>(await fetch(u,o)).json();
 const esc=s=>(s||'').replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
 const AL={recent_adds:'Recent Adds',duplicates:'In Several Playlists',unavailable:'Unavailable',untagged_inbox:'Watch Later, Not Yet Sorted'};
@@ -189,7 +190,7 @@ list.addEventListener('click',async e=>{const a=e.target.closest('.row a');if(!a
  acc.innerHTML=`<span class="pwret b4"></span><div class="pw stage"><div id="pl_${id}"></div></div><span class="pwret fkey flash"><kbd>F</kbd> Video Controls</span><div class=meta id=m${id}>Loading…</div>`;acc.querySelectorAll('.pwret').forEach(x=>yc.sentinel(x,retList));startPlayer(id);
  it.scrollIntoView({block:'nearest'});
  const v=await J('/api/video/'+id);const m=acc.querySelector('.meta');if(!m)return;m.dataset.v=id;
- m.innerHTML=`<span style="color:var(--fg)">${esc(v.channel||'')}</span><span class=tags>${v.tags.map(t=>`<span class="chip${t.confirmed?'':' s'}" style="margin:0" title="${t.confirmed?'':'Suggested from a playlist; not confirmed yet'}">${esc(t.name)}</span>`).join('')||'<span>no tags</span>'}</span><span title="Playlists this video is in">in ${v.playlists.map(p=>esc(p.title)).join(', ')}</span><span class=acts><button class="wbtn sm" title="Open on the Watch page with notes, loop and queue, carrying on from this moment (W)">Watch in Theater<kbd>W</kbd></button><a class=btn target=_blank href="https://youtu.be/${id}" title="Some owners block embedding; it always plays on YouTube">Open on YouTube</a><button class="mbtn sm ghost" title="Sound on/off (M)">${muteLabel()}</button><button class="tbtn sm" id=tb${id} title="Triage only this video (E)">Triage This Video<kbd>E</kbd></button></span>`});
+ m.innerHTML=`<span style="color:var(--fg)">${esc(v.channel||'')}</span><span class=tags>${v.tags.map(t=>`<span class="chip${t.confirmed?'':' s'}" style="margin:0" title="${t.confirmed?'':'Suggested from a playlist; not confirmed yet'}">${esc(t.name)}</span>`).join('')||'<span>no tags</span>'}</span><span title="Playlists this video is in">in ${v.playlists.map(p=>esc(p.title)).join(', ')}</span><span class=acts><button class="wbtn sm" title="Open on the Watch page with notes, loop and queue, carrying on from this moment (W)">Watch in Theater<kbd>W</kbd></button><button class="ybtn sm" title="Open on YouTube in a new tab (Y). Some owners block embedding; it always plays there.">Open on YouTube<kbd>Y</kbd></button><button class="mbtn sm" title="Sound on/off (M)">${muteLabel()}</button><button class="tbtn sm" id=tb${id} title="Triage only this video, carrying on from this moment (E)">Triage This Video<kbd>E</kbd></button></span>`});
 let to;s.oninput=()=>{clearTimeout(to);sw.classList.toggle('has',!!s.value);to=setTimeout(()=>{LASTQ=s.value;if(s.value){cur.audit=null;setView({...cur,search:true})}else setView(cur);load()},250)};
 sclr.onclick=()=>{s.value='';s.oninput();s.focus()};
 const typing=el=>yc.typing(el);
@@ -218,7 +219,8 @@ addEventListener('keydown',e=>{const a=document.activeElement;
  if(k=='Enter'&&r[CUR]){e.preventDefault();RUN=null;const cb=r[CUR].querySelector('.sel');cb.checked=!cb.checked;cb.checked?SEL.add(cb.dataset.v):SEL.delete(cb.dataset.v);bulkUI();return}
  if(k==' '&&r[CUR]){e.preventDefault();r[CUR].querySelector('.row a').click();return}
  if(document.querySelector('.item.open')&&PLAYER&&PLAYER.getCurrentTime){const kk=k.toLowerCase();if(kk=='m'){e.preventDefault();setMuted(!MUTED);return}if(kk=='k'){e.preventDefault();PLAYER.getPlayerState()==1?PLAYER.pauseVideo():PLAYER.playVideo();return}if(kk=='j'){e.preventDefault();PLAYER.seekTo(PLAYER.getCurrentTime()-10);return}if(kk=='l'){e.preventDefault();PLAYER.seekTo(PLAYER.getCurrentTime()+10);return}}
- if(k.toLowerCase()=='e'&&it){e.preventDefault();window.open('/triage?v='+it.dataset.v,'_blank');return}
+ if(k.toLowerCase()=='e'&&it){e.preventDefault();triageOne(it.dataset.v);return}
+ if(k.toLowerCase()=='y'&&it){e.preventDefault();window.open('https://youtu.be/'+it.dataset.v,'_blank','noopener');return}
  if(k.toLowerCase()=='t'){e.preventDefault();startTriage();return}
  if(k.toLowerCase()=='w'){e.preventDefault();watchNow();return}
  if(k.toLowerCase()=='h'){e.preventDefault();location.href='/history';return}
@@ -230,7 +232,8 @@ list.addEventListener('click',e=>{const row=e.target.closest('.row');if(!row||e.
  const g=getSelection();if(g&&!g.isCollapsed&&row.contains(g.anchorNode))return;
  const it=row.closest('.item'),cb=row.querySelector('.sel');if(!it||!cb)return;cb.checked=!cb.checked;cb.checked?SEL.add(cb.dataset.v):SEL.delete(cb.dataset.v);RUN=null;
  const r=rows(),i=r.indexOf(it);if(i>=0&&i!=CUR){r.forEach(x=>x.classList.remove('cur'));CUR=i;ANCH=i;it.classList.add('cur');list.setAttribute('aria-activedescendant',it.id)}bulkUI()});
-list.addEventListener('click',e=>{if(e.target.closest('.mbtn')){setMuted(!MUTED);return}if(e.target.closest('.wbtn')){watchNow();return}const b=e.target.closest('.tbtn');if(b)window.open('/triage?v='+b.closest('.item').dataset.v,'_blank')});
+function triageOne(v){const op=document.querySelector('.item.open');const ho=op&&op.dataset.v==v?handOff():'';saveState();location.href='/triage?v='+v+ho}
+list.addEventListener('click',e=>{if(e.target.closest('.mbtn')){setMuted(!MUTED);return}if(e.target.closest('.wbtn')){watchNow();return}if(e.target.closest('.ybtn')){window.open('https://youtu.be/'+e.target.closest('.item').dataset.v,'_blank','noopener');return}const b=e.target.closest('.tbtn');if(b)triageOne(b.closest('.item').dataset.v)});
 
 const SEL=new Set();
 const selInOrder=()=>{const seen=new Set(),out=[];rows().forEach(x=>{const v=x.dataset.v;if(SEL.has(v)){out.push(v);seen.add(v)}});SEL.forEach(v=>{if(!seen.has(v))out.push(v)});return out};
@@ -238,12 +241,12 @@ const pathOf=t=>{const m=Object.fromEntries(TAGS.map(x=>[x.id,x])),p=[];let x=t,
 let HASU=false;
 // W / "Watch in Theater": 2+ ticked play in list order; otherwise the open (or highlighted, or first) video, with the view as its queue.
 // t = where the open video is now, so the Watch page carries on from that moment.
-function watchNow(t){const r=rows(),op=document.querySelector('.item.open'),it=op||r[CUR]||r[0];let ids,v;
- if(t==null&&op&&PLAYER&&PLAYER.getCurrentTime)t=PLAYER.getCurrentTime();
- if(op&&PLAYER&&PLAYER.pauseVideo){try{PLAYER.pauseVideo()}catch(e){}}
+// the open preview's moment and play state, for handing to the Watch page or Triage (the preview pauses as we leave)
+function handOff(t){const op=document.querySelector('.item.open');if(!op||!PLAYER||!PLAYER.getCurrentTime)return '';if(t==null)t=PLAYER.getCurrentTime();const playing=PLAYER.getPlayerState&&PLAYER.getPlayerState()==1;try{PLAYER.pauseVideo()}catch(e){}return '&from=acc&p='+(playing?1:0)+(t>3?'&t='+Math.floor(t):'')}
+function watchNow(t){const r=rows(),op=document.querySelector('.item.open'),it=op||r[CUR]||r[0];let ids,v;const ho=handOff(t);
  if(!it&&SEL.size<2){say('Nothing to watch here: move onto a video first');return}
  if(SEL.size>=2){ids=selInOrder().slice(0,300);v=ids[0]}else if(it){v=it.dataset.v;ids=r.map(x=>x.dataset.v).slice(0,500)}else return;
- const at=(op&&op.dataset.v==v)?'&from=acc'+(t>3?'&t='+Math.floor(t):''):'';
+ const at=(op&&op.dataset.v==v)?ho:'';
  if(SEL.size<2&&cur.tag&&!s.value&&!cur.audit){saveState();location.href='/watch?v='+v+'&tag='+cur.tag+at;return}
  try{localStorage.setItem('watchIds',JSON.stringify(ids))}catch(e){}saveState();location.href='/watch?q=1&v='+v+at}
 function startTriage(){if(SEL.size>=2){const ids=selInOrder().slice(0,300);try{localStorage.setItem('batchIds',JSON.stringify(ids))}catch(e){}saveState();location.href='/triage?batch=1'+(ids.join(',').length<1500?'&ids='+ids.join(','):'')}else{saveState();location.href='/triage'}}
@@ -276,7 +279,7 @@ function saveState(){try{sessionStorage.setItem('cmdState',JSON.stringify({cur:{
 addEventListener('pagehide',saveState);
 let PENDING=null;
 let WB=null;   // {v,t} handed back by the Watch page: reopen that preview, paused at t
-function restoreOnce(){const wb=WB;WB=null;if(wb){const it=rows().find(x=>x.dataset.v==wb.v);if(it){PEND_OPEN={start:wb.t||0,paused:true};const r=rows(),i=r.indexOf(it);r.forEach(x=>x.classList.remove('cur'));CUR=i;ANCH=i;it.classList.add('cur');it.querySelector('.row a').click();if(PENDING)PENDING.CUR=-1}}
+function restoreOnce(){const wb=WB;WB=null;if(wb){const it=rows().find(x=>x.dataset.v==wb.v);if(it){PEND_OPEN={start:wb.t||0,paused:!wb.playing};const r=rows(),i=r.indexOf(it);r.forEach(x=>x.classList.remove('cur'));CUR=i;ANCH=i;it.classList.add('cur');it.querySelector('.row a').click();if(PENDING)PENDING.CUR=-1}}
  const p=PENDING;if(!p)return;PENDING=null;if(p.CUR>=0){const r=rows();if(r[p.CUR]){r.forEach(x=>x.classList.remove('cur'));CUR=p.CUR;ANCH=p.CUR;r[p.CUR].classList.add('cur');r[p.CUR].scrollIntoView({block:'nearest'})}}if(p.top)list.scrollTop=p.top}
 addEventListener('pageshow',e=>{if(e.persisted)location.reload()});   // coming back through the browser cache: rebuild from the saved state instead
 (async function boot(){let st=null;try{st=JSON.parse(sessionStorage.getItem('cmdState')||'null');sessionStorage.removeItem('cmdState');WB=JSON.parse(sessionStorage.getItem('watchBack')||'null');sessionStorage.removeItem('watchBack')}catch(e){}

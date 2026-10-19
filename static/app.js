@@ -94,7 +94,7 @@
  yc.playerMode=o=>{
   const st={on:false,yt:false};
   const P=()=>o.player&&o.player(),box=()=>o.box&&o.box(),frame=()=>o.frame&&o.frame(),extra=o.keys||{};
-  const items=()=>[[KB('Space')+' '+KB('K'),'play / pause'],[KB('←')+KB('→'),'5 s'],[KB('J')+KB('L'),'10 s'],[KB('↑')+KB('↓'),'volume'],[KB('M'),'mute'],[KB('0')+'–'+KB('9'),'jump'],[KB('&lt;')+KB('&gt;'),'speed'],[KB('F'),'fullscreen'],
+  const items=()=>[[KB('Space'),'play / pause'],[KB('←')+KB('→'),'5 s'],[KB('J')+KB('L'),'10 s'],[KB('↑')+KB('↓'),'volume'],[KB('M'),'mute'],[KB('0')+'–'+KB('9'),'jump'],[KB('&lt;')+KB('&gt;'),'speed'],[KB('F'),'fullscreen'],
    ...Object.keys(extra).map(k=>[KB(k.toUpperCase()),extra[k].label]),[KB('Tab'),'Exit YouTube Video Controls'],[KB('Esc'),'done']];
   const card=()=>st.on?'<b>Video Controls ON</b><div class=hk>'+items().map(x=>'<span>'+x[0]+' '+x[1]+'</span>').join('')+'</div>'
    :st.yt?'<b>YouTube’s own controls have the keyboard</b><div>Tab or Shift+Tab past them, or click outside the video, to come back. '+KB('F')+' in there is YouTube’s fullscreen.</div>':null;

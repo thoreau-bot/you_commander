@@ -109,7 +109,7 @@ const esc=s=>(s||'').replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"
 const $=id=>document.getElementById(id);
 const fmt=s=>{s=Math.max(0,Math.floor(s||0));const h=Math.floor(s/3600),m=Math.floor(s%3600/60),x=s%60;return (h?h+':'+String(m).padStart(2,'0'):m)+':'+String(x).padStart(2,'0')};
 let V=null,Q=[],qi=0,TAGS=[],player=null,ready=false,LOG=null,SP=1,LOOP={a:null,b:null},sel=0,MK=null,lastTick=Date.now(),delta=0,sinceFlush=0,pending=null;
-const seg=new URLSearchParams(location.search),TAGQ=seg.get('tag'),FROM_ACC=seg.get('from')=='acc';   // from a Commander preview: Esc hands the moment back
+const seg=new URLSearchParams(location.search),TAGQ=seg.get('tag'),FROM_ACC=seg.get('from')=='acc',P0=seg.get('p');   // p=0: arrive paused at t; p=1 (or absent): play   // from a Commander preview: Esc hands the moment back
 const toast=(t,ms)=>yc.toast(t,ms||2200);
 // ---------- player ----------
 window.onYouTubeIframeAPIReady=()=>{ready=true;if(pending){const p=pending;pending=null;startPlayer(p.id,p.start)}};
@@ -117,7 +117,7 @@ const muted0=()=>{try{return localStorage.getItem('muted')==='1'}catch(e){return
 function startPlayer(id,start){if(!ready){pending={id,start};return}
  $('fail').style.display='none';
  if(player&&player.loadVideoById){player.loadVideoById({videoId:id,startSeconds:start||0});return}
- player=new YT.Player('yt',{videoId:id,playerVars:{autoplay:1,mute:muted0()?1:0,rel:0,playsinline:1,start:Math.floor(start||0)},events:{onReady:e=>{if(muted0())e.target.mute();applySpeed();syncUI()},onStateChange:onState,onError:onErr}})}
+ const paused0=P0==='0';player=new YT.Player('yt',{videoId:id,playerVars:{autoplay:paused0?0:1,mute:muted0()?1:0,rel:0,playsinline:1,start:Math.floor(start||0)},events:{onReady:e=>{if(muted0())e.target.mute();if(paused0){try{e.target.pauseVideo()}catch(x){}}applySpeed();syncUI()},onStateChange:onState,onError:onErr}})}
 function onState(e){if(e.data===1){applySpeed();lastTick=Date.now()}if(e.data===0){flush(true,0);if($('auto').checked&&!LOOP.b)next(true)}syncUI()}
 try{if(localStorage.getItem('autoplay')==='0')$('auto').checked=false}catch(e){}$('auto').onchange=()=>{try{localStorage.setItem('autoplay',$('auto').checked?'1':'0')}catch(e){}toast($('auto').checked?'Autoplay on':'Autoplay off')};
 function onErr(e){const c=e.data;const why={2:'invalid video id',5:'player problem',100:'video removed or private',101:'the owner disabled embedding',150:'the owner disabled embedding',152:'age-restricted or embedding blocked'}[c]||'playback error';
@@ -252,7 +252,7 @@ $('bsn').onclick=toggleMute;
 function fullscreen(){const f=document.querySelector('#pl iframe');if(f&&f.requestFullscreen)f.requestFullscreen()}
 $('bfs').onclick=fullscreen;$('bpv').onclick=prev;$('bnx').onclick=()=>next(false);
 // ---------- keys ----------
-function leave(){saveNote();flush(true);if(FROM_ACC&&V){try{sessionStorage.setItem('watchBack',JSON.stringify({v:V.video_id,t:Math.floor(cur())}))}catch(e){}}let same=false;try{same=document.referrer&&new URL(document.referrer).origin==location.origin}catch(e){}if(same&&history.length>1)history.back();else location.href='/'}
+function leave(){saveNote();flush(true);if(FROM_ACC&&V){try{sessionStorage.setItem('watchBack',JSON.stringify({v:V.video_id,t:Math.floor(cur()),playing:!!(pl()&&pl().getPlayerState()==1)}))}catch(e){}}let same=false;try{same=document.referrer&&new URL(document.referrer).origin==location.origin}catch(e){}if(same&&history.length>1)history.back();else location.href='/'}
 addEventListener('keydown',e=>{
  if(QF>=0&&!e.ctrlKey&&!e.metaKey){const a1=document.activeElement;if(!yc.typing(a1)&&!yc.onControl(e)){const kk=e.key,n=Q.length;let h=true;
   if(e.altKey&&(kk=='ArrowUp'||kk=='ArrowDown')){const to=QF+(kk=='ArrowUp'?-1:1);if(moveQ(QF,to)){QF=to;paintQF(true);toast('Moved to position '+(to+1)+' of '+n)}else toast(kk=='ArrowUp'?'Already first':'Already last')}
@@ -346,7 +346,7 @@ function nothing(title,text){document.getElementById('wrap').style.display='none
  let start=v0||(Q[0]&&Q[0].video_id);
  if(!start){nothing('Nothing to watch yet','Open a video from the Commander page and press W, or tick several and press W to play them in order.');return}
  if(!Q.some(x=>x.video_id==start))Q=[{video_id:start,title:null}].concat(Q);
- const t0=seg.get('t');if(t0!=null||FROM_ACC){try{const u=new URL(location.href);u.searchParams.delete('t');u.searchParams.delete('from');history.replaceState(history.state,'',u)}catch(e){}}
- const KBx=k=>'<kbd>'+k+'</kbd>';yc.hint('<b>Video Controls ON</b><div class=hk>'+[[KBx('Space')+' '+KBx('K'),'play / pause'],[KBx('←')+KBx('→'),'5 s'],[KBx('J')+KBx('L'),'10 s'],[KBx('↑')+KBx('↓'),'volume'],[KBx('M'),'mute'],[KBx('0')+'–'+KBx('9'),'jump'],[KBx('&lt;')+KBx('&gt;'),'speed'],[KBx('[')+KBx(']')+KBx('\\'),'loop A, B, clear'],[KBx('B')+KBx('V'),'note, voice note'],[KBx('PgUp')+KBx('PgDn'),'queue'],[KBx('F'),'fullscreen'],[KBx('Esc'),'back']].map(x=>'<span>'+x[0]+' '+x[1]+'</span>').join('')+'</div>');
+ const t0=seg.get('t');if(t0!=null||FROM_ACC){try{const u=new URL(location.href);u.searchParams.delete('t');u.searchParams.delete('from');u.searchParams.delete('p');history.replaceState(history.state,'',u)}catch(e){}}
+ const KBx=k=>'<kbd>'+k+'</kbd>';yc.hint('<b>Video Controls ON</b><div class=hk>'+[[KBx('Space'),'play / pause'],[KBx('←')+KBx('→'),'5 s'],[KBx('J')+KBx('L'),'10 s'],[KBx('↑')+KBx('↓'),'volume'],[KBx('M'),'mute'],[KBx('0')+'–'+KBx('9'),'jump'],[KBx('&lt;')+KBx('&gt;'),'speed'],[KBx('[')+KBx(']')+KBx('\\'),'loop A, B, clear'],[KBx('B')+KBx('V'),'note, voice note'],[KBx('PgUp')+KBx('PgDn'),'queue'],[KBx('F'),'fullscreen'],[KBx('Esc'),'back']].map(x=>'<span>'+x[0]+' '+x[1]+'</span>').join('')+'</div>');
  $('cnt').textContent='';await loadVideo(start,t0!=null&&start==v0?Math.max(0,parseInt(t0,10)||0):undefined)})();
 </script>

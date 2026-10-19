@@ -13,11 +13,11 @@ Press `?` on any page for an overlay with that page's shortcuts (`Esc` or `?` cl
 | `←` / `Shift+Tab` | Move into the rail (library, audits, playlists, tags); `→` returns |
 | double-click a tag | Rename it (or edit the name in the tag sheet and Save) |
 | `T` | Start Triage (with 2+ ticked: batch triage) |
-| `W` | Watch in Theater: the open (or highlighted) video on the Watch page, carrying on from where it is; with 2+ ticked, those in list order. Also in the rail. From an open preview the preview pauses, and `Esc` on the Watch page brings you back with the same video open, paused where the Watch page left it. |
+| `W` | Watch in Theater: the open (or highlighted) video on the Watch page, carrying on from where it is; with 2+ ticked, those in list order. Also in the rail. From an open preview the preview pauses; the Watch page picks up at the same moment in the same play state, and `Esc` there brings you back with the same video open, at the Watch page's time and play state. `E` does the same with Triage. |
 | `H` | History |
 | `Esc` | Close preview, or clear filters |
 | `Z` | Undo, while an undo toast is showing (Watch: note delete, Drop) |
-| In preview: `K` `J` `L` `M` | Play-pause, back 10 s, forward 10 s, mute |
+| In preview: `K` `J` `L` `M` `Y` `E` | Play-pause, back 10 s, forward 10 s, mute, open on YouTube, triage this video (from this moment; `Esc` in Triage comes back) |
 
 ## Video controls (`F`)
 On a Commander preview and in Triage, `F` turns video controls on; `Esc` is the only way to turn them off (in fullscreen, the first `Esc` leaves fullscreen). While they are on: `Space`/`K` play-pause, `←/→` ±5 s, `J/L` ±10 s, `↑/↓` volume, `M` mute, `0`–`9` jump, `<` `>` speed, `Home`/`End` start/end, `F` or `Enter` fullscreen, `W` Watch in Theater from the same moment, `Tab` hands the keyboard to YouTube's own controls (`Tab`/`Shift+Tab` past them comes back).

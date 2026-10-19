@@ -1,5 +1,14 @@
 # Changelog
 
+## 1.8.0
+Requested changes. Regression suite: 150 checks (14 new), all green.
+- The "F Video Controls" flash is magenta (new `--mag` tokens, both themes)
+- Play state travels with the moment: a playing preview hands a playing Watch page (from the same second); a paused one arrives paused. Coming back with `Esc` restores the preview at the Watch page's time and play state
+- The same hand-off for Triage: `E` (or Triage This Video) opens Triage in this tab at the preview's moment and play state; `Esc` there comes back to the preview likewise
+- Preview actions are four matching buttons: Watch in Theater `W`, Open on YouTube `Y` (new shortcut), Sound On `M`, Triage This Video `E`
+- The "Video Controls ON" card lists Space alone for play / pause (K still works)
+- Import from Takeout is a button in the rail, icon inside
+
 ## 1.7.0
 Requested changes. Regression suite: 136 checks (24 new), all green.
 - Commander rail: "Owner & Visibility" (singular). Every column of that view sorts: click a header, again to reverse; Videos starts descending. The sort is remembered on this computer
