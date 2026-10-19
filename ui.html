@@ -63,7 +63,7 @@ header{flex:none;display:flex;align-items:center;gap:10px;height:52px;padding:0 
 /* playlists view */
 .prow{display:grid;grid-template-columns:minmax(0,1fr) 150px 90px 56px;gap:12px;align-items:center;min-height:38px;padding:0 10px 0 34px;border-bottom:1px solid var(--bd);margin:0 10px}
 .prow .mut{font-size:var(--fs-s)}.prow .num{text-align:right}
-.phead{color:var(--mut);font-size:var(--fs-s);font-weight:600;min-height:30px}
+.phead{color:var(--mut);font-size:var(--fs-s);font-weight:600;min-height:30px}.phead button.sort{justify-content:flex-start;gap:5px;min-height:26px;height:26px;padding:0 6px;margin-left:-6px;border:0;background:none;color:var(--mut);font-size:var(--fs-s);font-weight:600}.phead button.sort:hover,.phead button.sort.on{color:var(--fg)}.phead button.sort.num{justify-content:flex-end;margin-left:0;margin-right:-6px}.phead .arrow{font-size:9px;color:var(--ac);min-width:9px}
 /* tag editor sheet */
 #ed{flex:none;display:none;padding:12px 16px 14px;border-top:1px solid var(--bd);background:var(--sf)}
 #ed .edrow{display:flex;flex-wrap:wrap;align-items:center;gap:8px 14px}
@@ -83,7 +83,7 @@ header{flex:none;display:flex;align-items:center;gap:10px;height:52px;padding:0 
  </nav>
  <div class=sec>Library</div><div class=tag id=all role=button title="Every video, in title order">All Videos<small id=alln></small></div>
  <div class=sec title="Views that find videos needing attention">Audits</div><div id=aud></div>
- <div class=sec>Playlists</div><div class=tag id=pl role=button title="Your playlists from YouTube: owner, visibility and size">Owners &amp; Visibility<small id=pln></small></div>
+ <div class=sec>Playlists</div><div class=tag id=pl role=button title="Your playlists from YouTube: owner, visibility and size">Owner &amp; Visibility<small id=pln></small></div>
  <div class=sec id=tagsec>Tags <button id=addtag class=ghost aria-label="Create a tag" title="Create a tag">+</button></div><div id=tags></div>
  <div class=rfoot><a class=si href="/import" title="Add or refresh playlists from a Google Takeout"><svg width=14 height=14 viewBox="0 0 16 16" fill=none stroke=currentColor stroke-width=1.7 stroke-linecap=round stroke-linejoin=round><path d="M8 11V3M4.5 6.5 8 3l3.5 3.5M3 13h10"/></svg>Import from Takeout</a></div>
 </aside>
@@ -123,7 +123,8 @@ function destroyPlayer(){try{window.exitPlayerMode&&window.exitPlayerMode()}catc
 function muteLabel(){return MUTED?'Muted <kbd>M</kbd>':'Sound On <kbd>M</kbd>'}
 function setMuted(m){MUTED=m;try{localStorage.setItem('muted',m?'1':'0')}catch(e){}if(PLAYER&&PLAYER.mute){m?PLAYER.mute():PLAYER.unMute()}document.querySelectorAll('.mbtn').forEach(b=>b.innerHTML=muteLabel())}
 function logOpen(id,src){try{fetch('/api/watch/'+id+'/open',{method:'POST',headers:{'content-type':'application/json'},body:JSON.stringify({source:src})})}catch(e){}}
-function startPlayer(id){logOpen(id,'commander');destroyPlayer();const mk=()=>{PLAYER=new YT.Player('pl_'+id,{host:'https://www.youtube-nocookie.com',videoId:id,playerVars:{autoplay:1,mute:MUTED?1:0,rel:0,playsinline:1},events:{onReady:e=>{MUTED?e.target.mute():e.target.unMute();e.target.playVideo()}}})};if(window.YT&&YT.Player)mk();else{const t=setInterval(()=>{if(window.YT&&YT.Player){clearInterval(t);mk()}},200)}}
+let PEND_OPEN=null;   // {start,paused}: open the next preview cued at a moment instead of playing (coming back from the Watch page)
+function startPlayer(id){logOpen(id,'commander');destroyPlayer();const po=PEND_OPEN;PEND_OPEN=null;const mk=()=>{PLAYER=new YT.Player('pl_'+id,{host:'https://www.youtube-nocookie.com',videoId:id,playerVars:{autoplay:po&&po.paused?0:1,start:po?Math.floor(po.start||0):0,mute:MUTED?1:0,rel:0,playsinline:1},events:{onReady:e=>{MUTED?e.target.mute():e.target.unMute();if(po&&po.paused){try{e.target.pauseVideo()}catch(x){}say('Paused at '+Math.floor((po.start||0)/60)+':'+String(Math.floor(po.start||0)%60).padStart(2,'0')+', where you left it on the Watch page',3500)}else e.target.playVideo()}}})};if(window.YT&&YT.Player)mk();else{const t=setInterval(()=>{if(window.YT&&YT.Player){clearInterval(t);mk()}},200)}}
 let TAGS=[],SM={},cur={},J=async(u,o)=>(await fetch(u,o)).json();
 const esc=s=>(s||'').replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
 const AL={recent_adds:'Recent Adds',duplicates:'In Several Playlists',unavailable:'Unavailable',untagged_inbox:'Watch Later, Not Yet Sorted'};
@@ -152,9 +153,14 @@ railw.onclick=e=>{if(e.ctrlKey||e.metaKey||e.shiftKey||e.button)return;e.prevent
 function drawTags(){const kids={};TAGS.forEach(t=>(kids[t.parent_id||0]=kids[t.parent_id||0]||[]).push(t));
  const f=(p,d)=>(kids[p]||[]).map(t=>`<div class="tag${cur.tag==t.id?' on':''}" role=button style="padding-left:${10+d*14}px" data-t=${t.id} title="${t.publish?'Published as a playlist. ':''}Double-click to rename">${esc(t.name)}${t.publish?' ↗':''}<small>${t.n}</small></div>`+f(t.id,d+1)).join('');
  tags.innerHTML=f(0,0)}
-pl.onclick=async()=>{setView({});window.__pl=true;pl.classList.add('on');all.classList.remove('on');bsa.style.display='none';const r=await J('/api/playlists');
- vt.innerHTML=`<span class=crumb>Library / </span>Playlists<small>${r.length} from your accounts</small>`;info.textContent=r.length+' playlists';
- list.innerHTML=`<div class="prow phead"><span>Playlist</span><span>Owner</span><span>Visibility</span><span class=num>Videos</span></div>`+r.map(p=>`<div class=prow><span class=t>${esc(p.title)}</span><span class="mut t">${esc(p.owner)}</span><span class=mut>${esc(p.visibility)}</span><span class=num>${p.item_count}</span></div>`).join('')};
+// Owner & Visibility: every column sorts (click a header; again to reverse). The sort is remembered on this computer.
+let PLR=[],PSORT=(()=>{try{return JSON.parse(localStorage.getItem('plSort')||'null')}catch(e){return null}})()||{k:'title',d:1};
+const PCOLS=[['title','Playlist'],['owner','Owner'],['visibility','Visibility'],['item_count','Videos']];
+function drawPl(){const {k,d}=PSORT;const r=[...PLR].sort((a,b)=>{const x=a[k],y=b[k];const c=typeof x=='number'||typeof y=='number'?(x||0)-(y||0):String(x||'').localeCompare(String(y||''),undefined,{sensitivity:'base',numeric:true});return c*d||String(a.title||'').localeCompare(String(b.title||''))});
+ list.innerHTML=`<div class="prow phead" role=row>${PCOLS.map(([c,l])=>`<button class="sort${c=='item_count'?' num':''}${c==k?' on':''}" data-sort=${c} aria-sort="${c==k?(d>0?'ascending':'descending'):'none'}" title="Sort by ${l.toLowerCase()}${c==k?(d>0?' (descending next)':' (ascending next)'):''}">${l}<span class=arrow aria-hidden=true>${c==k?(d>0?'▲':'▼'):''}</span></button>`).join('')}</div>`+r.map(p=>`<div class=prow><span class=t>${esc(p.title)}</span><span class="mut t">${esc(p.owner)}</span><span class=mut>${esc(p.visibility)}</span><span class=num>${p.item_count}</span></div>`).join('');
+ list.querySelectorAll('[data-sort]').forEach(b=>b.onclick=()=>{const c=b.dataset.sort;PSORT=c==PSORT.k?{k:c,d:-PSORT.d}:{k:c,d:c=='item_count'?-1:1};try{localStorage.setItem('plSort',JSON.stringify(PSORT))}catch(e){}drawPl()})}
+pl.onclick=async()=>{setView({});window.__pl=true;pl.classList.add('on');all.classList.remove('on');bsa.style.display='none';PLR=await J('/api/playlists');
+ vt.innerHTML=`<span class=crumb>Library / </span>Owner &amp; Visibility<small>${PLR.length} playlists from your accounts</small>`;info.textContent=PLR.length+' playlists';drawPl()};
 tags.onclick=e=>{const d=e.target.closest('[data-t]');if(d){setView({tag:+d.dataset.t});load();edit(+d.dataset.t)}};
 tags.ondblclick=async e=>{const d=e.target.closest('[data-t]');if(!d)return;const t=TAGS.find(x=>x.id==d.dataset.t);const n=await yc.prompt({anchor:d,label:'Rename tag',value:t.name,ok:'Rename'});if(n&&n!=t.name){await J('/api/tags/'+t.id,{method:'PATCH',headers:{'content-type':'application/json'},body:JSON.stringify({name:n})});await init();if(cur.tag==t.id){setView({tag:t.id,keepSearch:true});viewTitle(OFF,false);edit(t.id)}say('Renamed to “'+n+'”')}};
 addtag.onclick=async()=>{const n=await yc.prompt({anchor:addtag,label:'New tag name',ok:'Create'});if(n){const r=await J('/api/tags',{method:'POST',headers:{'content-type':'application/json'},body:JSON.stringify({name:n})});if(r.error){say(r.error,4000);return}await init();say('Tag “'+n+'” created');const el=tags.querySelector(`[data-t="${r.id}"]`);if(el){el.classList.add('flash');setTimeout(()=>el.classList.remove('flash'),2300)}}};
@@ -180,7 +186,7 @@ list.addEventListener('click',async e=>{const a=e.target.closest('.row a');if(!a
  const it=a.closest('.item');const was=it.classList.contains('open');
  destroyPlayer();document.querySelectorAll('.item.open').forEach(x=>{x.classList.remove('open');x.querySelector('.acc').innerHTML=''});
  if(was)return;const id=it.dataset.v,acc=it.querySelector('.acc');it.classList.add('open');
- acc.innerHTML=`<span class="pwret b4"></span><div class="pw stage"><div id="pl_${id}"></div></div><span class=pwret><kbd>F</kbd> video controls</span><div class=meta id=m${id}>Loading…</div>`;acc.querySelectorAll('.pwret').forEach(x=>yc.sentinel(x,retList));startPlayer(id);
+ acc.innerHTML=`<span class="pwret b4"></span><div class="pw stage"><div id="pl_${id}"></div></div><span class="pwret fkey flash"><kbd>F</kbd> Video Controls</span><div class=meta id=m${id}>Loading…</div>`;acc.querySelectorAll('.pwret').forEach(x=>yc.sentinel(x,retList));startPlayer(id);
  it.scrollIntoView({block:'nearest'});
  const v=await J('/api/video/'+id);const m=acc.querySelector('.meta');if(!m)return;m.dataset.v=id;
  m.innerHTML=`<span style="color:var(--fg)">${esc(v.channel||'')}</span><span class=tags>${v.tags.map(t=>`<span class="chip${t.confirmed?'':' s'}" style="margin:0" title="${t.confirmed?'':'Suggested from a playlist; not confirmed yet'}">${esc(t.name)}</span>`).join('')||'<span>no tags</span>'}</span><span title="Playlists this video is in">in ${v.playlists.map(p=>esc(p.title)).join(', ')}</span><span class=acts><button class="wbtn sm" title="Open on the Watch page with notes, loop and queue, carrying on from this moment (W)">Watch in Theater<kbd>W</kbd></button><a class=btn target=_blank href="https://youtu.be/${id}" title="Some owners block embedding; it always plays on YouTube">Open on YouTube</a><button class="mbtn sm ghost" title="Sound on/off (M)">${muteLabel()}</button><button class="tbtn sm" id=tb${id} title="Triage only this video (E)">Triage This Video<kbd>E</kbd></button></span>`});
@@ -234,9 +240,10 @@ let HASU=false;
 // t = where the open video is now, so the Watch page carries on from that moment.
 function watchNow(t){const r=rows(),op=document.querySelector('.item.open'),it=op||r[CUR]||r[0];let ids,v;
  if(t==null&&op&&PLAYER&&PLAYER.getCurrentTime)t=PLAYER.getCurrentTime();
+ if(op&&PLAYER&&PLAYER.pauseVideo){try{PLAYER.pauseVideo()}catch(e){}}
  if(!it&&SEL.size<2){say('Nothing to watch here: move onto a video first');return}
  if(SEL.size>=2){ids=selInOrder().slice(0,300);v=ids[0]}else if(it){v=it.dataset.v;ids=r.map(x=>x.dataset.v).slice(0,500)}else return;
- const at=(op&&op.dataset.v==v&&t>3)?'&t='+Math.floor(t):'';
+ const at=(op&&op.dataset.v==v)?'&from=acc'+(t>3?'&t='+Math.floor(t):''):'';
  if(SEL.size<2&&cur.tag&&!s.value&&!cur.audit){saveState();location.href='/watch?v='+v+'&tag='+cur.tag+at;return}
  try{localStorage.setItem('watchIds',JSON.stringify(ids))}catch(e){}saveState();location.href='/watch?q=1&v='+v+at}
 function startTriage(){if(SEL.size>=2){const ids=selInOrder().slice(0,300);try{localStorage.setItem('batchIds',JSON.stringify(ids))}catch(e){}saveState();location.href='/triage?batch=1'+(ids.join(',').length<1500?'&ids='+ids.join(','):'')}else{saveState();location.href='/triage'}}
@@ -268,8 +275,11 @@ const P=(u,b)=>J(u,{method:'POST',headers:{'content-type':'application/json'},bo
 function saveState(){try{sessionStorage.setItem('cmdState',JSON.stringify({cur:{tag:cur.tag,audit:cur.audit},s:s.value,CUR,top:list.scrollTop,pl:!!window.__pl,sel:[...SEL]}))}catch(e){}}
 addEventListener('pagehide',saveState);
 let PENDING=null;
-function restoreOnce(){const p=PENDING;if(!p)return;PENDING=null;if(p.CUR>=0){const r=rows();if(r[p.CUR]){r.forEach(x=>x.classList.remove('cur'));CUR=p.CUR;ANCH=p.CUR;r[p.CUR].classList.add('cur');r[p.CUR].scrollIntoView({block:'nearest'})}}if(p.top)list.scrollTop=p.top}
-(async function boot(){let st=null;try{st=JSON.parse(sessionStorage.getItem('cmdState')||'null');sessionStorage.removeItem('cmdState')}catch(e){}
+let WB=null;   // {v,t} handed back by the Watch page: reopen that preview, paused at t
+function restoreOnce(){const wb=WB;WB=null;if(wb){const it=rows().find(x=>x.dataset.v==wb.v);if(it){PEND_OPEN={start:wb.t||0,paused:true};const r=rows(),i=r.indexOf(it);r.forEach(x=>x.classList.remove('cur'));CUR=i;ANCH=i;it.classList.add('cur');it.querySelector('.row a').click();if(PENDING)PENDING.CUR=-1}}
+ const p=PENDING;if(!p)return;PENDING=null;if(p.CUR>=0){const r=rows();if(r[p.CUR]){r.forEach(x=>x.classList.remove('cur'));CUR=p.CUR;ANCH=p.CUR;r[p.CUR].classList.add('cur');r[p.CUR].scrollIntoView({block:'nearest'})}}if(p.top)list.scrollTop=p.top}
+addEventListener('pageshow',e=>{if(e.persisted)location.reload()});   // coming back through the browser cache: rebuild from the saved state instead
+(async function boot(){let st=null;try{st=JSON.parse(sessionStorage.getItem('cmdState')||'null');sessionStorage.removeItem('cmdState');WB=JSON.parse(sessionStorage.getItem('watchBack')||'null');sessionStorage.removeItem('watchBack')}catch(e){}
  await init();HASU=(await J('/api/bulk/last')).length>0;bulkUI();
  if(st&&st.pl){pl.onclick();return}
  if(st){s.value=st.s||'';(st.sel||[]).forEach(v=>SEL.add(v));bulkUI();setView({tag:st.cur.tag||undefined,audit:st.cur.audit||undefined,search:!!st.s});PENDING=st;if(st.cur.tag)edit(st.cur.tag)}else setView({});

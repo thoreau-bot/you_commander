@@ -40,7 +40,7 @@
 </style>
 <div class=topbar><a class=brand href="/" title="Back to Commander"><svg width=24 height=24 viewBox="0 0 32 32" role=img aria-label=YouCommander><rect width=32 height=32 rx=8 fill="var(--ac)"/><g fill=none stroke="var(--ac-fg)" stroke-width=2.6 stroke-linecap=round stroke-linejoin=round><polyline points="9,13 16,7.5 23,13"/><polyline points="9,20 16,14.5 23,20"/><line x1=12 y1=26 x2=20 y2=26 /></g></svg></a><nav><a href="/">Commander</a><a class=here>Triage</a><a href="/watch" title="The player with notes, loop and queue">Watch</a><a href="/history" title="Everything you've opened or watched in the app">History</a></nav><span class=fill></span><span id=pos class=meta></span><span id=cnt class=meta></span><button class="ghost help" data-help title="Keyboard shortcuts (?)">?</button></div>
 <main id=wrap>
-<section><span class="pwret b4" tabindex=-1></span><div id=pl class=stage><div id=yt></div></div><span class=pwret tabindex=-1><kbd>F</kbd> video controls</span><div id=fhint></div><h1 id=ti></h1><div class=mut id=ch></div><div id=pls></div></section>
+<section><span class="pwret b4" tabindex=-1></span><div id=pl class=stage><div id=yt></div></div><span class="pwret fkey" tabindex=-1><kbd>F</kbd> Video Controls</span><div id=fhint></div><h1 id=ti></h1><div class=mut id=ch></div><div id=pls></div></section>
 <section class=side><div class=panel><div class=in>
  <div class=lbl title="Dashed tags are suggestions from your playlists; Confirm keeps them"><span id=tglab>Tags</span></div><div id=tg></div>
  <div class=tagwrap><input id=ti2 placeholder="Add a tag…" style="width:100%" autocomplete=off aria-label="Add a tag"><kbd>T</kbd><div id=sugg style="display:none" role=listbox></div></div>
@@ -109,7 +109,7 @@ yc.tagPicker(ti2,sugg,{tags:()=>TAGS,pathOf,onPick:id=>pick(id),onCreate:n=>crea
 note.onkeydown=e=>{if(e.key=='Escape'){e.preventDefault();e.stopPropagation();note.blur()}};
 // W / Watch in Theater: this video on the Watch page, carrying on from the current moment; Esc there comes back here, to the same video.
 // In a batch: the highlighted (or previewed, or first) video, with the whole batch as its queue.
-async function watchHere(t){if(t==null){const p=window.__getPlayer&&window.__getPlayer();t=p&&p.getCurrentTime?p.getCurrentTime():0}const at=t>3?'&t='+Math.floor(t):'';
+async function watchHere(t){const p0=window.__getPlayer&&window.__getPlayer();if(t==null)t=p0&&p0.getCurrentTime?p0.getCurrentTime():0;if(p0&&p0.pauseVideo){try{p0.pauseVideo()}catch(e){}}const at=t>3?'&t='+Math.floor(t):'';
  if(window.BATCH){const ids=[...document.querySelectorAll('#batch details')].map(d=>d.dataset.v);const v=(window.__bTarget&&window.__bTarget())||ids[0];if(!v){yc.toast('Nothing to watch here');return}try{localStorage.setItem('watchIds',JSON.stringify(ids))}catch(e){}location.href='/watch?q=1&v='+v+at;return}
  if(!cur||DONE){yc.toast('Nothing to watch here');return}
  if(note.value!==(cur.note||''))await P(`/api/video/${cur.video_id}/triage`,{action:'note',note:note.value});
@@ -196,7 +196,7 @@ function boxOf(id){return batch.querySelector(`[data-pv="${id}"]`)}
 function openPrev(id,start,after){const box=boxOf(id);if(!box)return;box.style.display='block';if(!ready||!window.YT||!YT.Player){if(!box.dataset.wait){box.dataset.wait=1;box.innerHTML='<div class=mut style="padding:14px;color:#aab">Loading the player…</div>'}setTimeout(()=>openPrev(id,start,after),300);return}
  delete box.dataset.wait;box.innerHTML='<div id="bp_'+id+'"></div>';OP.add(id);LASTP=id;
  box.insertAdjacentHTML('beforebegin','<span class="pwret b4" data-sent=1></span>');
- box.insertAdjacentHTML('afterend','<span class=pwret data-sent=1><kbd>F</kbd> video controls</span>');[box.previousElementSibling,box.nextElementSibling].forEach(x=>yc.sentinel(x,retList));
+ box.insertAdjacentHTML('afterend','<span class="pwret fkey" data-sent=1><kbd>F</kbd> Video Controls</span>');[box.previousElementSibling,box.nextElementSibling].forEach(x=>yc.sentinel(x,retList));
  PL[id]=new YT.Player('bp_'+id,{videoId:id,playerVars:{autoplay:1,mute:1,rel:0,playsinline:1,start:Math.floor(start||0)},events:{onReady:e=>{e.target.mute();if(after)after()}}})}
 function closePrev(id){if(window.__pmOn&&window.__pmOn())window.exitPlayerMode();try{PL[id]&&PL[id].destroy()}catch(e){}delete PL[id];OP.delete(id);const box=boxOf(id);if(box){[box.previousElementSibling,box.nextElementSibling].forEach(x=>x&&x.dataset.sent&&x.remove());box.innerHTML='';box.style.display='none'}}
 function togglePrev(id){OP.has(id)?closePrev(id):openPrev(id,0)}

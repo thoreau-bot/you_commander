@@ -35,7 +35,7 @@ main{max-width:1120px;margin:auto;padding:18px 22px 60px}
 </main>
 <div id=help><div class=card>
  <h2>Keyboard shortcuts<span class=mut>Esc or ? closes</span></h2>
- <div class=cols><div><dl><dt><kbd>↑</kbd><kbd>↓</kbd></dt><dd>move</dd><dt><kbd>Enter</kbd></dt><dd>watch</dd><dt><kbd>/</kbd></dt><dd>filter</dd><dt><kbd>Esc</kbd></dt><dd>back to Commander</dd></dl></div></div>
+ <div class=cols><div><dl><dt><kbd>↑</kbd><kbd>↓</kbd></dt><dd>move</dd><dt><kbd>Home</kbd><kbd>End</kbd></dt><dd>first, last</dd><dt><kbd>Enter</kbd><kbd>W</kbd></dt><dd>Watch in Theater: this video, with the rest of the list as its queue in this order</dd><dt><kbd>T</kbd></dt><dd>triage this video</dd><dt><kbd>/</kbd></dt><dd>filter</dd><dt><kbd>Esc</kbd></dt><dd>back to Commander</dd></dl></div></div>
 </div></div>
 <script src="/static/app.js"></script>
 <script>
@@ -53,13 +53,21 @@ function draw(){const L=shown();FI=Math.min(FI,Math.max(0,L.length-1));paintChip
  wq.disabled=!L.length;
  const f=list.querySelector('.f');if(f)f.scrollIntoView({block:'nearest'})}
 chips.onclick=e=>{if(e.target.dataset.m){MODE=e.target.dataset.m;FI=0;draw();const b=chips.querySelector(`[data-m=${MODE}]`);if(b&&e.detail===0)b.focus()}};fq.oninput=()=>{FI=0;draw()};
-list.onclick=e=>{const r=e.target.closest('[data-v]');if(r)location.href='/watch?v='+r.dataset.v};
+list.onclick=e=>{const r=e.target.closest('[data-v]');if(!r)return;const L=shown(),k=L.findIndex(x=>x.video_id==r.dataset.v);watchFrom(k<0?0:k)};
 cw.onclick=e=>{const r=e.target.closest('[data-v]');if(r)location.href='/watch?v='+r.dataset.v};
 wq.onclick=()=>{const ids=shown().map(x=>x.video_id).slice(0,300);if(!ids.length)return;try{localStorage.setItem('watchIds',JSON.stringify(ids))}catch(e){}location.href='/watch?q=1&v='+ids[0]};
+// W: the highlighted video on the Watch page, with everything listed here (in this order) as its queue. T: triage it. Esc: Commander.
+function watchFrom(k){const L=shown();if(!L.length){yc.toast('Nothing to watch here');return}k=Math.max(0,Math.min(L.length-1,k));const ids=L.map(x=>x.video_id).slice(0,300);if(!ids.includes(L[k].video_id))ids.unshift(L[k].video_id);try{localStorage.setItem('watchIds',JSON.stringify(ids))}catch(e){}location.href='/watch?q=1&v='+L[k].video_id}
 addEventListener('keydown',e=>{const a=document.activeElement;if(a&&a.tagName=='INPUT'){if(e.key=='Escape'){e.preventDefault();if(fq.value){fq.value='';draw()}else a.blur()}else if(e.key=='Enter'||e.key=='ArrowDown'){a.blur();draw();e.preventDefault()}return}
- if(e.ctrlKey||e.metaKey||e.altKey||yc.onControl(e))return;if(e.key=='Escape'&&yc.escapeControl(e))return;
- const L=shown();if(e.key=='ArrowDown'){e.preventDefault();if(document.activeElement&&document.activeElement.blur)document.activeElement.blur();FI=Math.min(L.length-1,FI+1);draw()}else if(e.key=='ArrowUp'){e.preventDefault();FI=Math.max(0,FI-1);draw()}
- else if(e.key=='Enter'&&L[FI])location.href='/watch?v='+L[FI].video_id;else if(e.key=='Escape'&&yc.escapeControl(e))return;else if(e.key=='/'){e.preventDefault();fq.focus()}else if(e.key=='Escape')location.href='/'});
+ if(e.ctrlKey||e.metaKey||e.altKey||yc.onControl(e))return;
+ const L=shown(),k=e.key,kl=k.toLowerCase();
+ if(k=='Escape'){e.preventDefault();if(yc.escapeControl(e))return;if(yc.popOpen())return;location.href='/';return}
+ if(k=='ArrowDown'){e.preventDefault();if(a&&a.blur)a.blur();FI=Math.min(L.length-1,FI+1);draw()}else if(k=='ArrowUp'){e.preventDefault();FI=Math.max(0,FI-1);draw()}
+ else if(k=='Home'&&L.length){e.preventDefault();FI=0;draw()}else if(k=='End'&&L.length){e.preventDefault();FI=L.length-1;draw()}
+ else if(k=='Enter'&&L[FI]){e.preventDefault();watchFrom(FI)}
+ else if(kl=='w'){e.preventDefault();watchFrom(FI)}
+ else if(kl=='t'){e.preventDefault();if(!L[FI]){yc.toast('Nothing to triage here');return}location.href='/triage?v='+L[FI].video_id}
+ else if(k=='/'){e.preventDefault();fq.focus()}});
 (async()=>{const d=await J('/api/history?limit=2000');ALL=d.items;sum.textContent='';hsum.textContent=d.videos+' videos opened, '+fmt(d.seconds)+' watched';
  const c=ALL.filter(x=>x.duration>0&&x.last_pos>30&&x.last_pos<x.duration-20).slice(0,10);
  cw.innerHTML=c.map(x=>`<div data-v="${x.video_id}"><div class=ti>${esc(x.title||x.video_id)}</div><small>${esc(x.channel||'')} · ${clock(x.last_pos)} of ${clock(x.duration)}</small><div class=bar2><i style="width:${100*x.last_pos/x.duration}%"></i></div></div>`).join('')||'<div class=none>Nothing in progress. Videos you stop partway through show up here.</div>';

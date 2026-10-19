@@ -150,6 +150,7 @@ label{display:inline-flex;align-items:center;gap:7px;color:var(--fg2)}
 #fhint{max-width:420px}#toast button{margin-left:6px;vertical-align:middle}
 #fhint b{display:block;color:var(--fg);margin-bottom:6px}#fhint .hk{display:flex;flex-wrap:wrap;gap:5px 14px;color:var(--fg2)}#fhint .hk span{white-space:nowrap}#fhint kbd{margin:0 1px}
 .pwret{display:block;font-size:var(--fs-s);color:var(--mut);margin:6px 2px;outline:none}
+.pwret.fkey{display:inline-block;padding:2px 8px;margin:6px -6px;border-radius:var(--rs)}@keyframes fkflash{0%,100%{background:transparent;color:var(--mut)}50%{background:var(--ac-s2);color:var(--ac)}}.pwret.fkey.flash{animation:fkflash .7s ease-in-out 3}.pwret.fkey.on{color:var(--ac)}
 .pwret.b4{position:absolute;width:1px;height:1px;overflow:hidden;margin:0;opacity:0}
 
 /* suggestion dropdown (tag picker) */

@@ -95,10 +95,12 @@
   const st={on:false,yt:false};
   const P=()=>o.player&&o.player(),box=()=>o.box&&o.box(),frame=()=>o.frame&&o.frame(),extra=o.keys||{};
   const items=()=>[[KB('Space')+' '+KB('K'),'play / pause'],[KB('←')+KB('→'),'5 s'],[KB('J')+KB('L'),'10 s'],[KB('↑')+KB('↓'),'volume'],[KB('M'),'mute'],[KB('0')+'–'+KB('9'),'jump'],[KB('&lt;')+KB('&gt;'),'speed'],[KB('F'),'fullscreen'],
-   ...Object.keys(extra).map(k=>[KB(k.toUpperCase()),extra[k].label]),[KB('Tab'),'YouTube’s own controls'],[KB('Esc'),'done']];
-  const card=()=>st.on?'<b>Video controls on</b><div class=hk>'+items().map(x=>'<span>'+x[0]+' '+x[1]+'</span>').join('')+'</div>'
+   ...Object.keys(extra).map(k=>[KB(k.toUpperCase()),extra[k].label]),[KB('Tab'),'Exit YouTube Video Controls'],[KB('Esc'),'done']];
+  const card=()=>st.on?'<b>Video Controls ON</b><div class=hk>'+items().map(x=>'<span>'+x[0]+' '+x[1]+'</span>').join('')+'</div>'
    :st.yt?'<b>YouTube’s own controls have the keyboard</b><div>Tab or Shift+Tab past them, or click outside the video, to come back. '+KB('F')+' in there is YouTube’s fullscreen.</div>':null;
-  function mark(){document.querySelectorAll('.pmode').forEach(x=>x.classList.remove('pmode'));const b=box();if(st.on&&b)b.classList.add('pmode')}
+  // the "F Video Controls" label under the stage reads "Tab Exit YouTube Video Controls" while the controls are on
+  function mark(){document.querySelectorAll('.pmode').forEach(x=>x.classList.remove('pmode'));const b=box();if(st.on&&b)b.classList.add('pmode');
+   document.querySelectorAll('.pwret.fkey').forEach(l=>{const mine=st.on&&b&&l===b.nextElementSibling;l.classList.toggle('on',mine);l.classList.remove('flash');l.innerHTML=mine?KB('Tab')+' Exit YouTube Video Controls':KB('F')+' Video Controls'})}
   function set(on){st.on=!!on;if(on)st.yt=false;mark();yc.hint(st.on||st.yt?card:null)}
   st.set=set;
   st.toYouTube=()=>{const fr=frame();if(!fr)return;st.on=false;st.yt=true;mark();yc.hint(card);fr.focus()};

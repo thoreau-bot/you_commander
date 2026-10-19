@@ -13,7 +13,7 @@ Press `?` on any page for an overlay with that page's shortcuts (`Esc` or `?` cl
 | `←` / `Shift+Tab` | Move into the rail (library, audits, playlists, tags); `→` returns |
 | double-click a tag | Rename it (or edit the name in the tag sheet and Save) |
 | `T` | Start Triage (with 2+ ticked: batch triage) |
-| `W` | Watch in Theater: the open (or highlighted) video on the Watch page, carrying on from where it is; with 2+ ticked, those in list order. Also in the rail. |
+| `W` | Watch in Theater: the open (or highlighted) video on the Watch page, carrying on from where it is; with 2+ ticked, those in list order. Also in the rail. From an open preview the preview pauses, and `Esc` on the Watch page brings you back with the same video open, paused where the Watch page left it. |
 | `H` | History |
 | `Esc` | Close preview, or clear filters |
 | `Z` | Undo, while an undo toast is showing (Watch: note delete, Drop) |
@@ -22,7 +22,7 @@ Press `?` on any page for an overlay with that page's shortcuts (`Esc` or `?` cl
 ## Video controls (`F`)
 On a Commander preview and in Triage, `F` turns video controls on; `Esc` is the only way to turn them off (in fullscreen, the first `Esc` leaves fullscreen). While they are on: `Space`/`K` play-pause, `←/→` ±5 s, `J/L` ±10 s, `↑/↓` volume, `M` mute, `0`–`9` jump, `<` `>` speed, `Home`/`End` start/end, `F` or `Enter` fullscreen, `W` Watch in Theater from the same moment, `Tab` hands the keyboard to YouTube's own controls (`Tab`/`Shift+Tab` past them comes back).
 
-A card at the bottom right lists these keys. Other messages may cover it for a while (never more than 10–15 s, depending on their length); then it comes back. Clicking the video while controls are on keeps the app's keys working.
+The label under the video reads `Tab Exit YouTube Video Controls` while they are on. A card at the bottom right ("Video Controls ON") lists these keys. Other messages may cover it for a while (never more than 10–15 s, depending on their length); then it comes back. Clicking the video while controls are on keeps the app's keys working.
 
 ## Triage
 | Key | Action |
@@ -63,13 +63,21 @@ With nothing highlighted: `Enter` confirms all (asks first when there are two or
 | `C` | Copy a link to this moment |
 | `F` / `Enter` | Fullscreen |
 | `H` | History |
-| `Esc` | Leave the page |
+| `Esc` | Leave the page (back to where you came from) |
+
+The video always has the keyboard on this page: the stage carries the same ring as video controls elsewhere, and a "Video Controls ON" card at the bottom right lists the keys. Owner & Visibility (Commander rail) sorts by any column; click a header, again to reverse.
 
 ### Queue focus (`Q`)
 `↑/↓` move highlight · `Alt+↑/↓` reorder · `Home/End` · `Space`/`Enter` play · `Esc`, `←` or `Q` leave.
 
 ## History
-`/` search · `↑/↓` move · `Enter` open · `Esc` leave field.
+| Key | Action |
+|---|---|
+| `/` | Filter |
+| `↑ ↓ Home End` | Move the highlight |
+| `Enter` or `W` | Watch in Theater: the highlighted video, with the rest of the list (in this order) as its queue |
+| `T` | Triage the highlighted video |
+| `Esc` | Leave the filter box; from rest, back to Commander |
 
 ## Import
 | Key | Action |

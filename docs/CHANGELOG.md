@@ -1,5 +1,15 @@
 # Changelog
 
+## 1.7.0
+Requested changes. Regression suite: 136 checks (24 new), all green.
+- Commander rail: "Owner & Visibility" (singular). Every column of that view sorts: click a header, again to reverse; Videos starts descending. The sort is remembered on this computer
+- History: `W` (or `Enter`, or a click) opens the highlighted video in Watch in Theater with the rest of the list, in the same order, as the queue; `T` triages the highlighted video; `Esc` goes back to Commander (from the filter box, the first `Esc` only leaves the box); `Home`/`End`
+- Commander preview: the label under the video reads "F Video Controls" and flashes three times when a video opens; while video controls are on it reads "Tab Exit YouTube Video Controls" and goes back to F when you press Tab, Esc, or leave
+- The video-controls card is titled "Video Controls ON" and its Tab line reads "Exit YouTube Video Controls"
+- `W` from a playing preview (or Triage video) pauses it before the Watch page opens
+- Watch page: the stage carries the same accent ring as video controls elsewhere, and a "Video Controls ON" card lists the page's keys (no Tab line; the video always has the keyboard there)
+- Round trip: from a Commander preview, `W` → Watch page → `Esc` comes back with the same video open in the accordion, paused where the Watch page left it
+
 ## 1.6.0
 Requested changes. Regression suite: 112 checks (40 new), all green.
 - Commander rail: **Watch in Theater** (`W`) sits between Start Triage and History. It opens the open, highlighted or first video on the Watch page with the current view as its queue; with two or more ticked, it plays those in list order
