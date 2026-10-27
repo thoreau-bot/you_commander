@@ -3,9 +3,10 @@
 <style>
 main{max-width:1120px;margin:auto;padding:18px 22px 60px}
 .panel{margin-top:14px;box-shadow:var(--sh);overflow:clip}
-.panel-h{position:sticky;top:52px;z-index:3;background:var(--sf)}
-.row.head{position:sticky;top:calc(52px + 42px);z-index:2}
-#unpanel .row{grid-template-columns:minmax(0,1fr) 220px 90px 150px}#unpanel .row.head{top:calc(52px + 42px)}
+.panel-h{position:sticky;top:66px;z-index:3;background:var(--sf);box-shadow:0 -14px 0 0 var(--bg)}
+.row.head{position:sticky;top:calc(66px + 42px);z-index:2}
+#unpanel .row{grid-template-columns:minmax(0,1fr) 220px 90px 150px}
+.row.head button.sort{justify-content:flex-start;gap:5px;min-height:24px;height:24px;padding:0 6px;margin-left:-6px;border:0;background:none;color:var(--mut);font-size:var(--fs-s);font-weight:600;border-radius:var(--rs)}.row.head button.sort:hover,.row.head button.sort.on{color:var(--fg)}.row.head button.sort.num{justify-content:flex-end;margin-left:0;margin-right:-6px;width:100%}.row.head .arrow{font-size:9px;color:var(--ac);min-width:9px}
 .showall{display:flex;justify-content:center;padding:8px}
 .panel-h .r{display:flex;gap:8px;align-items:center}
 .status{display:flex;flex-wrap:wrap;align-items:center;gap:10px 16px;padding:10px 14px;border-bottom:1px solid var(--bd);color:var(--fg2)}
@@ -45,14 +46,21 @@ main{max-width:1120px;margin:auto;padding:18px 22px 60px}
 </main>
 <div id=help><div class=card>
  <h2>Keyboard shortcuts<span class=mut>Esc or ? closes</span></h2>
- <div class=cols><div><dl><dt><kbd>R</kbd></dt><dd>Resolve Channels (or Cancel while running)</dd><dt><kbd>/</kbd></dt><dd>filter channels</dd><dt><kbd>↑</kbd><kbd>↓</kbd></dt><dd>move</dd><dt><kbd>Home</kbd><kbd>End</kbd></dt><dd>first, last (the round buttons at bottom left do the same by mouse)</dd><dt><kbd>Esc</kbd></dt><dd>back to Commander</dd></dl></div></div>
+ <div class=cols><div><dl><dt><kbd>R</kbd></dt><dd>Resolve Channels (or Cancel while running)</dd><dt><kbd>/</kbd></dt><dd>filter channels</dd><dt>click a column title</dt><dd>sort by it; again to reverse (remembered on this computer)</dd><dt><kbd>↑</kbd><kbd>↓</kbd></dt><dd>move</dd><dt><kbd>Home</kbd><kbd>End</kbd></dt><dd>first, last (the round buttons at bottom left do the same by mouse)</dd><dt><kbd>Esc</kbd></dt><dd>back to Commander</dd></dl></div></div>
 </div></div>
 <script src="/static/app.js"></script>
 <script>
 const J=async(u,o)=>(await fetch(u,o)).json(),esc=s=>(s||'').replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
 const n=x=>Number(x||0).toLocaleString();
 let D={channels:[],unresolved:[],videos:0,linked:0,pending:{need_url:0,need_id:0,unresolved:0}},RUN=false,FI=0,POLL=null,LASTJ=null,UNALL=false;
-function shown(){const q=fq.value.trim().toLowerCase();return D.channels.filter(c=>!q||((c.title||'')+' '+(c.handle||'')).toLowerCase().includes(q))}
+// Every column in both lists sorts: click a header, again to reverse. Remembered on this computer.
+const CH_COLS=[['title','Channel'],['handle','Handle'],['n_library','Videos'],['resolved_from','Found by']],UN_COLS=[['title','Channel'],['error','Reason'],['n','Videos'],['tried_at','Last tried']];
+const NUMC={n_library:1,n:1};const ld=(k,def)=>{let v=null;try{v=JSON.parse(localStorage.getItem(k)||'null')}catch(e){}return v||def};
+let CSORT=ld('feedChSort',{k:'n_library',d:-1}),USORT=ld('feedUnSort',{k:'n',d:-1});
+const sortBy=(rows,S)=>[...rows].sort((a,b)=>{const x=a[S.k],y=b[S.k];const c=NUMC[S.k]?(x||0)-(y||0):String(x||'').localeCompare(String(y||''),undefined,{sensitivity:'base',numeric:true});return c*S.d||String(a.title||'').localeCompare(String(b.title||''))});
+const head=(cols,S)=>'<div class="row head" role=row>'+cols.map(([c,l])=>`<button class="sort${NUMC[c]?' num':''}${c==S.k?' on':''}" data-sort=${c} aria-sort="${c==S.k?(S.d>0?'ascending':'descending'):'none'}" title="Sort by ${l.toLowerCase()}">${l}<span class=arrow aria-hidden=true>${c==S.k?(S.d>0?'▲':'▼'):''}</span></button>`).join('')+'</div>';
+function wireSort(el,S,key){el.querySelectorAll('[data-sort]').forEach(b=>b.onclick=()=>{const c=b.dataset.sort;const n=c==S.k?{k:c,d:-S.d}:{k:c,d:NUMC[c]||c=='tried_at'?-1:1};Object.assign(S,n);try{localStorage.setItem(key,JSON.stringify(S))}catch(e){}FI=0;draw()})}
+function shown(){const q=fq.value.trim().toLowerCase();return sortBy(D.channels.filter(c=>!q||((c.title||'')+' '+(c.handle||'')).toLowerCase().includes(q)),CSORT)}
 function statusLine(j){
  if(j&&j.running){const t=j.total||0,d=j.done||0;prog.style.display='';pbar.style.width=(t?100*d/t:0)+'%';
   return j.phase=='urls'?`Looking up channel pages for your videos: ${n(d)} of ${n(t)}.`:`Reading channel ids: ${n(d)} of ${n(t)}${j.failed?', '+n(j.failed)+' could not be read':''}.`}
@@ -69,13 +77,14 @@ function draw(j){if(j!==undefined)LASTJ=j;j=LASTJ;
  sum.textContent=D.videos?`${n(D.linked)} of ${n(D.videos)} videos linked`:'';
  const L=shown();FI=Math.min(FI,Math.max(0,L.length-1));cnt.textContent=fq.value.trim()?`${L.length} shown`:'';
  tools.style.display=D.channels.length?'':'none';
- list.innerHTML=L.length?'<div class="row head"><span>Channel</span><span>Handle</span><span class=num>Videos</span><span>Found by</span></div>'+L.map((c,k)=>`<div class="row${k==FI?' f':''}"><div><div class=t>${esc(c.title)}</div><small>${esc(c.channel_id)}</small></div><small>${esc(c.handle||'')}</small><div class=num>${n(c.n_library)}</div><div><span class=pill title="${c.resolved_from=='url'?'The id was in the channel link':c.resolved_from=='page'||c.resolved_from=='redirect'?'Read from the channel page':c.resolved_from=='ytdlp'?'Read by yt-dlp':''}">${esc({url:'link',page:'page',redirect:'page',ytdlp:'yt-dlp',known:'kept'}[c.resolved_from]||c.resolved_from||'')}</span></div></div>`).join('')
+ list.innerHTML=L.length?head(CH_COLS,CSORT)+L.map((c,k)=>`<div class="row${k==FI?' f':''}"><div><div class=t>${esc(c.title)}</div><small>${esc(c.channel_id)}</small></div><small>${esc(c.handle||'')}</small><div class=num>${n(c.n_library)}</div><div><span class=pill title="${c.resolved_from=='url'?'The id was in the channel link':c.resolved_from=='page'||c.resolved_from=='redirect'?'Read from the channel page':c.resolved_from=='ytdlp'?'Read by yt-dlp':''}">${esc({url:'link',page:'page',redirect:'page',ytdlp:'yt-dlp',known:'kept'}[c.resolved_from]||c.resolved_from||'')}</span></div></div>`).join('')
   :D.channels.length?`<div class=empty><b>No channel matches</b>Nothing matches “${esc(fq.value.trim())}”.</div>`
   :`<div class=empty><div class=glyph><svg width=20 height=20 viewBox="0 0 16 16" fill=none stroke=currentColor stroke-width=1.7 stroke-linecap=round stroke-linejoin=round><path d="M2 4.5h12M2 8h12M2 11.5h8"/></svg></div><b>No channels resolved yet</b>${D.videos?'Press Resolve Channels to look up the channel behind each of your videos.':'There are no videos in the library yet.'}</div>`;
+ wireSort(list,CSORT,'feedChSort');
  const f=list.querySelector('.f');if(f)f.scrollIntoView({block:'nearest'});
- const U=D.unresolved;unpanel.style.display=U.length?'':'none';unn.textContent=U.length?n(U.length)+' channel'+(U.length>1?'s':''):'';
+ const U=sortBy(D.unresolved,USORT);unpanel.style.display=U.length?'':'none';unn.textContent=U.length?n(U.length)+' channel'+(U.length>1?'s':''):'';
  const show=UNALL?U:U.slice(0,10);unmore.style.display=U.length>10?'':'none';unall.textContent=UNALL?'Show Fewer':`Show All ${n(U.length)}`;
- unlist.innerHTML=(U.length?'<div class="row head"><span>Channel</span><span>Reason</span><span class=num>Videos</span><span>Last tried</span></div>':'')+show.map(u=>`<div class="row bad"><div><div class=t>${esc(u.title||u.channel_url)}</div><small>${esc(u.channel_url)}</small></div><small title="${esc(u.error||'')}">${esc(reason(u.error))}</small><div class=num>${n(u.n)}</div><small>${esc(when(u.tried_at))}</small></div>`).join('')}
+ unlist.innerHTML=(U.length?head(UN_COLS,USORT):'')+show.map(u=>`<div class="row bad"><div><div class=t>${esc(u.title||u.channel_url)}</div><small>${esc(u.channel_url)}</small></div><small title="${esc(u.error||'')}">${esc(reason(u.error))}</small><div class=num>${n(u.n)}</div><small>${esc(when(u.tried_at))}</small></div>`).join('');wireSort(unlist,USORT,'feedUnSort')}
 const reason=e=>{e=e||'';if(/http 404|http 410/.test(e))return'Channel gone or renamed (404)';if(/429|throttl|could not fetch/.test(e))return'YouTube refused the request; try later';if(/no channel id/.test(e))return'Page had no channel id';return e};
 const when=s=>{if(!s)return'';const d=new Date(s.replace(' ','T')+'Z');return d.toLocaleDateString(undefined,{month:'short',day:'numeric'})+' '+d.toLocaleTimeString(undefined,{hour:'numeric',minute:'2-digit'})};
 async function load(j){D=await J('/api/feed/channels');draw(j)}
