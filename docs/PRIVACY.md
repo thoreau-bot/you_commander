@@ -11,6 +11,7 @@ YouCommander is built to stay on your computer.
 |---|---|---|
 | Embedded player | youtube.com / youtube-nocookie.com iframe | When you preview or watch a video. YouTube sees this like any embed. |
 | Title/channel lookup | YouTube oEmbed | When you ask to fill in missing titles |
+| Channel identity | YouTube oEmbed, then one visit to each channel's page (`youtube.com/@handle`) | Only when you press Resolve Channels on the Feed page. Reads the channel's public id; no sign-in, no API key |
 | Captions / audio | YouTube via `yt-dlp` | Only when you click a transcript button for one video |
 | Model download | Hugging Face | First use of Whisper |
 | LLM tagging | Your own Ollama on localhost | Only if configured |

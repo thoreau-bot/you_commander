@@ -1,5 +1,14 @@
 # Changelog
 
+## Unreleased — Feed, step 1 (branch feed-step1)
+Channel identity, the groundwork for the Feed page (design: the project's feed-design doc). Regression suite: 19 checks (6 new), all green.
+- New **Feed** page in the topbar and the Commander rail. For now it holds one thing: the Channels panel
+- **Resolve Channels** (`R`) finds the stable YouTube id behind every channel in the library: one oEmbed lookup for each video imported before this version (to get the channel's page link), then one visit to each distinct channel page to read its `UC…` id. Progress and a Cancel button while it runs; the result is a per-channel list with handle, video count and how the id was found
+- Channels are keyed on the id, never on the name, so two channels called the same thing stay two channels
+- Channel pages that cannot be read land in a **Not Yet Resolved** list with the reason; Retry All tries them again
+- The title lookup now keeps the channel's page link (`videos.channel_url`), so videos imported from here on need no second lookup
+- No key, no quota, nothing automatic: the lookups only run when you press the button (privacy table updated)
+
 ## 1.8.0
 Requested changes. Regression suite: 150 checks (14 new), all green.
 - The "F Video Controls" flash is magenta (new `--mag` tokens, both themes)

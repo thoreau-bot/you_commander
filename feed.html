@@ -1,0 +1,87 @@
+<!doctype html><meta charset=utf-8><title>YouCommander · Feed</title><link rel=icon href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='8' fill='%232a5bd7'/%3E%3Cg fill='none' stroke='white' stroke-width='2.6' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='9,13 16,7.5 23,13'/%3E%3Cpolyline points='9,20 16,14.5 23,20'/%3E%3Cline x1='12' y1='26' x2='20' y2='26'/%3E%3C/g%3E%3C/svg%3E"><meta name=viewport content="width=device-width,initial-scale=1">
+<link rel=stylesheet href="/static/app.css">
+<style>
+main{max-width:1120px;margin:auto;padding:18px 22px 60px}
+.panel{margin-top:14px;box-shadow:var(--sh)}
+.panel-h .r{display:flex;gap:8px;align-items:center}
+.status{display:flex;flex-wrap:wrap;align-items:center;gap:10px 16px;padding:10px 14px;border-bottom:1px solid var(--bd);color:var(--fg2)}
+.status .prog{width:220px;height:6px;background:var(--bd);border-radius:5px;overflow:hidden}.status .prog i{display:block;height:100%;background:var(--ac);width:0;transition:width .3s}
+.tools{display:flex;gap:8px;flex-wrap:wrap;align-items:center;padding:10px 14px;border-bottom:1px solid var(--bd)}
+.search{position:relative;display:flex;align-items:center}.search input{width:280px;padding-right:34px}.search kbd{position:absolute;right:9px;pointer-events:none}
+.row{display:grid;grid-template-columns:minmax(0,1fr) 220px 90px 90px;gap:12px;padding:9px 14px;border-bottom:1px solid var(--bd);align-items:center}
+.row.head{color:var(--mut);font-size:var(--fs-s);font-weight:600;padding:7px 14px;background:var(--sf2)}
+.row:last-child{border-bottom:0}.row>div{min-width:0}
+.row .t{overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-weight:500}
+.row small{color:var(--mut);font-variant-numeric:tabular-nums;font-size:var(--fs-s);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;display:block}
+.row .num{text-align:right;font-variant-numeric:tabular-nums}
+.row.f{background:var(--ac-s);box-shadow:inset 3px 0 0 var(--ac)}
+.row.bad .t{color:var(--bad)}
+.lbl{margin:18px 0 0}
+@media(max-width:800px){.row{grid-template-columns:minmax(0,1fr) 70px}.row>:nth-child(2),.row>:nth-child(4){display:none}}
+</style>
+<div class=topbar><a class=brand href="/" title="Back to Commander"><svg width=24 height=24 viewBox="0 0 32 32" role=img aria-label=YouCommander><rect width=32 height=32 rx=8 fill="var(--ac)"/><g fill=none stroke="var(--ac-fg)" stroke-width=2.6 stroke-linecap=round stroke-linejoin=round><polyline points="9,13 16,7.5 23,13"/><polyline points="9,20 16,14.5 23,20"/><line x1=12 y1=26 x2=20 y2=26 /></g></svg></a><nav><a href="/">Commander</a><a class=here>Feed</a><a href="/triage" title="Sort the inbox one video at a time">Triage</a><a href="/watch" title="The player with notes, loop and queue">Watch</a><a href="/history">History</a></nav><span class=fill></span><span id=sum class=meta></span><button class="ghost help" data-help title="Keyboard shortcuts (?)">?</button></div>
+<main><h1 class=vt>Feed<small>Step 1 of the Feed: knowing your channels</small></h1>
+<p class=mut style="margin:6px 0 0;max-width:72ch">The feed will follow every channel in your library. Takeout files only carry video IDs, so each channel's YouTube identity is looked up once from the videos you already have. Nothing is written to YouTube.</p>
+
+<div class=panel id=chpanel>
+ <div class=panel-h>Channels<span id=chn class=mut style="font-weight:400"></span><span class=r><button id=cancel class="sm ghost" style="display:none">Cancel</button><button id=resolve class="pri">Resolve Channels<kbd>R</kbd></button></span></div>
+ <div class=status id=status><span id=stxt>Checking…</span><span class=prog id=prog style="display:none"><i id=pbar></i></span></div>
+ <div class=tools id=tools><div class=search><input id=fq placeholder="Filter by channel or handle" aria-label="Filter channels"><kbd>/</kbd></div><span id=cnt class=mut></span></div>
+ <div id=list></div>
+</div>
+
+<div id=unwrap style="display:none">
+ <div class=lbl>Not Yet Resolved<small id=unn></small><span style="flex:1"></span><button id=retry class="sm">Retry All</button></div>
+ <p class=mut style="margin:0 0 8px;font-size:var(--fs-s);max-width:72ch">These channel pages could not be read: the channel may be gone, renamed, or YouTube may have refused the request for now. Videos from them stay in the library; they just will not be followed until this resolves.</p>
+ <div class=panel style="margin-top:0" id=unlist></div>
+</div>
+
+<p class=mut style="font-size:var(--fs-s);margin-top:18px;max-width:72ch">Network use, only when you press Resolve Channels: one title lookup (YouTube oEmbed) per video that was imported before this version, then one visit to each channel's page to read its id. No API key, no quota. See docs/PRIVACY.md.</p>
+</main>
+<div id=help><div class=card>
+ <h2>Keyboard shortcuts<span class=mut>Esc or ? closes</span></h2>
+ <div class=cols><div><dl><dt><kbd>R</kbd></dt><dd>Resolve Channels (or Cancel while running)</dd><dt><kbd>/</kbd></dt><dd>filter channels</dd><dt><kbd>↑</kbd><kbd>↓</kbd></dt><dd>move</dd><dt><kbd>Esc</kbd></dt><dd>back to Commander</dd></dl></div></div>
+</div></div>
+<script src="/static/app.js"></script>
+<script>
+const J=async(u,o)=>(await fetch(u,o)).json(),esc=s=>(s||'').replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+const n=x=>Number(x||0).toLocaleString();
+let D={channels:[],unresolved:[],videos:0,linked:0,pending:{need_url:0,need_id:0}},RUN=false,FI=0,POLL=null,LASTJ=null;
+function shown(){const q=fq.value.trim().toLowerCase();return D.channels.filter(c=>!q||((c.title||'')+' '+(c.handle||'')).toLowerCase().includes(q))}
+function statusLine(j){
+ if(j&&j.running){const t=j.total||0,d=j.done||0;prog.style.display='';pbar.style.width=(t?100*d/t:0)+'%';
+  return j.phase=='urls'?`Looking up channel pages for your videos: ${n(d)} of ${n(t)}.`:`Reading channel ids: ${n(d)} of ${n(t)}${j.failed?', '+n(j.failed)+' could not be read':''}.`}
+ prog.style.display='none';const p=D.pending;
+ if(!D.videos)return'No videos yet. Import from Takeout first, then come back here.';
+ if(!p.need_url&&!p.need_id)return`Every video is linked to its channel: ${n(D.linked)} of ${n(D.videos)}.`;
+ const parts=[];if(p.need_url)parts.push(`${n(p.need_url)} video${p.need_url>1?'s':''} still need${p.need_url>1?'':'s'} a channel page`);if(p.need_id)parts.push(`${n(p.need_id)} channel${p.need_id>1?'s':''} still need${p.need_id>1?'':'s'} an id`);
+ return parts.join(' and ')+'. Press Resolve Channels.'}
+function draw(j){if(j!==undefined)LASTJ=j;j=LASTJ;
+ RUN=!!(j&&j.running);resolve.style.display=RUN?'none':'';cancel.style.display=RUN?'':'none';resolve.disabled=!D.videos;
+ stxt.textContent=statusLine(j);if(j&&j.note)stxt.textContent+=' '+j.note;
+ chn.textContent=D.channels.length?n(D.channels.length)+' channel'+(D.channels.length>1?'s':''):'';
+ sum.textContent=D.videos?`${n(D.linked)} of ${n(D.videos)} videos linked`:'';
+ const L=shown();FI=Math.min(FI,Math.max(0,L.length-1));cnt.textContent=fq.value.trim()?`${L.length} shown`:'';
+ tools.style.display=D.channels.length?'':'none';
+ list.innerHTML=L.length?'<div class="row head"><span>Channel</span><span>Handle</span><span class=num>Videos</span><span>Found by</span></div>'+L.map((c,k)=>`<div class="row${k==FI?' f':''}"><div><div class=t>${esc(c.title)}</div><small>${esc(c.channel_id)}</small></div><small>${esc(c.handle||'')}</small><div class=num>${n(c.n_library)}</div><div><span class=pill title="${c.resolved_from=='url'?'The id was in the channel link':c.resolved_from=='page'||c.resolved_from=='redirect'?'Read from the channel page':c.resolved_from=='ytdlp'?'Read by yt-dlp':''}">${esc({url:'link',page:'page',redirect:'page',ytdlp:'yt-dlp',known:'kept'}[c.resolved_from]||c.resolved_from||'')}</span></div></div>`).join('')
+  :D.channels.length?`<div class=empty><b>No channel matches</b>Nothing matches “${esc(fq.value.trim())}”.</div>`
+  :`<div class=empty><div class=glyph><svg width=20 height=20 viewBox="0 0 16 16" fill=none stroke=currentColor stroke-width=1.7 stroke-linecap=round stroke-linejoin=round><path d="M2 4.5h12M2 8h12M2 11.5h8"/></svg></div><b>No channels resolved yet</b>${D.videos?'Press Resolve Channels to look up the channel behind each of your videos.':'There are no videos in the library yet.'}</div>`;
+ const f=list.querySelector('.f');if(f)f.scrollIntoView({block:'nearest'});
+ const U=D.unresolved;unwrap.style.display=U.length?'':'none';unn.textContent=U.length?U.length+' channel'+(U.length>1?'s':''):'';
+ unlist.innerHTML=U.map(u=>`<div class="row bad"><div><div class=t>${esc(u.title||u.channel_url)}</div><small>${esc(u.channel_url)}</small></div><small>${esc(u.error||'')}</small><div class=num>${n(u.n)}</div><small>${esc((u.tried_at||'').replace('T',' '))}</small></div>`).join('')}
+async function load(j){D=await J('/api/feed/channels');draw(j)}
+async function poll(){const j=await J('/api/feed/resolve/status');if(j.running){draw(j);POLL=setTimeout(poll,700)}else{POLL=null;await load(j);if(j.started)yc.toast(j.failed?`Done. ${n(j.failed)} channel page${j.failed>1?'s':''} could not be read.`:'Done. Every video has its channel.',4000)}}
+resolve.onclick=async()=>{if(RUN)return;const r=await J('/api/feed/resolve',{method:'POST'});if(!r.started){yc.toast('Already running');return}RUN=true;draw({running:true,phase:'urls',total:0,done:0});if(!POLL)poll()};
+cancel.onclick=async()=>{await J('/api/feed/resolve/cancel',{method:'POST'});yc.toast('Stopping after the current lookup')};
+retry.onclick=async()=>{const r=await J('/api/feed/unresolved/retry',{method:'POST'});if(r.started){RUN=true;draw({running:true,phase:'ids',total:0,done:0});if(!POLL)poll()}};
+fq.oninput=()=>{FI=0;draw()};
+addEventListener('keydown',e=>{const a=document.activeElement;if(a&&a.tagName=='INPUT'){if(e.key=='Escape'){e.preventDefault();if(fq.value){fq.value='';draw()}else a.blur()}else if(e.key=='Enter'||e.key=='ArrowDown'){a.blur();draw();e.preventDefault()}return}
+ if(e.ctrlKey||e.metaKey||e.altKey||yc.onControl(e))return;
+ const L=shown(),k=e.key,kl=k.toLowerCase();
+ if(k=='Escape'){e.preventDefault();if(yc.escapeControl(e))return;if(yc.popOpen&&yc.popOpen())return;location.href='/';return}
+ if(k=='ArrowDown'){e.preventDefault();FI=Math.min(L.length-1,FI+1);draw()}else if(k=='ArrowUp'){e.preventDefault();FI=Math.max(0,FI-1);draw()}
+ else if(k=='Home'&&L.length){e.preventDefault();FI=0;draw()}else if(k=='End'&&L.length){e.preventDefault();FI=L.length-1;draw()}
+ else if(kl=='r'){e.preventDefault();(RUN?cancel:resolve).click()}
+ else if(k=='/'){e.preventDefault();fq.focus()}});
+(async()=>{const j=await J('/api/feed/resolve/status');await load(j.running?j:null);if(j.running)poll()})();
+</script>

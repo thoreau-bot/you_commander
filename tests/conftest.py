@@ -8,8 +8,8 @@ def client():
     """One app instance on a throwaway database, with every network-touching feature switched to its built-in test double."""
     tmp = tempfile.mkdtemp(prefix='yc_test_')
     os.environ.update(ORG_DB=os.path.join(tmp, 'organizer.db'), ORG_AUDIO_DIR=os.path.join(tmp, 'audio'), ORG_IMPORT_DIR=os.path.join(tmp, 'staging'),
-                      ORG_OEMBED_FAKE='1', ORG_TRANSCRIPT_FAKE='1', ORG_VOICE_FAKE_TRANSCRIPT='spoken test note')
-    for m in ('app', 'importer', 'watch', 'transcripts', 'voice'):
+                      ORG_OEMBED_FAKE='1', ORG_TRANSCRIPT_FAKE='1', ORG_FEED_FAKE='1', ORG_VOICE_FAKE_TRANSCRIPT='spoken test note')
+    for m in ('app', 'importer', 'watch', 'transcripts', 'voice', 'feed'):
         sys.modules.pop(m, None)
     app = importlib.import_module('app')
     from fastapi.testclient import TestClient

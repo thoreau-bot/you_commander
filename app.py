@@ -233,6 +233,8 @@ watch.on_change=lambda:fts_dirty()
 watch.setup(app,DB,video,AUDIO_DIR)
 import transcripts
 transcripts.setup(app,DB)
+import feed
+feed.setup(app,DB)
 @app.get('/api/voice/status')
 def voice_status():
     o=voice.ollama_status() if voice.CFG['fake_transcript'] is None or True else {}

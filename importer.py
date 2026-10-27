@@ -35,6 +35,9 @@ def ensure_schema(path):
     c = sqlite3.connect(path)
     c.execute('PRAGMA journal_mode=WAL')
     c.executescript(SCHEMA)
+    # 1.9: the channel's page URL from oEmbed (author_url), so channels can be told apart by more than their title.
+    if 'channel_url' not in {r[1] for r in c.execute('pragma table_info(videos)')}:
+        c.execute('alter table videos add column channel_url TEXT')
     have_fts = c.execute("select 1 from sqlite_master where name='video_fts'").fetchone()
     if not have_fts:
         c.execute("create virtual table video_fts using fts5(title,channel,tags,notes,content='')")
@@ -227,7 +230,9 @@ _lock = threading.Lock()
 def _fetch_one(vid):
     if os.environ.get('ORG_OEMBED_FAKE'):
         if vid.startswith('GONE'): return 'fail', 404
-        return 'ok', dict(title=f'Fake title for {vid}', author_name='Fake Channel')
+        # Fake channels: the first character picks the channel, so several videos can share one, and two videos from
+        # different channels can share a *title* ('Fake Channel') the way real same-named channels do.
+        return 'ok', dict(title=f'Fake title for {vid}', author_name='Fake Channel', author_url=f'https://www.youtube.com/@fake-{vid[0]}')
     url = 'https://www.youtube.com/oembed?format=json&url=' + urllib.parse.quote(f'https://www.youtube.com/watch?v={vid}', safe='')
     for attempt in range(3):
         try:
@@ -256,8 +261,8 @@ def _title_worker(db_path):
                     st, res = _fetch_one(vid)
                     with lk:
                         if st == 'ok':
-                            c.execute("update videos set title=?,channel=?,title_source='oembed',unavailable=0,last_checked_at=? where video_id=?",
-                                      (res.get('title'), res.get('author_name'), dt.datetime.utcnow().isoformat(timespec='seconds'), vid))
+                            c.execute("update videos set title=?,channel=?,channel_url=?,title_source='oembed',unavailable=0,last_checked_at=? where video_id=?",
+                                      (res.get('title'), res.get('author_name'), res.get('author_url'), dt.datetime.utcnow().isoformat(timespec='seconds'), vid))
                         elif st == 'fail':
                             c.execute("update videos set title_source=?,unavailable=1,last_checked_at=? where video_id=?",
                                       (f'oembed_fail_{res}', dt.datetime.utcnow().isoformat(timespec='seconds'), vid)); TITLES['unavailable'] += 1
