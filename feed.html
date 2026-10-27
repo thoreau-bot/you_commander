@@ -4,7 +4,7 @@
 main{max-width:1120px;margin:auto;padding:18px 22px 60px}
 .panel{margin-top:14px;box-shadow:var(--sh);overflow:clip}
 .panel-h{position:sticky;top:66px;z-index:3;background:var(--sf);box-shadow:0 -14px 0 0 var(--bg)}
-.row.head{position:sticky;top:calc(66px + 42px);z-index:2}
+.row.head{position:sticky;top:var(--hh,108px);z-index:2}   /* --hh is set per panel from the title bar's real height */
 #unpanel .row{grid-template-columns:minmax(0,1fr) 220px 90px 150px}
 .row.head button.sort{justify-content:flex-start;gap:5px;min-height:24px;height:24px;padding:0 6px;margin-left:-6px;border:0;background:none;color:var(--mut);font-size:var(--fs-s);font-weight:600;border-radius:var(--rs)}.row.head button.sort:hover,.row.head button.sort.on{color:var(--fg)}.row.head button.sort.num{justify-content:flex-end;margin-left:0;margin-right:-6px;width:100%}.row.head .arrow{font-size:9px;color:var(--ac);min-width:9px}
 .showall{display:flex;justify-content:center;padding:8px}
@@ -70,6 +70,9 @@ function statusLine(j){
  if(!p.need_url&&!p.need_id)return(p.unresolved?`Every reachable channel is linked: ${n(D.linked)} of ${n(D.videos)} videos.`:`Every video is linked to its channel: ${n(D.linked)} of ${n(D.videos)}.`)+un;
  const parts=[];if(p.need_url)parts.push(`${n(p.need_url)} video${p.need_url>1?'s':''} still need${p.need_url>1?'':'s'} a channel page`);if(p.need_id)parts.push(`${n(p.need_id)} channel${p.need_id>1?'s':''} still need${p.need_id>1?'':'s'} an id`);
  return parts.join(' and ')+'. Press Resolve Channels.'+un}
+// pinned column rows sit exactly under their panel's title bar, whatever that bar's height is (it holds a button)
+function pinHeads(){document.querySelectorAll('.panel').forEach(p=>{const h=p.querySelector('.panel-h');if(h)p.style.setProperty('--hh',(66+h.offsetHeight)+'px')})}
+addEventListener('resize',pinHeads);
 function draw(j){if(j!==undefined)LASTJ=j;j=LASTJ;
  RUN=!!(j&&j.running);resolve.style.display=RUN?'none':'';cancel.style.display=RUN?'':'none';resolve.disabled=!D.videos;
  stxt.textContent=statusLine(j);if(j&&j.note)stxt.textContent+=' '+j.note;
@@ -84,7 +87,7 @@ function draw(j){if(j!==undefined)LASTJ=j;j=LASTJ;
  const f=list.querySelector('.f');if(f)f.scrollIntoView({block:'nearest'});
  const U=sortBy(D.unresolved,USORT);unpanel.style.display=U.length?'':'none';unn.textContent=U.length?n(U.length)+' channel'+(U.length>1?'s':''):'';
  const show=UNALL?U:U.slice(0,10);unmore.style.display=U.length>10?'':'none';unall.textContent=UNALL?'Show Fewer':`Show All ${n(U.length)}`;
- unlist.innerHTML=(U.length?head(UN_COLS,USORT):'')+show.map(u=>`<div class="row bad"><div><div class=t>${esc(u.title||u.channel_url)}</div><small>${esc(u.channel_url)}</small></div><small title="${esc(u.error||'')}">${esc(reason(u.error))}</small><div class=num>${n(u.n)}</div><small>${esc(when(u.tried_at))}</small></div>`).join('');wireSort(unlist,USORT,'feedUnSort')}
+ unlist.innerHTML=(U.length?head(UN_COLS,USORT):'')+show.map(u=>`<div class="row bad"><div><div class=t>${esc(u.title||u.channel_url)}</div><small>${esc(u.channel_url)}</small></div><small title="${esc(u.error||'')}">${esc(reason(u.error))}</small><div class=num>${n(u.n)}</div><small>${esc(when(u.tried_at))}</small></div>`).join('');wireSort(unlist,USORT,'feedUnSort');pinHeads()}
 const reason=e=>{e=e||'';if(/http 404|http 410/.test(e))return'Channel gone or renamed (404)';if(/429|throttl|could not fetch/.test(e))return'YouTube refused the request; try later';if(/no channel id/.test(e))return'Page had no channel id';return e};
 const when=s=>{if(!s)return'';const d=new Date(s.replace(' ','T')+'Z');return d.toLocaleDateString(undefined,{month:'short',day:'numeric'})+' '+d.toLocaleTimeString(undefined,{hour:'numeric',minute:'2-digit'})};
 async function load(j){D=await J('/api/feed/channels');draw(j)}
