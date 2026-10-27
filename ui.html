@@ -80,7 +80,7 @@ header{flex:none;display:flex;align-items:center;gap:10px;height:52px;padding:0 
  <nav class=side>
   <a class=si href="/triage" title="Step through every unsorted video, one at a time (T). Esc in Triage comes back here."><svg width=14 height=14 viewBox="0 0 16 16" fill=currentColor><path d="M4 2.5v11l9-5.5z"/></svg>Start Triage<kbd>T</kbd></a>
   <a class=si href="/watch" id=railw title="Open the highlighted video on the Watch page, with notes, loop and the view as its queue (W). With two or more ticked, plays those in list order."><svg width=14 height=14 viewBox="0 0 16 16" fill=none stroke=currentColor stroke-width=1.6 stroke-linejoin=round><rect x="1.5" y="3" width="13" height="9" rx="1.6"/><path d="M6.7 5.6v3.8L9.9 7.5z" fill=currentColor stroke=none /><path d="M5 14.2h6" stroke-linecap=round /></svg>Watch in Theater<kbd>W</kbd></a>
-  <a class=si href="/feed" title="New uploads from the channels in your library"><svg width=14 height=14 viewBox="0 0 16 16" fill=none stroke=currentColor stroke-width=1.7 stroke-linecap=round stroke-linejoin=round><path d="M2 4.5h12M2 8h12M2 11.5h8"/></svg>Feed</a>
+  <a class=si href="/feed" title="New uploads from the channels in your library (G)"><svg width=14 height=14 viewBox="0 0 16 16" fill=none stroke=currentColor stroke-width=1.7 stroke-linecap=round stroke-linejoin=round><path d="M2 4.5h12M2 8h12M2 11.5h8"/></svg>Feed<kbd>G</kbd></a>
   <a class=si href="/history" title="Everything you've opened or watched in the app (H)"><svg width=14 height=14 viewBox="0 0 16 16" fill=none stroke=currentColor stroke-width=1.7 stroke-linecap=round><circle cx="8" cy="8" r="6"/><path d="M8 4.5V8l2.5 1.5"/></svg>History<kbd>H</kbd></a>
  </nav>
  <div class=sec>Library</div><div class=tag id=all role=button title="Every video, in title order">All Videos<small id=alln></small></div>
@@ -114,7 +114,7 @@ header{flex:none;display:flex;align-items:center;gap:10px;height:52px;padding:0 
   <div><h3>Open video</h3><dl>
    <dt><kbd>F</kbd></dt><dd>video controls on: Space, arrows, J L, M, 0–9, &lt; &gt;; then F is fullscreen, W Watch in Theater, Esc turns them off</dd><dt><kbd>K</kbd></dt><dd>play, pause</dd><dt><kbd>J</kbd><kbd>L</kbd></dt><dd>−10s, +10s</dd><dt><kbd>M</kbd></dt><dd>sound</dd><dt><kbd>Y</kbd></dt><dd>open on YouTube</dd><dt><kbd>E</kbd></dt><dd>triage this video, from this moment</dd></dl></div>
   <div><h3>Pages</h3><dl>
-   <dt><kbd>T</kbd></dt><dd>Triage (all ticked videos together if 2+)</dd><dt><kbd>W</kbd></dt><dd>Watch in Theater (all ticked in list order if 2+)</dd><dt><kbd>H</kbd></dt><dd>History</dd></dl></div>
+   <dt><kbd>T</kbd></dt><dd>Triage (all ticked videos together if 2+)</dd><dt><kbd>W</kbd></dt><dd>Watch in Theater (all ticked in list order if 2+)</dd><dt><kbd>H</kbd></dt><dd>History</dd><dt><kbd>G</kbd></dt><dd>Go to My Feed</dd></dl></div>
  </div>
 </div></div>
 <script src="/static/app.js"></script>
@@ -225,6 +225,7 @@ addEventListener('keydown',e=>{const a=document.activeElement;
  if(k.toLowerCase()=='t'){e.preventDefault();startTriage();return}
  if(k.toLowerCase()=='w'){e.preventDefault();watchNow();return}
  if(k.toLowerCase()=='h'){e.preventDefault();location.href='/history';return}
+ if(k.toLowerCase()=='g'){e.preventDefault();location.href='/feed';return}
  if(k=='Escape'){if(yc.escapeControl(e))return;if(document.querySelector('.item.open')){closeOpen()}else resetFilters()}});
 // a click on a row's empty space ticks or unticks it: a large target for anyone who finds the small checkbox hard to hit.
 // The title link still opens the video; a double-click (or a tremor's second click) counts once; no text gets selected.

@@ -267,7 +267,7 @@ addEventListener('keydown',e=>{
  if(REC){const kk=e.key;if(kk==' '||kk.toLowerCase()=='v'){e.preventDefault();stopRec(false)}else if(kk=='Escape'){e.preventDefault();stopRec(true)}else e.preventDefault();return}
  const a=document.activeElement;if(yc.typing(a))return;if(e.ctrlKey||e.metaKey||e.altKey)return;if(yc.onControl(e))return;
  const k=e.key,kl=k.toLowerCase(),eat=()=>e.preventDefault();
- if(!V){if(k=='Escape'){eat();if(!yc.escapeControl(e))location.href='/'}else if(kl=='h'){eat();location.href='/history'}return}
+ if(!V){if(k=='Escape'){eat();if(!yc.escapeControl(e))location.href='/'}else if(kl=='h'){eat();location.href='/history'}else if(kl=='g'){eat();location.href='/feed'}return}
  if(k==' '||kl=='k'){eat();toggle()}
  else if(k=='ArrowLeft'){eat();seek(-5)}else if(k=='ArrowRight'){eat();seek(5)}
  else if(kl=='j'){eat();seek(-10)}else if(kl=='l'){eat();seek(10)}

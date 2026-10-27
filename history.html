@@ -35,7 +35,7 @@ main{max-width:1120px;margin:auto;padding:18px 22px 60px}
 </main>
 <div id=help><div class=card>
  <h2>Keyboard shortcuts<span class=mut>Esc or ? closes</span></h2>
- <div class=cols><div><dl><dt><kbd>↑</kbd><kbd>↓</kbd></dt><dd>move</dd><dt><kbd>Home</kbd><kbd>End</kbd></dt><dd>first, last</dd><dt><kbd>Enter</kbd><kbd>W</kbd></dt><dd>Watch in Theater: this video, with the rest of the list as its queue in this order</dd><dt><kbd>T</kbd></dt><dd>triage this video</dd><dt><kbd>/</kbd></dt><dd>filter</dd><dt><kbd>Esc</kbd></dt><dd>back to Commander</dd></dl></div></div>
+ <div class=cols><div><dl><dt><kbd>↑</kbd><kbd>↓</kbd></dt><dd>move</dd><dt><kbd>Home</kbd><kbd>End</kbd></dt><dd>first, last</dd><dt><kbd>Enter</kbd><kbd>W</kbd></dt><dd>Watch in Theater: this video, with the rest of the list as its queue in this order</dd><dt><kbd>T</kbd></dt><dd>triage this video</dd><dt><kbd>G</kbd></dt><dd>Go to My Feed</dd><dt><kbd>/</kbd></dt><dd>filter</dd><dt><kbd>Esc</kbd></dt><dd>back to Commander</dd></dl></div></div>
 </div></div>
 <script src="/static/app.js"></script>
 <script>
@@ -67,6 +67,7 @@ addEventListener('keydown',e=>{const a=document.activeElement;if(a&&a.tagName=='
  else if(k=='Enter'&&L[FI]){e.preventDefault();watchFrom(FI)}
  else if(kl=='w'){e.preventDefault();watchFrom(FI)}
  else if(kl=='t'){e.preventDefault();if(!L[FI]){yc.toast('Nothing to triage here');return}location.href='/triage?v='+L[FI].video_id}
+ else if(kl=='g'){e.preventDefault();location.href='/feed'}
  else if(k=='/'){e.preventDefault();fq.focus()}});
 (async()=>{const d=await J('/api/history?limit=2000');ALL=d.items;sum.textContent='';hsum.textContent=d.videos+' videos opened, '+fmt(d.seconds)+' watched';
  const c=ALL.filter(x=>x.duration>0&&x.last_pos>30&&x.last_pos<x.duration-20).slice(0,10);

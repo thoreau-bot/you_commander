@@ -2,7 +2,7 @@
 
 ## Unreleased — Feed, step 1 (branch feed-step1)
 Channel identity, the groundwork for the Feed page (design: the project's feed-design doc). Regression suite: 19 checks (6 new), all green.
-- New **Feed** page in the topbar and the Commander rail. For now it holds one thing: the Channels panel
+- New **Feed** page in the topbar and the Commander rail; `G` (Go to My Feed) jumps to it from Commander, History and the Watch page (with no video loaded). For now it holds one thing: the Channels panel
 - **Resolve Channels** (`R`) finds the stable YouTube id behind every channel in the library: one oEmbed lookup for each video imported before this version (to get the channel's page link), then one visit to each distinct channel page to read its `UC…` id. Progress and a Cancel button while it runs; the result is a per-channel list with handle, video count and how the id was found
 - Channels are keyed on the id, never on the name, so two channels called the same thing stay two channels
 - Channel pages that cannot be read land in a **Not Yet Resolved** list with the reason; Retry All tries them again

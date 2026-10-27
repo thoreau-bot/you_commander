@@ -15,6 +15,7 @@ Press `?` on any page for an overlay with that page's shortcuts (`Esc` or `?` cl
 | `T` | Start Triage (with 2+ ticked: batch triage) |
 | `W` | Watch in Theater: the open (or highlighted) video on the Watch page, carrying on from where it is; with 2+ ticked, those in list order. Also in the rail. From an open preview the preview pauses; the Watch page picks up at the same moment in the same play state, and `Esc` there brings you back with the same video open, at the Watch page's time and play state. `E` does the same with Triage. |
 | `H` | History |
+| `G` | Go to My Feed |
 | `Esc` | Close preview, or clear filters |
 | `Z` | Undo, while an undo toast is showing (Watch: note delete, Drop) |
 | In preview: `K` `J` `L` `M` `Y` `E` | Play-pause, back 10 s, forward 10 s, mute, open on YouTube, triage this video (from this moment; `Esc` in Triage comes back) |
@@ -63,12 +64,21 @@ With nothing highlighted: `Enter` confirms all (asks first when there are two or
 | `C` | Copy a link to this moment |
 | `F` / `Enter` | Fullscreen |
 | `H` | History |
+| `G` | Go to My Feed (when no video is loaded; with one open, `G` opens this moment on YouTube) |
 | `Esc` | Leave the page (back to where you came from) |
 
 The video always has the keyboard on this page: the stage carries the same ring as video controls elsewhere, and a "Video Controls ON" card at the bottom right lists the keys. Owner & Visibility (Commander rail) sorts by any column; click a header, again to reverse.
 
 ### Queue focus (`Q`)
 `↑/↓` move highlight · `Alt+↑/↓` reorder · `Home/End` · `Space`/`Enter` play · `Esc`, `←` or `Q` leave.
+
+## Feed
+| Key | Action |
+|---|---|
+| `R` | Resolve Channels (Cancel while running) |
+| `/` | filter channels |
+| `↑` `↓` | move |
+| `Esc` | back to Commander |
 
 ## History
 | Key | Action |
