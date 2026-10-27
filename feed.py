@@ -99,8 +99,11 @@ def resolve_url(url):
 def pending(path):
     c = sqlite3.connect(path)
     a = c.execute("select count(*) from videos where channel_url is null and title_source='oembed' and unavailable=0").fetchone()[0]
-    b = c.execute("select count(distinct channel_url) from videos v where channel_url is not null and not exists(select 1 from video_channel x where x.video_id=v.video_id)").fetchone()[0]
-    c.close(); return dict(need_url=a, need_id=b)
+    b = c.execute("""select count(distinct channel_url) from videos v where channel_url is not null
+                     and not exists(select 1 from video_channel x where x.video_id=v.video_id)
+                     and channel_url not in (select channel_url from channel_unresolved)""").fetchone()[0]
+    u = c.execute("select count(*) from channel_unresolved").fetchone()[0]
+    c.close(); return dict(need_url=a, need_id=b, unresolved=u)
 
 def _worker(path):
     import importer
@@ -129,8 +132,10 @@ def _worker(path):
         c.commit()
         if JOB['cancel']: return
         # ---- phase B: one page fetch per distinct channel URL that has no id yet
+        # URLs already tried and failed are left alone here; Retry All clears channel_unresolved first, which is the only way back in
         rows = c.execute("""select channel_url, min(channel) title, count(*) n from videos v where channel_url is not null
-                            and not exists(select 1 from video_channel x where x.video_id=v.video_id) group by channel_url order by n desc""").fetchall()
+                            and not exists(select 1 from video_channel x where x.video_id=v.video_id)
+                            and channel_url not in (select channel_url from channel_unresolved) group by channel_url order by n desc""").fetchall()
         JOB.update(phase='ids', total=len(rows), done=0, ok=0, failed=0)
         known = {r[0]: r[1] for r in c.execute("select channel_url,channel_id from channels where channel_url is not null")}
         for url, title, n in rows:

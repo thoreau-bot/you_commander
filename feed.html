@@ -2,7 +2,11 @@
 <link rel=stylesheet href="/static/app.css">
 <style>
 main{max-width:1120px;margin:auto;padding:18px 22px 60px}
-.panel{margin-top:14px;box-shadow:var(--sh)}
+.panel{margin-top:14px;box-shadow:var(--sh);overflow:clip}
+.panel-h{position:sticky;top:52px;z-index:3;background:var(--sf)}
+.row.head{position:sticky;top:calc(52px + 42px);z-index:2}
+#unpanel .row{grid-template-columns:minmax(0,1fr) 220px 90px 150px}#unpanel .row.head{top:calc(52px + 42px)}
+.showall{display:flex;justify-content:center;padding:8px}
 .panel-h .r{display:flex;gap:8px;align-items:center}
 .status{display:flex;flex-wrap:wrap;align-items:center;gap:10px 16px;padding:10px 14px;border-bottom:1px solid var(--bd);color:var(--fg2)}
 .status .prog{width:220px;height:6px;background:var(--bd);border-radius:5px;overflow:hidden}.status .prog i{display:block;height:100%;background:var(--ac);width:0;transition:width .3s}
@@ -23,6 +27,13 @@ main{max-width:1120px;margin:auto;padding:18px 22px 60px}
 <main><h1 class=vt>Feed<small>Step 1 of the Feed: knowing your channels</small></h1>
 <p class=mut style="margin:6px 0 0;max-width:72ch">The feed will follow every channel in your library. Takeout files only carry video IDs, so each channel's YouTube identity is looked up once from the videos you already have. Nothing is written to YouTube.</p>
 
+<div class=panel id=unpanel style="display:none">
+ <div class=panel-h>Not Yet Resolved<span id=unn class=mut style="font-weight:400"></span><span class=r><button id=retry class="sm">Retry All</button></span></div>
+ <div class=status><span>These channel pages could not be read. Most often the channel is gone or renamed (a 404); sometimes YouTube refused the request for now. Their videos stay in the library; they just will not be followed until this resolves. Resolve Channels leaves them alone; Retry All tries them again.</span></div>
+ <div id=unlist></div>
+ <div class=showall id=unmore style="display:none"><button class="sm ghost" id=unall>Show All</button></div>
+</div>
+
 <div class=panel id=chpanel>
  <div class=panel-h>Channels<span id=chn class=mut style="font-weight:400"></span><span class=r><button id=cancel class="sm ghost" style="display:none">Cancel</button><button id=resolve class="pri">Resolve Channels<kbd>R</kbd></button></span></div>
  <div class=status id=status><span id=stxt>Checking…</span><span class=prog id=prog style="display:none"><i id=pbar></i></span></div>
@@ -30,32 +41,27 @@ main{max-width:1120px;margin:auto;padding:18px 22px 60px}
  <div id=list></div>
 </div>
 
-<div id=unwrap style="display:none">
- <div class=lbl>Not Yet Resolved<small id=unn></small><span style="flex:1"></span><button id=retry class="sm">Retry All</button></div>
- <p class=mut style="margin:0 0 8px;font-size:var(--fs-s);max-width:72ch">These channel pages could not be read: the channel may be gone, renamed, or YouTube may have refused the request for now. Videos from them stay in the library; they just will not be followed until this resolves.</p>
- <div class=panel style="margin-top:0" id=unlist></div>
-</div>
-
 <p class=mut style="font-size:var(--fs-s);margin-top:18px;max-width:72ch">Network use, only when you press Resolve Channels: one title lookup (YouTube oEmbed) per video that was imported before this version, then one visit to each channel's page to read its id. No API key, no quota. See docs/PRIVACY.md.</p>
 </main>
 <div id=help><div class=card>
  <h2>Keyboard shortcuts<span class=mut>Esc or ? closes</span></h2>
- <div class=cols><div><dl><dt><kbd>R</kbd></dt><dd>Resolve Channels (or Cancel while running)</dd><dt><kbd>/</kbd></dt><dd>filter channels</dd><dt><kbd>↑</kbd><kbd>↓</kbd></dt><dd>move</dd><dt><kbd>Esc</kbd></dt><dd>back to Commander</dd></dl></div></div>
+ <div class=cols><div><dl><dt><kbd>R</kbd></dt><dd>Resolve Channels (or Cancel while running)</dd><dt><kbd>/</kbd></dt><dd>filter channels</dd><dt><kbd>↑</kbd><kbd>↓</kbd></dt><dd>move</dd><dt><kbd>Home</kbd><kbd>End</kbd></dt><dd>first, last (the round buttons at bottom left do the same by mouse)</dd><dt><kbd>Esc</kbd></dt><dd>back to Commander</dd></dl></div></div>
 </div></div>
 <script src="/static/app.js"></script>
 <script>
 const J=async(u,o)=>(await fetch(u,o)).json(),esc=s=>(s||'').replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
 const n=x=>Number(x||0).toLocaleString();
-let D={channels:[],unresolved:[],videos:0,linked:0,pending:{need_url:0,need_id:0}},RUN=false,FI=0,POLL=null,LASTJ=null;
+let D={channels:[],unresolved:[],videos:0,linked:0,pending:{need_url:0,need_id:0,unresolved:0}},RUN=false,FI=0,POLL=null,LASTJ=null,UNALL=false;
 function shown(){const q=fq.value.trim().toLowerCase();return D.channels.filter(c=>!q||((c.title||'')+' '+(c.handle||'')).toLowerCase().includes(q))}
 function statusLine(j){
  if(j&&j.running){const t=j.total||0,d=j.done||0;prog.style.display='';pbar.style.width=(t?100*d/t:0)+'%';
   return j.phase=='urls'?`Looking up channel pages for your videos: ${n(d)} of ${n(t)}.`:`Reading channel ids: ${n(d)} of ${n(t)}${j.failed?', '+n(j.failed)+' could not be read':''}.`}
  prog.style.display='none';const p=D.pending;
  if(!D.videos)return'No videos yet. Import from Takeout first, then come back here.';
- if(!p.need_url&&!p.need_id)return`Every video is linked to its channel: ${n(D.linked)} of ${n(D.videos)}.`;
+ const un=p.unresolved?` ${n(p.unresolved)} channel${p.unresolved>1?'s':''} could not be read (listed above).`:'';
+ if(!p.need_url&&!p.need_id)return(p.unresolved?`Every reachable channel is linked: ${n(D.linked)} of ${n(D.videos)} videos.`:`Every video is linked to its channel: ${n(D.linked)} of ${n(D.videos)}.`)+un;
  const parts=[];if(p.need_url)parts.push(`${n(p.need_url)} video${p.need_url>1?'s':''} still need${p.need_url>1?'':'s'} a channel page`);if(p.need_id)parts.push(`${n(p.need_id)} channel${p.need_id>1?'s':''} still need${p.need_id>1?'':'s'} an id`);
- return parts.join(' and ')+'. Press Resolve Channels.'}
+ return parts.join(' and ')+'. Press Resolve Channels.'+un}
 function draw(j){if(j!==undefined)LASTJ=j;j=LASTJ;
  RUN=!!(j&&j.running);resolve.style.display=RUN?'none':'';cancel.style.display=RUN?'':'none';resolve.disabled=!D.videos;
  stxt.textContent=statusLine(j);if(j&&j.note)stxt.textContent+=' '+j.note;
@@ -67,14 +73,18 @@ function draw(j){if(j!==undefined)LASTJ=j;j=LASTJ;
   :D.channels.length?`<div class=empty><b>No channel matches</b>Nothing matches “${esc(fq.value.trim())}”.</div>`
   :`<div class=empty><div class=glyph><svg width=20 height=20 viewBox="0 0 16 16" fill=none stroke=currentColor stroke-width=1.7 stroke-linecap=round stroke-linejoin=round><path d="M2 4.5h12M2 8h12M2 11.5h8"/></svg></div><b>No channels resolved yet</b>${D.videos?'Press Resolve Channels to look up the channel behind each of your videos.':'There are no videos in the library yet.'}</div>`;
  const f=list.querySelector('.f');if(f)f.scrollIntoView({block:'nearest'});
- const U=D.unresolved;unwrap.style.display=U.length?'':'none';unn.textContent=U.length?U.length+' channel'+(U.length>1?'s':''):'';
- unlist.innerHTML=U.map(u=>`<div class="row bad"><div><div class=t>${esc(u.title||u.channel_url)}</div><small>${esc(u.channel_url)}</small></div><small>${esc(u.error||'')}</small><div class=num>${n(u.n)}</div><small>${esc((u.tried_at||'').replace('T',' '))}</small></div>`).join('')}
+ const U=D.unresolved;unpanel.style.display=U.length?'':'none';unn.textContent=U.length?n(U.length)+' channel'+(U.length>1?'s':''):'';
+ const show=UNALL?U:U.slice(0,10);unmore.style.display=U.length>10?'':'none';unall.textContent=UNALL?'Show Fewer':`Show All ${n(U.length)}`;
+ unlist.innerHTML=(U.length?'<div class="row head"><span>Channel</span><span>Reason</span><span class=num>Videos</span><span>Last tried</span></div>':'')+show.map(u=>`<div class="row bad"><div><div class=t>${esc(u.title||u.channel_url)}</div><small>${esc(u.channel_url)}</small></div><small title="${esc(u.error||'')}">${esc(reason(u.error))}</small><div class=num>${n(u.n)}</div><small>${esc(when(u.tried_at))}</small></div>`).join('')}
+const reason=e=>{e=e||'';if(/http 404|http 410/.test(e))return'Channel gone or renamed (404)';if(/429|throttl|could not fetch/.test(e))return'YouTube refused the request; try later';if(/no channel id/.test(e))return'Page had no channel id';return e};
+const when=s=>{if(!s)return'';const d=new Date(s.replace(' ','T')+'Z');return d.toLocaleDateString(undefined,{month:'short',day:'numeric'})+' '+d.toLocaleTimeString(undefined,{hour:'numeric',minute:'2-digit'})};
 async function load(j){D=await J('/api/feed/channels');draw(j)}
-async function poll(){const j=await J('/api/feed/resolve/status');if(j.running){draw(j);POLL=setTimeout(poll,700)}else{POLL=null;await load(j);if(j.started)yc.toast(j.failed?`Done. ${n(j.failed)} channel page${j.failed>1?'s':''} could not be read.`:'Done. Every video has its channel.',4000)}}
+async function poll(){const j=await J('/api/feed/resolve/status');if(j.running){draw(j);POLL=setTimeout(poll,700)}else{POLL=null;await load(j);if(j.started)yc.toast(j.failed?`Done. ${n(j.failed)} channel page${j.failed>1?'s':''} could not be read; they are listed under Not Yet Resolved at the top.`:'Done. Every video has its channel.',6000)}}
 resolve.onclick=async()=>{if(RUN)return;const r=await J('/api/feed/resolve',{method:'POST'});if(!r.started){yc.toast('Already running');return}RUN=true;draw({running:true,phase:'urls',total:0,done:0});if(!POLL)poll()};
 cancel.onclick=async()=>{await J('/api/feed/resolve/cancel',{method:'POST'});yc.toast('Stopping after the current lookup')};
 retry.onclick=async()=>{const r=await J('/api/feed/unresolved/retry',{method:'POST'});if(r.started){RUN=true;draw({running:true,phase:'ids',total:0,done:0});if(!POLL)poll()}};
 fq.oninput=()=>{FI=0;draw()};
+unall.onclick=()=>{UNALL=!UNALL;draw()};
 addEventListener('keydown',e=>{const a=document.activeElement;if(a&&a.tagName=='INPUT'){if(e.key=='Escape'){e.preventDefault();if(fq.value){fq.value='';draw()}else a.blur()}else if(e.key=='Enter'||e.key=='ArrowDown'){a.blur();draw();e.preventDefault()}return}
  if(e.ctrlKey||e.metaKey||e.altKey||yc.onControl(e))return;
  const L=shown(),k=e.key,kl=k.toLowerCase();
@@ -83,5 +93,6 @@ addEventListener('keydown',e=>{const a=document.activeElement;if(a&&a.tagName=='
  else if(k=='Home'&&L.length){e.preventDefault();FI=0;draw()}else if(k=='End'&&L.length){e.preventDefault();FI=L.length-1;draw()}
  else if(kl=='r'){e.preventDefault();(RUN?cancel:resolve).click()}
  else if(k=='/'){e.preventDefault();fq.focus()}});
+yc.jump();
 (async()=>{const j=await J('/api/feed/resolve/status');await load(j.running?j:null);if(j.running)poll()})();
 </script>

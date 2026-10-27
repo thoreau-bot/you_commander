@@ -187,6 +187,15 @@
  }
  // a popover swallows page shortcuts while it is open
  addEventListener('keydown',e=>{if(POP&&!POP.el.contains(e.target)){if(e.key=='Escape')closePop(POP.cancel);else if(e.key=='Enter'){const ok=POP.el.querySelector('[data-a=ok]');ok&&ok.click()}else if(e.key=='Tab'){cycle(POP.el,e)}e.stopImmediatePropagation();e.preventDefault()}},true);
+ // ---- jump buttons: yc.jump(el?) adds Top / Bottom buttons that appear once the page (or the given scrolling pane)
+ //      is longer than three screens; each is disabled at its own end. Home/End keys are the page's own business.
+ yc.jump=el=>{const sc=el||document.scrollingElement,tgt=el||window;const box=document.createElement('div');box.className='jump';
+  box.innerHTML='<button data-j=top title="Top of the list" aria-label="Scroll to top"><svg width=14 height=14 viewBox="0 0 16 16" fill=none stroke=currentColor stroke-width=1.8 stroke-linecap=round stroke-linejoin=round><path d="M3 10l5-5 5 5"/></svg></button><button data-j=bot title="Bottom of the list" aria-label="Scroll to bottom"><svg width=14 height=14 viewBox="0 0 16 16" fill=none stroke=currentColor stroke-width=1.8 stroke-linecap=round stroke-linejoin=round><path d="M3 6l5 5 5-5"/></svg></button>';
+  document.body.appendChild(box);const [up,dn]=box.querySelectorAll('button');
+  const go=y=>{if(el)el.scrollTo({top:y,behavior:'smooth'});else window.scrollTo({top:y,behavior:'smooth'})};
+  up.onclick=()=>go(0);dn.onclick=()=>go(sc.scrollHeight);
+  const upd=()=>{const h=sc.clientHeight,t=sc.scrollTop,m=sc.scrollHeight;box.classList.toggle('on',m>h*3);up.disabled=t<h/2;dn.disabled=m-t-h<h/2};
+  tgt.addEventListener('scroll',upd,{passive:true});addEventListener('resize',upd);new MutationObserver(upd).observe(el||document.body,{childList:true,subtree:true});upd();return upd};
  // status nodes announce politely
  if(!document.documentElement.lang)document.documentElement.lang='en';
  document.querySelectorAll('#info,#vs,#st,#pos,#toast').forEach(el=>{if(!el.getAttribute('role')){el.setAttribute('role','status');el.setAttribute('aria-live','polite')}});

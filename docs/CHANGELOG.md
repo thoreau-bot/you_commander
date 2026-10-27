@@ -8,6 +8,7 @@ Channel identity, the groundwork for the Feed page (design: the project's feed-d
 - Channel pages that cannot be read land in a **Not Yet Resolved** list with the reason; Retry All tries them again
 - The title lookup now keeps the channel's page link (`videos.channel_url`), so videos imported from here on need no second lookup
 - No key, no quota, nothing automatic: the lookups only run when you press the button (privacy table updated)
+- After a real-library run (3,918 channels): **Not Yet Resolved** sits at the top of the page (first ten, Show All for the rest) with a titled Reason column in plain words ("Channel gone or renamed (404)"); plain Resolve Channels leaves failed channels alone and only Retry All tries them again; column headers stay pinned while you scroll and the upper section collapses away as you pass it; round Top / Bottom buttons (bottom left) appear on any list longer than three screens (`yc.jump`, shared in app.js for other pages)
 
 ## 1.8.0
 Requested changes. Regression suite: 150 checks (14 new), all green.

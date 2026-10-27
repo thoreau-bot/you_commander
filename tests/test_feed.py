@@ -53,7 +53,7 @@ def test_resolver_links_every_video_and_keeps_same_titled_channels_apart(lib):
     assert client.post('/api/feed/resolve').json()['started']
     _wait(client)
     after = client.get('/api/feed/channels').json()
-    assert after['linked'] == after['videos'] and after['pending'] == {'need_url': 0, 'need_id': 0}
+    assert after['linked'] == after['videos'] and after['pending'] == {'need_url': 0, 'need_id': 0, 'unresolved': 0}
     # 'aaaaaaaaaaa' and 'bbbbbbbbbbb' both say "Fake Channel" but come from @fake-a and @fake-b: two channels, not one
     ids = {ch['channel_id'] for ch in after['channels']}
     assert len(ids) == len(after['channels']) >= 2
@@ -71,18 +71,23 @@ def test_phase_a_backfills_pre_1_9_rows_and_unresolved_is_reported(lib):
     c.execute("insert into videos(video_id,title,channel,channel_url,title_source) values('fffffffffff','Gone','Vanished','https://www.youtube.com/@nochannel-x','oembed')")
     c.commit(); c.close()
     p = client.get('/api/feed/channels').json()['pending']
-    assert p == {'need_url': 1, 'need_id': 1}
+    assert p == {'need_url': 1, 'need_id': 1, 'unresolved': 0}
     client.post('/api/feed/resolve'); _wait(client)
     r = client.get('/api/feed/channels').json()
-    assert r['pending'] == {'need_url': 0, 'need_id': 1}
+    # the failed URL is no longer "pending": a plain Resolve leaves it alone, only Retry All tries it again
+    assert r['pending'] == {'need_url': 0, 'need_id': 0, 'unresolved': 1}
+    tried = r['unresolved'][0]['tried_at']
+    client.post('/api/feed/resolve'); _wait(client)
+    assert client.get('/api/feed/channels').json()['unresolved'][0]['tried_at'] == tried
     assert len(r['unresolved']) == 1 and r['unresolved'][0]['channel_url'].endswith('@nochannel-x') and r['unresolved'][0]['n'] == 1
     c = sqlite3.connect(db)
     assert c.execute("select channel_url from videos where video_id='eeeeeeeeeee'").fetchone()[0] == 'https://www.youtube.com/@fake-e'
     assert c.execute("select channel_id from video_channel where video_id='eeeeeeeeeee'").fetchone()
     c.close()
     # retry clears the list and runs again; still unresolvable, so it comes back with n unchanged
-    client.post('/api/feed/unresolved/retry'); _wait(client)
-    assert len(client.get('/api/feed/channels').json()['unresolved']) == 1
+    time.sleep(1.1); client.post('/api/feed/unresolved/retry'); _wait(client)
+    u = client.get('/api/feed/channels').json()['unresolved']
+    assert len(u) == 1 and u[0]['tried_at'] != tried
     # leave the shared library as the import left it (the smoke test counts its videos)
     c = sqlite3.connect(db)
     c.execute("delete from videos where video_id in ('eeeeeeeeeee','fffffffffff')")
