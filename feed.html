@@ -3,7 +3,7 @@
 <style>
 main{max-width:1120px;margin:auto;padding:18px 22px 60px}
 .panel{margin-top:14px;box-shadow:var(--sh);overflow:clip}
-.panel-h{position:sticky;top:66px;z-index:3;background:var(--sf);box-shadow:0 -14px 0 0 var(--bg)}
+.panel-h{position:sticky;top:66px;z-index:3;background:var(--sf);box-shadow:0 -14px 0 0 var(--bg),0 1px 0 0 var(--sf);height:53px;box-sizing:border-box}
 .panel-h .r{display:flex;gap:8px;align-items:center}
 .status{display:flex;flex-wrap:wrap;align-items:center;gap:10px 16px;padding:10px 14px;border-bottom:1px solid var(--bd);color:var(--fg2)}
 .status .prog{width:220px;height:6px;background:var(--bd);border-radius:5px;overflow:hidden}.status .prog i{display:block;height:100%;background:var(--ac);width:0;transition:width .3s}
@@ -11,7 +11,7 @@ main{max-width:1120px;margin:auto;padding:18px 22px 60px}
 .search{position:relative;display:flex;align-items:center}.search input{width:280px;padding-right:34px}.search kbd{position:absolute;right:9px;pointer-events:none}
 .tools .chips{display:flex;gap:4px}
 .row{display:grid;grid-template-columns:minmax(0,1fr) 220px 90px 90px;gap:12px;padding:9px 14px;border-bottom:1px solid var(--bd);align-items:center}
-.row.head{position:sticky;top:var(--hh,108px);z-index:2;color:var(--mut);font-size:var(--fs-s);font-weight:600;padding:7px 14px;background:var(--sf2)}
+.row.head{position:sticky;top:118px;z-index:2;color:var(--mut);font-size:var(--fs-s);font-weight:600;padding:7px 14px;background:var(--sf2)}
 .row.head button.sort{justify-content:flex-start;gap:5px;min-height:24px;height:24px;padding:0 6px;margin-left:-6px;border:0;background:none;color:var(--mut);font-size:var(--fs-s);font-weight:600;border-radius:var(--rs)}.row.head button.sort:hover,.row.head button.sort.on{color:var(--fg)}.row.head button.sort.num{justify-content:flex-end;margin-left:0;margin-right:-6px;width:100%}.row.head .arrow{font-size:9px;color:var(--ac);min-width:9px}
 .row:last-child{border-bottom:0}.row>div{min-width:0}
 .row .t{overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-weight:500}
@@ -24,7 +24,7 @@ main{max-width:1120px;margin:auto;padding:18px 22px 60px}
 .row select{height:26px;padding:0 6px;font-size:var(--fs-s);max-width:150px}
 /* the feed itself */
 .vrow{display:grid;grid-template-columns:118px minmax(0,1fr) 150px 90px;gap:12px;padding:8px 14px;border-bottom:1px solid var(--bd);align-items:center;cursor:default}
-.vrow.head{position:sticky;top:var(--hh,108px);z-index:2;color:var(--mut);font-size:var(--fs-s);font-weight:600;padding:7px 14px;background:var(--sf2)}
+.vrow.head{position:sticky;top:118px;z-index:2;color:var(--mut);font-size:var(--fs-s);font-weight:600;padding:7px 14px;background:var(--sf2)}
 .vrow:last-child{border-bottom:0}.vrow>div{min-width:0}
 .vrow:hover{background:var(--sf2)}.vrow.f{background:var(--ac-s);box-shadow:inset 3px 0 0 var(--ac)}
 .vrow .th{width:118px;aspect-ratio:16/9;background:var(--sf2);border-radius:var(--rs);overflow:hidden;position:relative;display:block}
@@ -114,7 +114,8 @@ let CSORT=ld('feedChSort',{k:'n_library',d:-1}),USORT=ld('feedUnSort',{k:'n',d:-
 const sortBy=(rows,S)=>[...rows].sort((a,b)=>{const x=a[S.k],y=b[S.k];const c=NUMC[S.k]?(x||0)-(y||0):String(x||'').localeCompare(String(y||''),undefined,{sensitivity:'base',numeric:true});return c*S.d||String(a.title||'').localeCompare(String(b.title||''))});
 const head=(cols,S)=>'<div class="row head" role=row>'+cols.map(([c,l])=>c=='_'?'<span></span>':`<button class="sort${NUMC[c]?' num':''}${c==S.k?' on':''}" data-sort=${c} aria-sort="${c==S.k?(S.d>0?'ascending':'descending'):'none'}" title="Sort by ${l.toLowerCase()}">${l}<span class=arrow aria-hidden=true>${c==S.k?(S.d>0?'▲':'▼'):''}</span></button>`).join('')+'</div>';
 function wireSort(el,S,key){el.querySelectorAll('[data-sort]').forEach(b=>b.onclick=()=>{const c=b.dataset.sort;const nn=c==S.k?{k:c,d:-S.d}:{k:c,d:NUMC[c]||c=='tried_at'?-1:1};Object.assign(S,nn);try{localStorage.setItem(key,JSON.stringify(S))}catch(e){}CI=0;draw()})}
-function pinHeads(){document.querySelectorAll('.panel').forEach(p=>{const h=p.querySelector('.panel-h');if(h)p.style.setProperty('--hh',(66+h.offsetHeight)+'px')})}
+// Pinned column rows sit 1px under their panel's fixed-height title bar; nothing is measured, so zoom and scaling cannot open a seam.
+function pinHeads(){}   // the title bar has a fixed height, so the header offset is a constant (66 + 53 - 1)
 addEventListener('resize',pinHeads);
 
 // ---------------------------------------------------------------- channels view (step 1)

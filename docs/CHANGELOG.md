@@ -14,6 +14,7 @@ Step 2 — New Videos
 - A video whose title lookup answers without a channel link is tried once and then left alone (Retry All gives it another go); it no longer blocks the feed or makes Resolve Channels re-run forever
 - Not Yet Resolved rows have **Link…** (paste the channel's current link, any video from it, or its UC… id; YouTube sometimes swaps an @handle for a random string) and **Remove** (give up: the feed leaves the channel out for good, its videos stay in the library, Retry All does not bring it back)
 - The Feed page opens on New Videos whenever any channel is resolved; the last-used tab is no longer remembered
+- Pinned column titles tuck 1px under a fixed-height panel title bar, so no sliver of the list shows between them while scrolling, at any display scale or zoom
 
 Step 1 — Channel identity
 - New **Feed** page in the topbar and the Commander rail; `G` (Go to My Feed) jumps to it from Commander, History and the Watch page (with no video loaded). For now it holds one thing: the Channels panel
