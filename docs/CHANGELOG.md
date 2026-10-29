@@ -35,7 +35,7 @@ Whisper
 - **Keep Audio** (off by default; checkbox on the Whisper row of the Watch page): keeps each video's downloaded audio under `audio/whisper/` so a better model later can **Re-transcribe** without asking YouTube again. Re-transcribe (Whisper row) re-runs on the kept file when there is one; Drop Audio removes a video's file; the status endpoint reports how many files are kept and their size. The privacy doc says what is stored
 
 - Every request the app makes to youtube.com (caption fetches, feed checks, Shorts probes, the yt-dlp channel fallback) now shares one pace: a 429 anywhere pauses all of them for 5 minutes, doubling on repeats up to an hour, and resets after a quiet half hour. The Watch and Feed pages say "YouTube asked us to slow down; resuming at …" while it lasts
-- Caption fetches skip yt-dlp's player-JS and config requests (`player_skip`), roughly halving the requests per video
+- Caption fetches skip yt-dlp's player-JS and config requests (`player_skip`), roughly halving the requests per video. (2k fix: that left yt-dlp with no stream formats and its format selector refused every fetch with "Requested format is not available"; `ignore_no_formats_error` lets the caption read proceed. Error notes no longer carry terminal colour codes)
 - The Shorts probe runs at about one request a second and at most 500 per pass, so a backlog drains over several wake-ups rather than as one burst
 - The background feed check waits while transcript jobs are queued or running: captions you asked for go first
 - The yt-dlp channel-id fallback respects the pace and never runs under the test doubles

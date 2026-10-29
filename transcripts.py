@@ -69,8 +69,10 @@ def fetch_captions(vid):
     import yt_dlp
     # Subtitles only: skip the player JS and the stream-format resolution yt-dlp does by default, which is most of the
     # requests (and most of what trips YouTube's rate limit) for a fetch that never downloads anything.
-    opts = {'quiet': True, 'no_warnings': True, 'skip_download': True, 'noplaylist': True, 'socket_timeout': 25,
-            'writesubtitles': True, 'writeautomaticsub': True, 'subtitleslangs': ['en', 'en-orig', 'en-US', 'en-GB'],
+    # With the player JS skipped there are no stream formats, and yt-dlp's format selector would raise
+    # "Requested format is not available" before we read the captions; ignore_no_formats_error lets it carry on.
+    opts = {'quiet': True, 'no_warnings': True, 'skip_download': True, 'noplaylist': True, 'socket_timeout': 25, 'no_color': True,
+            'ignore_no_formats_error': True,
             'extractor_args': {'youtube': {'player_skip': ['js', 'configs'], 'player_client': ['web']}}}
     with yt_dlp.YoutubeDL(opts) as ydl:
         info = ydl.extract_info('https://www.youtube.com/watch?v=' + vid, download=False)
@@ -171,7 +173,7 @@ def setup(app, DB):
                 save(vid, 'captions', 'none', error='No English captions on this video'); return 'none'
             save(vid, 'captions', 'ok', r['kind'], r['language'], r['cues']); return 'ok'
         except Exception as e:
-            msg = str(e)[:300]
+            msg = re.sub(r'\x1b\[[0-9;]*m', '', str(e)); msg = re.sub(r'^ERROR:\s*', '', msg).strip()[:300]
             save(vid, method, 'error', error=msg)
             JOB['note'] = msg
             if re.search(r'429|Too Many|Sign in to confirm|bot', msg, re.I):
