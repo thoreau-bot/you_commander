@@ -319,8 +319,13 @@ def setup(app, DB):
         else: ids = []
         done = {r[0] for r in c.execute("select video_id from transcripts where kind=? and status in ('ok','none')", (b.method,))} if not b.force else set()
         c.close()
-        todo = [(v, b.method) for v in ids if v not in done][:2000]
-        return {'queued': enqueue(todo), 'skipped': len(ids) - len(todo)}
+        # Three honest numbers: already done (skipped), queued now, and left over if the queue cap was hit.
+        # The cap keeps one request from building a multi-day queue by accident; queue the rest with another press.
+        CAP = 10000
+        want = [(v, b.method) for v in ids if v not in done]
+        todo = want[:CAP]
+        q = enqueue(todo)
+        return {'queued': q, 'skipped': len(ids) - len(want), 'already_queued': len(todo) - q, 'left': len(want) - len(todo)}
 
     class KeepIn(BaseModel): keep_audio: bool
     @app.post('/api/transcripts/settings')

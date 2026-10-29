@@ -149,7 +149,7 @@ def test_transcript_queue_takes_a_method(client):
         if t['whisper']['status'] == 'ok': break
         time.sleep(0.05)
     assert t['whisper']['status'] == 'ok' and t['captions']['status'] == 'missing'
-    assert client.post('/api/transcripts/queue', json={'ids': ['aaaaaaaaaaa'], 'method': 'whisper'}).json() == {'queued': 0, 'skipped': 1}
+    assert client.post('/api/transcripts/queue', json={'ids': ['aaaaaaaaaaa'], 'method': 'whisper'}).json() == {'queued': 0, 'skipped': 1, 'already_queued': 0, 'left': 0}
     assert client.post('/api/transcripts/queue', json={'ids': ['aaaaaaaaaaa'], 'method': 'nope'}).status_code == 400
     client.delete('/api/transcript/aaaaaaaaaaa', params={'kind': 'whisper'})
 

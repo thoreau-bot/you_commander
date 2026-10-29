@@ -26,6 +26,7 @@ Watch page
 - The video endpoint tolerates a video with no triage row
 
 Commander
+- Get Captions / Get Transcripts on a big selection report the real numbers: queued now, already done, already waiting, and how many did not fit (the queue cap is 10,000 per press; it was 2,000, and the leftover was being reported as "already done")
 - `W` / Watch in Theater with a video open always opens *that* video, even with others ticked (after Select All it was opening the first ticked video instead). The ticked set becomes the queue behind it
 - After Load 200 More, the "n in view" count in the bulk bar updates
 - With more than 300 ticked, the Triage button reads "Triage the First 300 Together" (one Triage page holds 300), and the batch page continues: a **Next 300** button (`⇧N`) with a "page 2 of 27" counter, and Confirm All / Drop All move on to the next page instead of back to Commander
