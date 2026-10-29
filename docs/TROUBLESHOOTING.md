@@ -17,3 +17,6 @@
 **Titles are blank** – run the title lookup from Import; it needs internet access.
 
 **Reset** – stop the app and delete `organizer.db`.
+
+## "database is locked", or the Watch page stays black
+Before 1.9's fix, a running Feed background check could hold the database for long stretches. If you still see this: the Feed page's "Check for new videos in the background" box can be unticked (Check Now still works on demand), and `BACKUP.bat` is always safe to run. Report it with the console log if it persists.

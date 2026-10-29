@@ -15,6 +15,7 @@ Step 2 — New Videos
 - Not Yet Resolved rows have **Link…** (paste the channel's current link, any video from it, or its UC… id; YouTube sometimes swaps an @handle for a random string) and **Remove** (give up: the feed leaves the channel out for good, its videos stay in the library, Retry All does not bring it back)
 - The Feed page opens on New Videos whenever any channel is resolved; the last-used tab is no longer remembered
 - Pinned column titles tuck 1px under a fixed-height panel title bar, so no sliver of the list shows between them while scrolling, at any display scale or zoom
+- **Fix: "database is locked" / black Watch page.** The background check held the database's write lock for long stretches (it committed every 50 channels), so the Watch page's open call and caption saves failed while a pass was running. The fetch and resolve workers now commit per channel, every page connection waits up to 30 s instead of 5, the background check waits 90 s after start-up and holds off while the app has been used in the last two minutes, and a wake-up checks at most 400 channels. A regression test runs page writes against a live pass
 
 Step 1 — Channel identity
 - New **Feed** page in the topbar and the Commander rail; `G` (Go to My Feed) jumps to it from Commander, History and the Watch page (with no video loaded). For now it holds one thing: the Channels panel

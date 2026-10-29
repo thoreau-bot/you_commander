@@ -10,16 +10,20 @@ import voice, importer
 from fastapi.responses import JSONResponse
 AUDIO_DIR=os.environ.get('ORG_AUDIO_DIR',os.path.join(os.path.dirname(os.path.abspath(DB)),'audio'))
 def _init_voice():
-    c=sqlite3.connect(DB)
+    c=sqlite3.connect(DB,timeout=30)
     c.execute("create table if not exists audio_notes(id INTEGER PRIMARY KEY,video_id TEXT,path TEXT,created_at TEXT,transcript TEXT,status TEXT,extracted TEXT,error TEXT)")
     c.commit();c.close();os.makedirs(AUDIO_DIR,exist_ok=True)
 
 importer.ensure_schema(DB)
+def _touch():
+    try:
+        import feed_fetch;feed_fetch.touch()
+    except Exception:pass
 def q(sql,a=()):
-    c=sqlite3.connect(DB);c.row_factory=sqlite3.Row
+    _touch();c=sqlite3.connect(DB,timeout=30);c.row_factory=sqlite3.Row
     r=[dict(x) for x in c.execute(sql,a)];c.close();return r
 def w(sql,a=()):
-    c=sqlite3.connect(DB);cur=c.execute(sql,a);c.commit();i=cur.lastrowid;c.close();return i
+    _touch();c=sqlite3.connect(DB,timeout=30);cur=c.execute(sql,a);c.commit();i=cur.lastrowid;c.close();return i
 AUD=['recent_adds','duplicates','unavailable','untagged_inbox']
 _FTS_T=None
 def _fts_rebuild():
@@ -37,7 +41,7 @@ def _fts_rebuild():
     finally: c.close()
 def _fts_shape_ok():
     try:
-        c=sqlite3.connect(DB);r=c.execute("select sql from sqlite_master where name='video_fts'").fetchone();c.close()
+        c=sqlite3.connect(DB,timeout=30);r=c.execute("select sql from sqlite_master where name='video_fts'").fetchone();c.close()
         return bool(r and 'notes' in r[0])
     except Exception: return False
 if not _fts_shape_ok(): threading.Thread(target=_fts_rebuild,daemon=True).start()
@@ -99,7 +103,7 @@ class PathIn(BaseModel): path:str
 def tag_path(b:PathIn):
     segs=[x.strip() for x in b.path.split('/') if x.strip()]
     if not segs: return {'error':'empty'}
-    c=sqlite3.connect(DB);parent=None;created=[]
+    c=sqlite3.connect(DB,timeout=30);parent=None;created=[]
     for name in segs:
         r=c.execute("select id from tags where lower(name)=lower(?) and coalesce(parent_id,0)=coalesce(?,0)",(name,parent)).fetchone()
         if r: parent=r[0];continue
@@ -112,7 +116,7 @@ def _inbox(c):
     r=c.execute("select id from tags where name='Inbox'").fetchone();return r[0] if r else None
 @app.post('/api/bulk')
 def bulk(b:Bulk):
-    c=sqlite3.connect(DB)
+    c=sqlite3.connect(DB,timeout=30)
     c.execute("create table if not exists bulk_log(op INTEGER,video_id TEXT,tag_id INTEGER,added INTEGER DEFAULT 0,removed_tag INTEGER DEFAULT 0,prev_confirmed INTEGER,had_inbox INTEGER DEFAULT 0,prev_status TEXT)")
     tag=b.tag_id
     if b.action=='trash':
@@ -143,7 +147,7 @@ def bulk(b:Bulk):
     c.commit();c.close();fts_dirty();return {'ok':1,'changed':n,'op':op,'tag_id':tag}
 @app.post('/api/bulk/undo')
 def bulk_undo():
-    c=sqlite3.connect(DB)
+    c=sqlite3.connect(DB,timeout=30)
     try: op=c.execute("select max(op) from bulk_log").fetchone()[0]
     except Exception: op=None
     if not op: return {'error':'nothing to undo'}
@@ -164,7 +168,7 @@ class Merge(BaseModel): into:int
 @app.post('/api/tags/{tid}/merge')
 def merge(tid:int,m:Merge):
     if tid==m.into: return {'error':'same'}
-    c=sqlite3.connect(DB)
+    c=sqlite3.connect(DB,timeout=30)
     c.execute("insert or ignore into video_tags(video_id,tag_id,source,confidence,confirmed) select video_id,?,source,confidence,confirmed from video_tags where tag_id=?",(m.into,tid))
     c.execute("update video_tags set confirmed=1 where tag_id=? and video_id in (select video_id from video_tags where tag_id=? and confirmed=1)",(m.into,tid))
     c.execute("delete from video_tags where tag_id=?",(tid,))
@@ -199,7 +203,7 @@ def videos_batch(b:Ids):
 class BSug(BaseModel): video_ids:list[str]; tag_ids:list[int]
 @app.post('/api/bulk/suggest')
 def bulk_suggest(b:BSug):
-    c=sqlite3.connect(DB)
+    c=sqlite3.connect(DB,timeout=30)
     for v in b.video_ids:
         for t in b.tag_ids: c.execute("insert or ignore into video_tags(video_id,tag_id,source,confirmed) values(?,?, 'voice',0)",(v,t))
     c.commit();c.close();fts_dirty();return {'ok':1}
@@ -214,7 +218,7 @@ def rmtag(vid:str,tid:int):
 class Act(BaseModel): action:str; note:str|None=None
 @app.post('/api/video/{vid}/triage')
 def act(vid:str,a:Act):
-    c=sqlite3.connect(DB)
+    c=sqlite3.connect(DB,timeout=30)
     if a.note is not None:
         if a.note.strip(): c.execute("insert into notes(video_id,body,updated_at) values(?,?,datetime('now')) on conflict(video_id) do update set body=excluded.body,updated_at=excluded.updated_at",(vid,a.note))
         else: c.execute("delete from notes where video_id=?",(vid,))

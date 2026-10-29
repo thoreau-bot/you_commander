@@ -186,11 +186,18 @@ def test_tiers_follow_library_signals(resolved):
     ff = _ff(); db = os.environ['ORG_DB']; c = sqlite3.connect(db)
     t = ff.compute_tiers(c)
     chans = {r[1]: r[0] for r in c.execute("select channel_id,handle from channels")}
-    # test library: bbbbbbbbbbb is in two playlists but one video per channel -> daily everywhere unless watched
-    assert t[chans['@fake-a']] == 'daily'
-    c.execute("insert into watch_log(video_id,at,source) values('aaaaaaaaaaa',datetime('now'),'test')") if 'at' in {r[1] for r in c.execute('pragma table_info(watch_log)')} else None
-    c.commit(); t = ff.compute_tiers(c)
-    c.execute("delete from watch_log where source='test'"); c.commit(); c.close()
+    # one video per channel in the test library -> daily, unless that video has been watched or noted (then hourly)
+    a = chans['@fake-a']
+    watched = c.execute("select count(*) from watch_log w join video_channel x using(video_id) where x.channel_id=?", (a,)).fetchone()[0]
+    noted = c.execute("select count(*) from notes n join video_channel x using(video_id) where x.channel_id=?", (a,)).fetchone()[0]
+    assert t[a] == ('hourly' if (watched or noted) else 'daily')
+    # and the rule holds for every channel, whatever the other tests did before this one
+    for cid, tier in t.items():
+        n = c.execute("select count(*) from video_channel where channel_id=?", (cid,)).fetchone()[0]
+        w = c.execute("select count(*) from watch_log l join video_channel x using(video_id) where x.channel_id=?", (cid,)).fetchone()[0]
+        m = c.execute("select count(*) from video_channel x where x.channel_id=? and (exists(select 1 from notes nt where nt.video_id=x.video_id) or exists(select 1 from video_marks mk where mk.video_id=x.video_id))", (cid,)).fetchone()[0]
+        assert tier == ('hourly' if (w or m or n >= 3) else 'sixhourly' if n == 2 else 'daily'), (cid, tier, n, w, m)
+    c.close()
 
 def test_one_stuck_video_does_not_block_the_feed(resolved):
     client = resolved; db = os.environ['ORG_DB']
@@ -243,3 +250,35 @@ def test_manual_link_and_remove_for_stubborn_channels(resolved):
     assert c.execute("select channel_url from videos where video_id='MOVED000003'").fetchone()[0] == '-'
     c.execute("delete from videos where video_id like 'MOVED%'"); c.execute("delete from video_channel where video_id like 'MOVED%'")
     c.execute("delete from channels where channel_id like 'UCmanual%' or channel_url like '%renamed-channel'"); c.commit(); c.close()
+
+def test_background_pass_never_blocks_the_pages(resolved):
+    """Kendall's report: with a fetch pass running, /api/watch/<id>/open and caption saves hit 'database is locked'
+    and the Watch page stayed black. The worker must hold the write lock only for instants."""
+    client = resolved; ff = _ff()
+    os.environ['ORG_FEED_FAKE_SLOW'] = '0.4'
+    try:
+        # many channels so the pass runs for a couple of seconds
+        ids = [c['channel_id'] for c in client.get('/api/feed/channels').json()['channels']] * 6
+        assert ff.start_pass(os.environ['ORG_DB'], 'manual', ids)
+        time.sleep(0.3)
+        assert client.get('/api/feed/fetch/status').json()['running']
+        t0 = time.time(); worst = 0
+        for i in range(6):
+            t = time.time()
+            r = client.post('/api/watch/aaaaaaaaaaa/open', json={'source': 'test'})
+            assert r.status_code == 200, r.text
+            r = client.post('/api/watch/aaaaaaaaaaa/ping', json={'pos': 10 + i, 'duration': 100, 'playing': True, 'rate': 1})
+            assert r.status_code == 200, r.text
+            r = client.post('/api/video/aaaaaaaaaaa/triage', json={'action': 'note', 'note': f'while fetching {i}'})
+            assert r.status_code == 200, r.text
+            worst = max(worst, time.time() - t); time.sleep(0.2)
+        assert worst < 2.0, f'a page write waited {worst:.1f}s on the background pass'
+        assert client.get('/api/feed/fetch/status').json()['running'], 'the pass should still be running while the pages were served'
+    finally:
+        os.environ.pop('ORG_FEED_FAKE_SLOW', None); ff.JOB['cancel'] = True; _wait_fetch(client, 30)
+        # leave no watch state or note behind (the smoke tests check History ordering)
+        c = sqlite3.connect(os.environ['ORG_DB'])
+        for t in ('watch_state', 'watch_log'):
+            try: c.execute(f"delete from {t} where video_id='aaaaaaaaaaa'")
+            except Exception: pass
+        c.execute("delete from notes where video_id='aaaaaaaaaaa'"); c.commit(); c.close()

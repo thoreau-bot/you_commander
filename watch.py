@@ -31,7 +31,11 @@ def setup(app, DB, video_fn, audio_dir=None):
     c.commit(); c.close()
     audio_dir = audio_dir or os.path.join(os.path.dirname(os.path.abspath(DB)), 'audio')
     def con():
-        x = sqlite3.connect(DB); x.row_factory = sqlite3.Row; return x
+        x = sqlite3.connect(DB, timeout=30); x.row_factory = sqlite3.Row
+        try:
+            import feed_fetch; feed_fetch.touch()   # someone is using the app: the feed poller stays out of the way
+        except Exception: pass
+        return x
     def page(name):
         return HTMLResponse(open(os.path.join(os.path.dirname(os.path.abspath(__file__)), name), encoding='utf-8').read())
 

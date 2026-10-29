@@ -95,6 +95,7 @@ def iso_utc(s):
 def fetch_feed(channel_id, etag=None, last_modified=None):
     """-> ('ok', entries, etag, last_modified) | ('unchanged', None, etag, lm) | ('fail', reason, None, None)"""
     if FAKE:
+        if os.environ.get('ORG_FEED_FAKE_SLOW'): time.sleep(float(os.environ['ORG_FEED_FAKE_SLOW']))   # tests: hold each fetch so a pass stays running
         p = os.path.join(FIX, f'{channel_id}.xml')
         if not os.path.exists(p): return 'fail', 'fake: no feed', None, None
         tag = str(int(os.path.getmtime(p)))
@@ -192,7 +193,8 @@ def due_channels(c, all_channels=False):
 # ---------------------------------------------------------------- the pass
 def run_pass(path, kind, channel_ids=None, workers=4):
     """One pass over the due channels (or the given ones). kind: 'first' | 'poll' | 'manual'."""
-    c = sqlite3.connect(path, timeout=30, check_same_thread=False)
+    c = sqlite3.connect(path, timeout=30, check_same_thread=False, isolation_level='DEFERRED')
+    c.execute('pragma busy_timeout=30000')
     try:
         ids = channel_ids if channel_ids is not None else due_channels(c, all_channels=(kind in ('first', 'manual')))   # the button checks everything; only the poller goes by tier
         JOB.update(kind=kind, total=len(ids), done=0, new=0, unchanged=0, failed=0, note='', started=time.time(), finished=None)
@@ -207,6 +209,7 @@ def run_pass(path, kind, channel_ids=None, workers=4):
                 et, lm = meta.get(cid, (None, None))
                 st, res, et2, lm2 = fetch_feed(cid, et, lm)
                 with lk:
+                    # one short write transaction per channel, committed at once, so the pages never wait on this worker
                     if st == 'ok':
                         n = upsert_entries(c, cid, res)
                         new_ids.extend(d['video_id'] for d in res)
@@ -220,7 +223,7 @@ def run_pass(path, kind, channel_ids=None, workers=4):
                         if res == 'http 429':
                             JOB['note'] = 'YouTube is throttling; stopped early. Try again in a while.'; JOB['cancel'] = True
                     JOB['done'] += 1
-                    if JOB['done'] % 50 == 0: c.commit()
+                    c.commit()
                 if not FAKE: time.sleep(random.uniform(0.25, 0.6))   # ~4 workers -> ~8 requests/s at most
         ths = [threading.Thread(target=work, daemon=True) for _ in range(1 if FAKE else workers)]
         [t.start() for t in ths]; [t.join() for t in ths]
@@ -230,10 +233,9 @@ def run_pass(path, kind, channel_ids=None, workers=4):
         JOB.update(kind=kind + ':shorts', total=len(todo), done=0)
         for vid in todo:
             if JOB['cancel'] or POLLER['stop']: break
-            r = probe_short(vid)
-            if r is not None: c.execute("update feed_items set is_short=?,is_short_src='probe' where video_id=?", (r, vid))
+            r = probe_short(vid)   # network first, outside any transaction
+            if r is not None: c.execute("update feed_items set is_short=?,is_short_src='probe' where video_id=?", (r, vid)); c.commit()
             JOB['done'] += 1
-            if JOB['done'] % 50 == 0: c.commit()
             if not FAKE: time.sleep(random.uniform(0.15, 0.35))
         c.commit()
         c.execute("insert into feed_log(at,kind,channels,new_items,unchanged,failed,seconds,note) values(?,?,?,?,?,?,?,?)",
@@ -252,17 +254,28 @@ def start_pass(path, kind, channel_ids=None):
         JOB.update(running=True, cancel=False, kind=kind, total=0, done=0, new=0, unchanged=0, failed=0, note='')
     threading.Thread(target=run_pass, args=(path, kind, channel_ids), name='feed-fetch', daemon=True).start(); return True
 
+LAST_USER_ACTION = [0.0]
+def touch():
+    """Called by the app on every foreground write, so the poller stays out of the way while someone is using it."""
+    LAST_USER_ACTION[0] = time.time()
+
 def _poll_loop(path):
-    """Every ~10 min, see what is due; run a pass for it. Off until first_pass_at is set and polling = 1."""
+    """Every ~10 min, see what is due; run a pass for it. Off until first_pass_at is set and polling = 1.
+    Waits 90 s after startup (the pages come up first), and holds off while the app was used in the last 2 minutes."""
+    grace = int(os.environ.get('ORG_FEED_POLL_GRACE', '90'))
+    for _ in range(grace):
+        if POLLER['stop']: return
+        time.sleep(1)
     while not POLLER['stop']:
         try:
-            c = sqlite3.connect(path, timeout=30)
-            on = setting(c, 'polling', '0') == '1' and setting(c, 'first_pass_at')
-            due = due_channels(c) if on else []
-            c.close()
-            if due and not JOB['running']:
-                start_pass(path, 'poll', due)
-                while JOB['running'] and not POLLER['stop']: time.sleep(1)
+            if time.time() - LAST_USER_ACTION[0] > 120 and not JOB['running']:
+                c = sqlite3.connect(path, timeout=30); c.execute('pragma busy_timeout=30000')
+                on = setting(c, 'polling', '0') == '1' and setting(c, 'first_pass_at')
+                due = due_channels(c) if on else []
+                c.close()
+                if due:
+                    start_pass(path, 'poll', due[:400])   # at most 400 channels per wake-up, so a backlog never becomes a long lock-out
+                    while JOB['running'] and not POLLER['stop']: time.sleep(1)
         except Exception:
             pass
         for _ in range(int(os.environ.get('ORG_FEED_POLL_SECS', '600'))):

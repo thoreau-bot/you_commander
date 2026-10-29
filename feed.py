@@ -110,7 +110,7 @@ def pending(path):
 def _worker(path):
     import importer
     try:
-        c = sqlite3.connect(path, timeout=30, check_same_thread=False)
+        c = sqlite3.connect(path, timeout=30, check_same_thread=False); c.execute('pragma busy_timeout=30000')
         # ---- phase A: one more oEmbed call per video that has a title but no channel URL (pre-1.9 libraries)
         todo = [r[0] for r in c.execute("select video_id from videos where channel_url is null and title_source='oembed' and unavailable=0")]
         JOB.update(phase='urls', total=len(todo), done=0, ok=0, failed=0, note='')
@@ -130,7 +130,7 @@ def _worker(path):
                         # answered without a channel link, or a retry-class error: note the attempt so this row stops counting as pending
                         c.execute("update videos set channel_url='' where video_id=?", (vid,)); JOB['failed'] += 1   # '' = tried, no link; NULL = never tried
                     JOB['done'] += 1
-                    if JOB['done'] % 100 == 0: c.commit()
+                    c.commit()
         ths = [threading.Thread(target=work, daemon=True) for _ in range(int(os.environ.get('ORG_TITLE_THREADS', '5')))]
         [t.start() for t in ths]; [t.join() for t in ths]
         c.commit()
@@ -176,7 +176,7 @@ def start(path):
 def setup(app, DB):
     ensure_schema(DB)
     def con():
-        c = sqlite3.connect(DB); c.row_factory = sqlite3.Row; return c
+        c = sqlite3.connect(DB, timeout=30); c.row_factory = sqlite3.Row; return c
 
     @app.get('/feed', response_class=HTMLResponse)
     def feed_page(): return open(os.path.join(os.path.dirname(__file__), 'feed.html'), encoding='utf-8').read()
