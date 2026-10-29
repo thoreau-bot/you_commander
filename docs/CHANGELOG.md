@@ -26,6 +26,7 @@ Watch page
 - The video endpoint tolerates a video with no triage row
 
 Commander
+- `W` / Watch in Theater with a video open always opens *that* video, even with others ticked (after Select All it was opening the first ticked video instead). The ticked set becomes the queue behind it
 - After Load 200 More, the "n in view" count in the bulk bar updates
 - With more than 300 ticked, the Triage button reads "Triage the First 300 Together" (one Triage page holds 300), and the batch page continues: a **Next 300** button (`⇧N`) with a "page 2 of 27" counter, and Confirm All / Drop All move on to the next page instead of back to Commander
 - The bulk bar's **Get Captions** reads YouTube's caption track (it was labelled Get Transcripts); a new **Get Transcripts** button transcribes the ticked videos with Whisper on this computer, one at a time in the background, asking first above 20 videos. Captions are YouTube's; transcripts are Whisper's, everywhere in the app

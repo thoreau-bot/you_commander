@@ -114,7 +114,7 @@ header{flex:none;display:flex;align-items:center;gap:10px;height:52px;padding:0 
   <div><h3>Open video</h3><dl>
    <dt><kbd>F</kbd></dt><dd>video controls on: Space, arrows, J L, M, 0–9, &lt; &gt;; then F is fullscreen, W Watch in Theater, Esc turns them off</dd><dt><kbd>K</kbd></dt><dd>play, pause</dd><dt><kbd>J</kbd><kbd>L</kbd></dt><dd>−10s, +10s</dd><dt><kbd>M</kbd></dt><dd>sound</dd><dt><kbd>Y</kbd></dt><dd>open on YouTube</dd><dt><kbd>E</kbd></dt><dd>triage this video, from this moment</dd></dl></div>
   <div><h3>Pages</h3><dl>
-   <dt><kbd>T</kbd></dt><dd>Triage (all ticked videos together if 2+)</dd><dt><kbd>W</kbd></dt><dd>Watch in Theater (all ticked in list order if 2+)</dd><dt><kbd>H</kbd></dt><dd>History</dd><dt><kbd>G</kbd></dt><dd>Go to My Feed</dd></dl></div>
+   <dt><kbd>T</kbd></dt><dd>Triage (all ticked videos together if 2+)</dd><dt><kbd>W</kbd></dt><dd>Watch in Theater: the open video (the ticked ones become its queue), else all ticked in list order if 2+</dd><dt><kbd>H</kbd></dt><dd>History</dd><dt><kbd>G</kbd></dt><dd>Go to My Feed</dd></dl></div>
  </div>
 </div></div>
 <script src="/static/app.js"></script>
@@ -247,7 +247,10 @@ let HASU=false;
 function handOff(t){const op=document.querySelector('.item.open');if(!op||!PLAYER||!PLAYER.getCurrentTime)return '';if(t==null)t=PLAYER.getCurrentTime();const playing=PLAYER.getPlayerState&&PLAYER.getPlayerState()==1;try{PLAYER.pauseVideo()}catch(e){}return '&from=acc&p='+(playing?1:0)+(t>3?'&t='+Math.floor(t):'')}
 function watchNow(t){const r=rows(),op=document.querySelector('.item.open'),it=op||r[CUR]||r[0];let ids,v;const ho=handOff(t);
  if(!it&&SEL.size<2){say('Nothing to watch here: move onto a video first');return}
- if(SEL.size>=2){ids=selInOrder().slice(0,300);v=ids[0]}else if(it){v=it.dataset.v;ids=r.map(x=>x.dataset.v).slice(0,500)}else return;
+ // An open (playing) video always wins: it is what you are watching. The ticked set, if any, becomes the queue
+ // behind it; with nothing open, two or more ticks play those in list order, as before.
+ if(op){v=op.dataset.v;ids=SEL.size>=2?selInOrder().slice(0,300):r.map(x=>x.dataset.v).slice(0,500);const k=ids.indexOf(v);if(k>0)ids=ids.slice(k).concat(ids.slice(0,k));else if(k<0)ids.unshift(v)}   // the queue starts at the open video
+ else if(SEL.size>=2){ids=selInOrder().slice(0,300);v=ids[0]}else if(it){v=it.dataset.v;ids=r.map(x=>x.dataset.v).slice(0,500)}else return;
  const at=(op&&op.dataset.v==v)?ho:'';
  if(SEL.size<2&&cur.tag&&!s.value&&!cur.audit){saveState();location.href='/watch?v='+v+'&tag='+cur.tag+at;return}
  try{localStorage.setItem('watchIds',JSON.stringify(ids))}catch(e){}saveState();location.href='/watch?q=1&v='+v+at}
