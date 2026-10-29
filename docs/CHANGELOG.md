@@ -11,6 +11,7 @@ Step 2 — New Videos
 - **Background checks**: ticked after the first fetch, untick on the page. Channels are checked on a tier picked from your own library: hourly if you have watched, noted or saved 3+ of their videos; every 6 h for two; daily for one. The Channels view shows each channel's tier (Auto · Hourly …) with a per-channel override (Hourly / Every 6 h / Daily / Off) and a New column. A channel that keeps failing is tried at most daily; a 429 stops the pass early
 - The Channels panel from step 1 lives behind the **Channels** tab (`C`), with a "needs attention" pill while anything is unresolved; `G` still jumps here from Commander, History and Watch
 - Privacy table: two new rows (channel feeds, Shorts check); the feed requests carry no cookies or account
+- A video whose title lookup answers without a channel link is tried once and then left alone (Retry All gives it another go); it no longer blocks the feed or makes Resolve Channels re-run forever
 
 Step 1 — Channel identity
 - New **Feed** page in the topbar and the Commander rail; `G` (Go to My Feed) jumps to it from Commander, History and the Watch page (with no video loaded). For now it holds one thing: the Channels panel

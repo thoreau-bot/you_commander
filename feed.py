@@ -98,8 +98,9 @@ def resolve_url(url):
 # ---------------------------------------------------------------- the worker
 def pending(path):
     c = sqlite3.connect(path)
+    # channel_url: NULL = never looked up since 1.9, '' = looked up and YouTube gave no channel link (not re-counted; Retry All clears it)
     a = c.execute("select count(*) from videos where channel_url is null and title_source='oembed' and unavailable=0").fetchone()[0]
-    b = c.execute("""select count(distinct channel_url) from videos v where channel_url is not null
+    b = c.execute("""select count(distinct channel_url) from videos v where channel_url is not null and channel_url<>''
                      and not exists(select 1 from video_channel x where x.video_id=v.video_id)
                      and channel_url not in (select channel_url from channel_unresolved)""").fetchone()[0]
     u = c.execute("select count(*) from channel_unresolved").fetchone()[0]
@@ -124,7 +125,9 @@ def _worker(path):
                         c.execute("update videos set channel_url=?,channel=coalesce(?,channel) where video_id=?", (res['author_url'], res.get('author_name'), vid)); JOB['ok'] += 1
                     elif st == 'fail':
                         c.execute("update videos set unavailable=1,title_source=?,last_checked_at=? where video_id=?", (f'oembed_fail_{res}', now(), vid)); JOB['failed'] += 1
-                    else: JOB['failed'] += 1
+                    else:
+                        # answered without a channel link, or a retry-class error: note the attempt so this row stops counting as pending
+                        c.execute("update videos set channel_url='' where video_id=?", (vid,)); JOB['failed'] += 1   # '' = tried, no link; NULL = never tried
                     JOB['done'] += 1
                     if JOB['done'] % 100 == 0: c.commit()
         ths = [threading.Thread(target=work, daemon=True) for _ in range(int(os.environ.get('ORG_TITLE_THREADS', '5')))]
@@ -133,7 +136,7 @@ def _worker(path):
         if JOB['cancel']: return
         # ---- phase B: one page fetch per distinct channel URL that has no id yet
         # URLs already tried and failed are left alone here; Retry All clears channel_unresolved first, which is the only way back in
-        rows = c.execute("""select channel_url, min(channel) title, count(*) n from videos v where channel_url is not null
+        rows = c.execute("""select channel_url, min(channel) title, count(*) n from videos v where channel_url is not null and channel_url<>''
                             and not exists(select 1 from video_channel x where x.video_id=v.video_id)
                             and channel_url not in (select channel_url from channel_unresolved) group by channel_url order by n desc""").fetchall()
         JOB.update(phase='ids', total=len(rows), done=0, ok=0, failed=0)
@@ -207,7 +210,7 @@ def setup(app, DB):
 
     @app.post('/api/feed/unresolved/retry')
     def retry():
-        c = con(); c.execute("delete from channel_unresolved"); c.commit(); c.close()
+        c = con(); c.execute("delete from channel_unresolved"); c.execute("update videos set channel_url=NULL where channel_url=''"); c.commit(); c.close()
         return dict(started=start(DB))
 
     # ---------------------------------------------------------------- step 2: new videos

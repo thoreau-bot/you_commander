@@ -128,7 +128,7 @@ function statusLine(j){
  const un=p.unresolved?` ${n(p.unresolved)} channel${p.unresolved>1?'s':''} could not be read (listed above).`:'';
  if(!p.need_url&&!p.need_id)return(p.unresolved?`Every reachable channel is linked: ${n(D.linked)} of ${n(D.videos)} videos.`:`Every video is linked to its channel: ${n(D.linked)} of ${n(D.videos)}.`)+un;
  const parts=[];if(p.need_url)parts.push(`${n(p.need_url)} video${p.need_url>1?'s':''} still need${p.need_url>1?'':'s'} a channel page`);if(p.need_id)parts.push(`${n(p.need_id)} channel${p.need_id>1?'s':''} still need${p.need_id>1?'':'s'} an id`);
- return parts.join(' and ')+'. Press Resolve Channels.'+un}
+ return parts.join(' and ')+'. Press Resolve Channels (the feed works meanwhile).'+un}
 function drawChannels(j){if(j!==undefined)LASTJ=j;j=LASTJ;
  RUN=!!(j&&j.running);resolve.style.display=RUN?'none':'';cancel.style.display=RUN?'':'none';resolve.disabled=!D.videos;
  stxt.textContent=statusLine(j);if(j&&j.note)stxt.textContent+=' '+j.note;
@@ -147,7 +147,7 @@ function drawChannels(j){if(j!==undefined)LASTJ=j;j=LASTJ;
 const reason=e=>{e=e||'';if(/http 404|http 410/.test(e))return'Channel gone or renamed (404)';if(/429|throttl|could not fetch/.test(e))return'YouTube refused the request; try later';if(/no channel id/.test(e))return'Page had no channel id';return e};
 
 // ---------------------------------------------------------------- the feed (step 2)
-function ready(){return D.videos&&!D.pending.need_url&&!D.pending.need_id&&D.channels.length}
+function ready(){return D.videos&&D.channels.length>0}   // one stuck lookup must never block the feed; leftovers show on the Channels tab
 function fstatusLine(j){
  if(j&&j.running){const t=j.total||0,d=j.done||0;fprog.style.display='';fpbar.style.width=(t?100*d/t:0)+'%';
   const base=j.kind&&j.kind.endsWith(':shorts')?`Telling Shorts apart: ${n(d)} of ${n(t)}.`:`Checking channels: ${n(d)} of ${n(t)}${j.new?', '+n(j.new)+' new so far':''}${j.failed?', '+n(j.failed)+' could not be read':''}.`;

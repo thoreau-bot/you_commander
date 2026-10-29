@@ -230,6 +230,7 @@ _lock = threading.Lock()
 def _fetch_one(vid):
     if os.environ.get('ORG_OEMBED_FAKE'):
         if vid.startswith('GONE'): return 'fail', 404
+        if vid.startswith('NOURL'): return 'ok', dict(title=f'Fake title for {vid}', author_name='Fake Channel')   # answered without a channel link
         # Fake channels: the first character picks the channel, so several videos can share one, and two videos from
         # different channels can share a *title* ('Fake Channel') the way real same-named channels do.
         return 'ok', dict(title=f'Fake title for {vid}', author_name='Fake Channel', author_url=f'https://www.youtube.com/@fake-{vid[0]}')

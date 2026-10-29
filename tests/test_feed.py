@@ -191,3 +191,18 @@ def test_tiers_follow_library_signals(resolved):
     c.execute("insert into watch_log(video_id,at,source) values('aaaaaaaaaaa',datetime('now'),'test')") if 'at' in {r[1] for r in c.execute('pragma table_info(watch_log)')} else None
     c.commit(); t = ff.compute_tiers(c)
     c.execute("delete from watch_log where source='test'"); c.commit(); c.close()
+
+def test_one_stuck_video_does_not_block_the_feed(resolved):
+    client = resolved; db = os.environ['ORG_DB']
+    c = sqlite3.connect(db)
+    c.execute("insert into videos(video_id,title,channel,title_source) values('NOURL000001','No link','Someone','oembed')"); c.commit(); c.close()
+    assert client.get('/api/feed/channels').json()['pending']['need_url'] == 1
+    client.post('/api/feed/resolve'); _wait(client)
+    p = client.get('/api/feed/channels').json()['pending']
+    assert p['need_url'] == 0                      # tried once, recorded, no longer pending
+    client.post('/api/feed/resolve'); _wait(client)
+    assert client.get('/api/feed/resolve/status').json()['total'] == 0   # a second R does not retry it
+    # Retry All gives it another go
+    client.post('/api/feed/unresolved/retry'); _wait(client)
+    c = sqlite3.connect(db); assert c.execute("select channel_url from videos where video_id='NOURL000001'").fetchone()[0] == ''
+    c.execute("delete from videos where video_id='NOURL000001'"); c.commit(); c.close()
