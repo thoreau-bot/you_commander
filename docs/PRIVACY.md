@@ -2,7 +2,7 @@
 
 YouCommander is built to stay on your computer.
 
-**Stored locally:** the database (`organizer.db`), voice-note audio, any transcripts you fetch, and — only if you tick **Keep Audio** on the Watch page — the audio of videos you transcribe with Whisper, under `audio/whisper/` (a few MB each; Drop Audio on a video, or the setting, removes them).
+**Stored locally:** the database (`organizer.db`), voice-note audio, any transcripts you fetch, and — only if you tick **Keep Audio** on the Watch page — the audio of videos you transcribe with Whisper, under `audio/whisper/` or a folder you choose on the Watch page (a few MB each; Drop Audio on a video, or the setting, removes them).
 
 **Read from Takeout:** only playlist CSV files. Other files in the archive are skipped and never opened.
 

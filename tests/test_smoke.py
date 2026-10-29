@@ -169,7 +169,7 @@ def test_whisper_has_its_own_lane_and_audio_can_be_kept(client):
     assert client.get('/api/transcript/ddddddddddd').json()['captions']['status'] == 'ok'
     assert all(client.get(f'/api/transcript/{v}').json()['whisper']['status'] == 'ok' for v in ('aaaaaaaaaaa', 'bbbbbbbbbbb', 'ccccccccccc'))
     # keep audio: off by default, nothing stored
-    assert st['keep_audio'] is False and st['audio_kept'] == {'files': 0, 'bytes': 0}
+    assert st['keep_audio'] is False and st['audio_kept']['files'] == 0 and st['audio_kept']['is_default'] is True
     assert client.get('/api/transcript/aaaaaaaaaaa').json()['audio_kept'] is False
     # on: a re-run stores the audio; the status counts it; the video reports it
     assert client.post('/api/transcripts/settings', json={'keep_audio': True}).json()['keep_audio'] is True
@@ -186,3 +186,40 @@ def test_whisper_has_its_own_lane_and_audio_can_be_kept(client):
     client.post('/api/transcripts/audio/clear'); client.post('/api/transcripts/settings', json={'keep_audio': False})
     for v in ('aaaaaaaaaaa', 'bbbbbbbbbbb', 'ccccccccccc'): client.delete(f'/api/transcript/{v}', params={'kind': 'whisper'})
     client.delete('/api/transcript/ddddddddddd', params={'kind': 'captions'})
+
+
+def test_whisper_audio_folder_can_change_and_move(client, tmp_path):
+    if client.get('/api/summary').json()['videos'] == 0: test_import_flow(client)
+    import os as _os
+    client.post('/api/transcripts/settings', json={'keep_audio': True})
+    client.post('/api/transcripts/queue', json={'ids': ['bbbbbbbbbbb'], 'method': 'whisper', 'force': True})
+    for _ in range(200):
+        if not client.get('/api/transcripts/status').json()['lanes']['whisper']['running']: break
+        time.sleep(0.05)
+    info = client.get('/api/transcripts/audio').json()
+    assert info['files'] >= 1 and info['is_default'] and info['free'] is None or info['free'] > 0
+    old_dir = info['dir']
+    # a bad folder is refused with a sentence
+    assert 'error' in client.post('/api/transcripts/settings', json={'audio_dir': '/'}).json()
+    # a new folder, with the kept files moved
+    new_dir = str(tmp_path / 'archive' / 'whisper')
+    r = client.post('/api/transcripts/settings', json={'audio_dir': new_dir, 'move': True}).json()
+    assert r['ok']
+    for _ in range(200):
+        i = client.get('/api/transcripts/audio').json()
+        if not i['move']['running'] and _os.path.abspath(i['dir']) == _os.path.abspath(new_dir): break
+        time.sleep(0.05)
+    i = client.get('/api/transcripts/audio').json()
+    assert _os.path.abspath(i['dir']) == _os.path.abspath(new_dir) and i['is_default'] is False and i['files'] >= 1 and i['move']['error'] is None
+    assert _os.path.exists(_os.path.join(new_dir, 'bbbbbbbbbbb.m4a')) and not _os.path.exists(_os.path.join(old_dir, 'bbbbbbbbbbb.m4a'))
+    # the kept file is found at the new location (a re-run makes no download)
+    assert client.get('/api/transcript/bbbbbbbbbbb').json()['audio_kept'] is True
+    # back to the default, moving again
+    client.post('/api/transcripts/settings', json={'audio_dir': '', 'move': True})
+    for _ in range(200):
+        i = client.get('/api/transcripts/audio').json()
+        if not i['move']['running'] and i['is_default']: break
+        time.sleep(0.05)
+    assert client.get('/api/transcripts/audio').json()['is_default'] is True
+    client.post('/api/transcripts/audio/clear'); client.post('/api/transcripts/settings', json={'keep_audio': False})
+    client.delete('/api/transcript/bbbbbbbbbbb', params={'kind': 'whisper'})

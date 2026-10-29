@@ -34,6 +34,7 @@ Commander
 
 Whisper
 - **Its own lane.** Captions (YouTube) and Whisper (local) now run in separate background queues, so a long Whisper batch never delays a caption fetch. The Commander status line reports each lane; the feed's background check only waits for the captions lane
+- **Audio folder**: with Keep Audio on, the Whisper row shows where the audio lives, how many files and how big, and the drive's free space. **Change Folder…** points it at any folder (an archive drive, say; created if missing, checked writable) and offers to move the files already kept, in the background with progress, copy-and-delete across drives. **Use Default** brings it back to `audio/whisper` next to the database
 - **Keep Audio** (off by default; checkbox on the Whisper row of the Watch page): keeps each video's downloaded audio under `audio/whisper/` so a better model later can **Re-transcribe** without asking YouTube again. Re-transcribe (Whisper row) re-runs on the kept file when there is one; Drop Audio removes a video's file; the status endpoint reports how many files are kept and their size. The privacy doc says what is stored
 
 - Every request the app makes to youtube.com (caption fetches, feed checks, Shorts probes, the yt-dlp channel fallback) now shares one pace: a 429 anywhere pauses all of them for 5 minutes, doubling on repeats up to an hour, and resets after a quiet half hour. The Watch and Feed pages say "YouTube asked us to slow down; resuming at …" while it lasts

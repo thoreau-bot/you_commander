@@ -138,12 +138,48 @@ def setup(app, DB):
     def set_setting(key, value):
         c = con(); c.execute("insert into app_settings(key,value) values(?,?) on conflict(key) do update set value=excluded.value", (key, str(value))); c.commit(); c.close()
     def keep_audio(): return setting('keep_audio', '0') == '1'
-    def audio_store(): return os.path.join(os.environ.get('ORG_AUDIO_DIR') or os.path.join(os.path.dirname(os.path.abspath(DB)), 'audio'), 'whisper')
+    def default_store(): return os.path.join(os.environ.get('ORG_AUDIO_DIR') or os.path.join(os.path.dirname(os.path.abspath(DB)), 'audio'), 'whisper')
+    def audio_store():
+        """Where kept Whisper audio lives: the audio_dir setting (an absolute folder the user chose), else audio/whisper next to the database."""
+        return setting('audio_dir') or default_store()
+    def free_bytes(path):
+        try:
+            p = path
+            while p and not os.path.isdir(p): p = os.path.dirname(p)
+            return shutil.disk_usage(p or '/').free
+        except Exception: return None
     def kept_audio_stats():
-        st = audio_store()
-        if not os.path.isdir(st): return {'files': 0, 'bytes': 0}
-        fs = [os.path.join(st, f) for f in os.listdir(st)]
-        return {'files': len(fs), 'bytes': sum(os.path.getsize(f) for f in fs if os.path.isfile(f))}
+        st = audio_store(); d = {'files': 0, 'bytes': 0, 'dir': st, 'is_default': not setting('audio_dir'), 'free': free_bytes(st), 'move': dict(MOVE)}
+        if os.path.isdir(st):
+            fs = [os.path.join(st, f) for f in os.listdir(st)]
+            d['files'] = len(fs); d['bytes'] = sum(os.path.getsize(f) for f in fs if os.path.isfile(f))
+        return d
+    MOVE = {'running': False, 'total': 0, 'done': 0, 'bytes': 0, 'error': None, 'to': None}
+    def check_dir(path):
+        """-> (abs path, None) or (None, reason). Creates the folder if it does not exist."""
+        path = os.path.abspath(os.path.expanduser(path.strip()))
+        if not path or path == os.path.abspath(os.sep): return None, 'Pick a folder, not the root of a drive.'
+        try: os.makedirs(path, exist_ok=True)
+        except Exception as e: return None, f'Cannot create that folder: {e}'
+        if not os.path.isdir(path): return None, 'That is not a folder.'
+        try:
+            t = os.path.join(path, '.yc_write_test'); open(t, 'w').close(); os.remove(t)
+        except Exception as e: return None, f'That folder is not writable: {e}'
+        return path, None
+    def _mover(src, dst):
+        try:
+            files = [f for f in os.listdir(src) if os.path.isfile(os.path.join(src, f))] if os.path.isdir(src) else []
+            MOVE.update(running=True, total=len(files), done=0, bytes=0, error=None, to=dst)
+            for f in files:
+                a, b = os.path.join(src, f), os.path.join(dst, f)
+                if os.path.exists(b) and os.path.getsize(b) == os.path.getsize(a): os.remove(a)
+                else: shutil.move(a, b)          # same drive: rename; other drive: copy then delete
+                MOVE['done'] += 1; MOVE['bytes'] += os.path.getsize(b) if os.path.exists(b) else 0
+            set_setting('audio_dir', '' if dst == default_store() else dst)
+        except Exception as e:
+            MOVE['error'] = str(e)[:200]
+        finally:
+            MOVE['running'] = False
 
     def reindex(c, vid):
         c.execute("delete from transcript_fts where video_id=?", (vid,))
@@ -257,7 +293,7 @@ def setup(app, DB):
             d = dict(r); d['cues'] = json.loads(d['cues']) if d['cues'] else []; d.pop('text', None); d['active'] = is_active(vid, d['kind'])
             d['edited'] = sum(1 for x in d['cues'] if len(x) > 2 and x[2])
             out[d['kind']] = d
-        out['audio_kept'] = bool(kept_file(audio_store(), vid)); out['keep_audio'] = keep_audio()
+        out['audio_kept'] = bool(kept_file(audio_store(), vid)); out['keep_audio'] = keep_audio(); out['store'] = kept_audio_stats()
         out['pace'] = ytpace.status(); out['note'] = ' '.join(x for x in (LANES['captions']['note'], LANES['whisper']['note']) if x)
         return out
 
@@ -327,10 +363,28 @@ def setup(app, DB):
         q = enqueue(todo)
         return {'queued': q, 'skipped': len(ids) - len(want), 'already_queued': len(todo) - q, 'left': len(want) - len(todo)}
 
-    class KeepIn(BaseModel): keep_audio: bool
+    class KeepIn(BaseModel): keep_audio: bool | None = None; audio_dir: str | None = None; move: bool = False
     @app.post('/api/transcripts/settings')
     def t_settings(b: KeepIn):
-        set_setting('keep_audio', '1' if b.keep_audio else '0'); return {'ok': 1, 'keep_audio': b.keep_audio}
+        """keep_audio toggles keeping. audio_dir sets the folder (empty string = back to the default); with move=True the
+        files already kept are moved there in the background (copy + delete when it is another drive)."""
+        if b.keep_audio is not None: set_setting('keep_audio', '1' if b.keep_audio else '0')
+        if b.audio_dir is not None:
+            if MOVE['running']: return {'error': 'A move is still running; wait for it to finish.'}
+            cur = audio_store()
+            if b.audio_dir.strip() == '': new = default_store(); os.makedirs(new, exist_ok=True)
+            else:
+                new, why = check_dir(b.audio_dir)
+                if why: return {'error': why}
+            if os.path.abspath(new) != os.path.abspath(cur):
+                if b.move and os.path.isdir(cur) and any(os.path.isfile(os.path.join(cur, f)) for f in os.listdir(cur)):
+                    threading.Thread(target=_mover, args=(cur, new), name='audio-move', daemon=True).start()
+                else:
+                    set_setting('audio_dir', '' if new == default_store() else new)
+        return {'ok': 1, 'keep_audio': keep_audio(), 'audio_kept': kept_audio_stats()}
+
+    @app.get('/api/transcripts/audio')
+    def t_audio_info(): return kept_audio_stats()
 
     @app.delete('/api/transcript/{vid}/audio')
     def t_audio_del(vid: str):
