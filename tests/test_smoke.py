@@ -241,3 +241,9 @@ def test_jobs_page_and_summary(client):
     assert client.get('/api/jobs').json()['active'] == 0
     assert client.post('/api/transcripts/cancel?lane=whisper').json()['ok']
     for v in ('aaaaaaaaaaa', 'bbbbbbbbbbb'): client.delete(f'/api/transcript/{v}', params={'kind': 'whisper'})
+
+def test_static_links_are_versioned_and_not_cached(client):
+    r = client.get('/')
+    assert 'src="/static/app.js?v=' in r.text and 'href="/static/app.css?v=' in r.text and r.headers.get('cache-control') == 'no-store'
+    assert client.get('/jobs').text.count('?v=') >= 2
+    s = client.get('/static/app.js'); assert s.status_code == 200 and s.headers.get('cache-control') == 'no-cache'

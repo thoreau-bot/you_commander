@@ -268,7 +268,28 @@ def audio_get(aid:int):
     if not r: return {}
     r=r[0];r['extracted']=_json.loads(r['extracted']) if r['extracted'] else None;return r
 from fastapi.staticfiles import StaticFiles
-app.mount('/static',StaticFiles(directory=os.path.join(os.path.dirname(__file__),'static')),name='static')
+from starlette.middleware.base import BaseHTTPMiddleware
+_STATIC=os.path.join(os.path.dirname(__file__),'static')
+app.mount('/static',StaticFiles(directory=_STATIC),name='static')
+# Browsers cache /static/app.js and app.css hard, so after an update a plain reload could keep running the old script.
+# Every page's static links are stamped with the file's modification time (?v=…) on the way out, and static files are
+# sent with no-cache so the browser revalidates; both together make any update live on an ordinary reload.
+def _stamp():
+    try: return str(int(max(os.path.getmtime(os.path.join(_STATIC,f)) for f in ('app.js','app.css'))))
+    except Exception: return '0'
+class _Fresh(BaseHTTPMiddleware):
+    async def dispatch(self,request,call_next):
+        resp=await call_next(request)
+        if request.url.path.startswith('/static/'):
+            resp.headers['Cache-Control']='no-cache';return resp
+        if resp.headers.get('content-type','').startswith('text/html') and not request.url.path.startswith('/api/'):
+            body=b''.join([chunk async for chunk in resp.body_iterator]);v=_stamp().encode()
+            body=body.replace(b'/static/app.css"',b'/static/app.css?v='+v+b'"').replace(b'/static/app.js"',b'/static/app.js?v='+v+b'"')
+            from starlette.responses import Response
+            h=dict(resp.headers);h.pop('content-length',None);h['Cache-Control']='no-store'
+            return Response(content=body,status_code=resp.status_code,headers=h,media_type='text/html')
+        return resp
+app.add_middleware(_Fresh)
 @app.get('/triage',response_class=HTMLResponse)
 def triage_page(): return open(os.path.join(os.path.dirname(__file__),'triage.html'),encoding='utf-8').read()
 @app.get('/',response_class=HTMLResponse)

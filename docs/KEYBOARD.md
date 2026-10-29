@@ -17,7 +17,7 @@ Press `?` on any page for an overlay with that page's shortcuts (`Esc` or `?` cl
 | `H` | History |
 | `G` | Go to My Feed |
 | `⇧N` (batch Triage) | next 300 of a larger selection |
-| Jobs (top bar, while something runs) | progress, Cancel and the Whisper audio settings |
+| Jobs (top bar) | background progress, Cancel and the Whisper audio settings; lit with a count while something runs |
 | `Esc` | Close preview, or clear filters |
 | `Z` | Undo, while an undo toast is showing (Watch: note delete, Drop) |
 | In preview: `K` `J` `L` `M` `Y` `E` | Play-pause, back 10 s, forward 10 s, mute, open on YouTube, triage this video (from this moment; `Esc` in Triage comes back) |

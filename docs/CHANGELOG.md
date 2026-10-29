@@ -26,6 +26,7 @@ Watch page
 - The video endpoint tolerates a video with no triage row
 
 Commander
+- Pages stamp their `app.js` / `app.css` links with the file version and static files are sent `no-cache`, so an update is live on an ordinary reload (before, the browser could keep the old script for days; this is why a new feature could seem to be missing until a hard refresh)
 - Get Captions / Get Transcripts on a big selection report the real numbers: queued now, already done, already waiting, and how many did not fit (the queue cap is 10,000 per press; it was 2,000, and the leftover was being reported as "already done")
 - `W` / Watch in Theater with a video open always opens *that* video, even with others ticked (after Select All it was opening the first ticked video instead). The ticked set becomes the queue behind it
 - After Load 200 More, the "n in view" count in the bulk bar updates
@@ -33,7 +34,7 @@ Commander
 - The bulk bar's **Get Captions** reads YouTube's caption track (it was labelled Get Transcripts); a new **Get Transcripts** button transcribes the ticked videos with Whisper on this computer, one at a time in the background, asking first above 20 videos. Captions are YouTube's; transcripts are Whisper's, everywhere in the app
 
 Jobs page
-- **Jobs** (`/jobs`): everything running in the background on one page, wherever it was started: the captions lane, the Whisper lane, a feed check, channel resolving, a YouTube pause, and an audio move, each with progress, the current video, and Cancel. A **Jobs** link with a count appears in the top bar (and the Commander rail) only while something is running, so a batch you started on Commander is still in view from Watch or History
+- **Jobs** (`/jobs`): everything running in the background on one page, wherever it was started: the captions lane, the Whisper lane, a feed check, channel resolving, a YouTube pause, and an audio move, each with progress, the current video, and Cancel. A **Jobs** link sits in the top bar (and the Commander rail), quiet when idle and lit with a count while something runs, so a batch you started on Commander is still in view from Watch or History
 - The Whisper audio settings live there too (Keep Audio, the folder, free space, model, Change Folder…, Use Default, Delete All Kept Audio) and can be changed while a batch runs: the next video uses the new setting
 
 Whisper
