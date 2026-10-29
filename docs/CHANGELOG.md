@@ -30,7 +30,10 @@ Commander
 - With more than 300 ticked, the Triage button reads "Triage the First 300 Together" (one Triage page holds 300), and the batch page continues: a **Next 300** button (`⇧N`) with a "page 2 of 27" counter, and Confirm All / Drop All move on to the next page instead of back to Commander
 - The bulk bar's **Get Captions** reads YouTube's caption track (it was labelled Get Transcripts); a new **Get Transcripts** button transcribes the ticked videos with Whisper on this computer, one at a time in the background, asking first above 20 videos. Captions are YouTube's; transcripts are Whisper's, everywhere in the app
 
-YouTube rate limits (`ytpace.py`)
+Whisper
+- **Its own lane.** Captions (YouTube) and Whisper (local) now run in separate background queues, so a long Whisper batch never delays a caption fetch. The Commander status line reports each lane; the feed's background check only waits for the captions lane
+- **Keep Audio** (off by default; checkbox on the Whisper row of the Watch page): keeps each video's downloaded audio under `audio/whisper/` so a better model later can **Re-transcribe** without asking YouTube again. Re-transcribe (Whisper row) re-runs on the kept file when there is one; Drop Audio removes a video's file; the status endpoint reports how many files are kept and their size. The privacy doc says what is stored
+
 - Every request the app makes to youtube.com (caption fetches, feed checks, Shorts probes, the yt-dlp channel fallback) now shares one pace: a 429 anywhere pauses all of them for 5 minutes, doubling on repeats up to an hour, and resets after a quiet half hour. The Watch and Feed pages say "YouTube asked us to slow down; resuming at …" while it lasts
 - Caption fetches skip yt-dlp's player-JS and config requests (`player_skip`), roughly halving the requests per video
 - The Shorts probe runs at about one request a second and at most 500 per pass, so a backlog drains over several wake-ups rather than as one burst

@@ -152,3 +152,37 @@ def test_transcript_queue_takes_a_method(client):
     assert client.post('/api/transcripts/queue', json={'ids': ['aaaaaaaaaaa'], 'method': 'whisper'}).json() == {'queued': 0, 'skipped': 1}
     assert client.post('/api/transcripts/queue', json={'ids': ['aaaaaaaaaaa'], 'method': 'nope'}).status_code == 400
     client.delete('/api/transcript/aaaaaaaaaaa', params={'kind': 'whisper'})
+
+def test_whisper_has_its_own_lane_and_audio_can_be_kept(client):
+    if client.get('/api/summary').json()['videos'] == 0: test_import_flow(client)
+    import sys, os as _os
+    tx = sys.modules['transcripts']
+    # queue whisper for three, captions for one: the caption job must not wait behind whisper
+    assert client.post('/api/transcripts/queue', json={'ids': ['aaaaaaaaaaa', 'bbbbbbbbbbb', 'ccccccccccc'], 'method': 'whisper', 'force': True}).json()['queued'] == 3
+    assert client.post('/api/transcripts/queue', json={'ids': ['ddddddddddd'], 'method': 'captions', 'force': True}).json()['queued'] == 1
+    st = client.get('/api/transcripts/status').json()
+    assert set(st['lanes']) == {'captions', 'whisper'}
+    for _ in range(200):
+        st = client.get('/api/transcripts/status').json()
+        if not st['lanes']['captions']['running'] and not st['lanes']['whisper']['running']: break
+        time.sleep(0.05)
+    assert client.get('/api/transcript/ddddddddddd').json()['captions']['status'] == 'ok'
+    assert all(client.get(f'/api/transcript/{v}').json()['whisper']['status'] == 'ok' for v in ('aaaaaaaaaaa', 'bbbbbbbbbbb', 'ccccccccccc'))
+    # keep audio: off by default, nothing stored
+    assert st['keep_audio'] is False and st['audio_kept'] == {'files': 0, 'bytes': 0}
+    assert client.get('/api/transcript/aaaaaaaaaaa').json()['audio_kept'] is False
+    # on: a re-run stores the audio; the status counts it; the video reports it
+    assert client.post('/api/transcripts/settings', json={'keep_audio': True}).json()['keep_audio'] is True
+    client.post('/api/transcripts/queue', json={'ids': ['aaaaaaaaaaa'], 'method': 'whisper', 'force': True})
+    for _ in range(200):
+        if not client.get('/api/transcripts/status').json()['lanes']['whisper']['running']: break
+        time.sleep(0.05)
+    st = client.get('/api/transcripts/status').json()
+    assert st['audio_kept']['files'] == 1 and client.get('/api/transcript/aaaaaaaaaaa').json()['audio_kept'] is True
+    assert _os.path.isdir(_os.path.join(_os.environ['ORG_AUDIO_DIR'], 'whisper'))
+    # per-video delete, then clear-all, then setting off
+    assert client.delete('/api/transcript/aaaaaaaaaaa/audio').json()['removed'] is True
+    assert client.get('/api/transcripts/status').json()['audio_kept']['files'] == 0
+    client.post('/api/transcripts/audio/clear'); client.post('/api/transcripts/settings', json={'keep_audio': False})
+    for v in ('aaaaaaaaaaa', 'bbbbbbbbbbb', 'ccccccccccc'): client.delete(f'/api/transcript/{v}', params={'kind': 'whisper'})
+    client.delete('/api/transcript/ddddddddddd', params={'kind': 'captions'})

@@ -81,18 +81,38 @@ def fetch_captions(vid):
     cues = parse_json3(raw)
     return {'language': lang, 'kind': kind, 'cues': cues} if cues else None
 
-def whisper_audio(vid):
-    """Download the audio to a temp folder, transcribe locally, delete the file. -> list[(start,text)]"""
+def kept_file(store, vid):
+    """The kept audio file for a video, if any."""
+    if not store or not os.path.isdir(store): return None
+    for f in os.listdir(store):
+        if f.startswith(vid + '.'): return os.path.join(store, f)
+    return None
+
+def whisper_audio(vid, keep=False, store=None):
+    """Transcribe locally. The audio comes from the kept copy when there is one (no YouTube request), else it is
+    downloaded; with keep on, the download is moved into the store so a later model can re-run without YouTube.
+    -> list[(start,text)]"""
     import voice
-    if FAKE: return merge_cues([(i * 5.0, f'Whisper test line {i}.') for i in range(20)])
+    if FAKE:
+        if keep and store:
+            os.makedirs(store, exist_ok=True)
+            if not kept_file(store, vid): open(os.path.join(store, vid + '.m4a'), 'wb').write(b'fake audio')
+        return merge_cues([(i * 5.0, f'Whisper test line {i}.') for i in range(20)])
+    have = kept_file(store, vid)
+    if have: return merge_cues(voice.transcribe_segments(have))
     import yt_dlp
     d = tempfile.mkdtemp(prefix='org_audio_')
     try:
-        opts = {'quiet': True, 'no_warnings': True, 'noplaylist': True, 'format': 'bestaudio/best', 'outtmpl': os.path.join(d, '%(id)s.%(ext)s'), 'socket_timeout': 25}
+        opts = {'quiet': True, 'no_warnings': True, 'noplaylist': True, 'format': 'bestaudio[ext=m4a]/bestaudio/best', 'outtmpl': os.path.join(d, '%(id)s.%(ext)s'), 'socket_timeout': 25,
+                'extractor_args': {'youtube': {'player_skip': ['configs']}}}
         with yt_dlp.YoutubeDL(opts) as ydl: ydl.download(['https://www.youtube.com/watch?v=' + vid])
         files = [os.path.join(d, f) for f in os.listdir(d)]
         if not files: raise RuntimeError('audio download produced no file')
-        return merge_cues(voice.transcribe_segments(files[0]))
+        src = files[0]
+        if keep and store:
+            os.makedirs(store, exist_ok=True)
+            dst = os.path.join(store, os.path.basename(src)); shutil.move(src, dst); src = dst
+        return merge_cues(voice.transcribe_segments(src))
     finally:
         shutil.rmtree(d, ignore_errors=True)
 
@@ -101,12 +121,27 @@ class Many(BaseModel): tag: int | None = None; ids: list[str] | None = None; for
 
 def setup(app, DB):
     c = sqlite3.connect(DB); c.executescript(SCHEMA); migrate(c); c.commit(); c.close()
-    JOB = {'running': False, 'total': 0, 'done': 0, 'ok': 0, 'none': 0, 'err': 0, 'current': None, 'method': None, 'note': '', 'cancel': False}
-    QUEUE = []   # [(vid, method)]
+    # Two lanes. Captions are a few web requests per video; Whisper downloads audio then runs for minutes on this machine.
+    # Each lane has its own queue and worker so a long Whisper queue never holds up a caption fetch.
+    def _lane(): return {'running': False, 'total': 0, 'done': 0, 'ok': 0, 'none': 0, 'err': 0, 'current': None, 'method': None, 'note': '', 'cancel': False, 'queue': []}
+    LANES = {'captions': _lane(), 'whisper': _lane()}
     LOCK = threading.Lock()
 
     def con():
         x = sqlite3.connect(DB, timeout=30); x.row_factory = sqlite3.Row; return x
+
+    c0 = sqlite3.connect(DB); c0.execute("create table if not exists app_settings(key TEXT PRIMARY KEY, value TEXT NOT NULL)"); c0.commit(); c0.close()
+    def setting(key, default=None):
+        c = con(); r = c.execute("select value from app_settings where key=?", (key,)).fetchone(); c.close(); return r[0] if r else default
+    def set_setting(key, value):
+        c = con(); c.execute("insert into app_settings(key,value) values(?,?) on conflict(key) do update set value=excluded.value", (key, str(value))); c.commit(); c.close()
+    def keep_audio(): return setting('keep_audio', '0') == '1'
+    def audio_store(): return os.path.join(os.environ.get('ORG_AUDIO_DIR') or os.path.join(os.path.dirname(os.path.abspath(DB)), 'audio'), 'whisper')
+    def kept_audio_stats():
+        st = audio_store()
+        if not os.path.isdir(st): return {'files': 0, 'bytes': 0}
+        fs = [os.path.join(st, f) for f in os.listdir(st)]
+        return {'files': len(fs), 'bytes': sum(os.path.getsize(f) for f in fs if os.path.isfile(f))}
 
     def reindex(c, vid):
         c.execute("delete from transcript_fts where video_id=?", (vid,))
@@ -124,10 +159,11 @@ def setup(app, DB):
         c.commit(); c.close()
 
     def run_one(vid, method):
+        JOB = LANES[method]
         try:
             if method == 'whisper':
                 import voice
-                cues = whisper_audio(vid)
+                cues = whisper_audio(vid, keep=keep_audio(), store=audio_store())
                 save(vid, 'whisper', 'ok', voice.CFG['whisper_model'], voice.CFG['whisper_lang'] or None, cues)
                 return 'ok'
             r = fetch_captions(vid)
@@ -142,8 +178,8 @@ def setup(app, DB):
                 ytpace.hit(); return 'blocked'
             return 'err'
 
-    def worker():
-        blocked = 0
+    def worker(lane):
+        JOB = LANES[lane]; QUEUE = JOB['queue']; blocked = 0
         while True:
             with LOCK:
                 if not QUEUE or JOB['cancel']:
@@ -170,30 +206,44 @@ def setup(app, DB):
             if QUEUE and not FAKE: time.sleep(random.uniform(1.5, 3.5))   # be polite
 
     global QUEUE_LEN
-    QUEUE_LEN = lambda: len(QUEUE) + (1 if JOB['running'] else 0)
+    # the feed poller waits only for the captions lane (YouTube traffic); a Whisper job is local once its audio is in
+    QUEUE_LEN = lambda: len(LANES['captions']['queue']) + (1 if LANES['captions']['running'] else 0)
 
     def enqueue(items, front=False):
-        with LOCK:
-            have = set(QUEUE)
-            new = [(v, m) for v, m in items if (v, m) not in have and (v, m) != (JOB['current'], JOB['method'])]
-            if not new: return 0
-            if not JOB['running']:
-                JOB.update(running=True, total=0, done=0, ok=0, none=0, err=0, note='', cancel=False)
-            QUEUE[0:0] = new if front else []
-            if not front: QUEUE.extend(new)
-            JOB['total'] += len(new)
-            if not any(t.name == 'tx-worker' and t.is_alive() for t in threading.enumerate()):
-                threading.Thread(target=worker, name='tx-worker', daemon=True).start()
-            return len(new)
+        n = 0
+        for lane in ('captions', 'whisper'):
+            JOB = LANES[lane]; QUEUE = JOB['queue']
+            mine = [(v, m) for v, m in items if m == lane]
+            if not mine: continue
+            with LOCK:
+                have = set(QUEUE)
+                new = [(v, m) for v, m in mine if (v, m) not in have and (v, m) != (JOB['current'], JOB['method'])]
+                if not new: continue
+                if not JOB['running']:
+                    JOB.update(running=True, total=0, done=0, ok=0, none=0, err=0, note='', cancel=False)
+                QUEUE[0:0] = new if front else []
+                if not front: QUEUE.extend(new)
+                JOB['total'] += len(new)
+                if not any(t.name == 'tx-' + lane and t.is_alive() for t in threading.enumerate()):
+                    threading.Thread(target=worker, args=(lane,), name='tx-' + lane, daemon=True).start()
+                n += len(new)
+        return n
 
     @app.get('/api/transcripts/status')
     def t_status():
         try:
             import voice; w = voice.whisper_installed()
         except Exception: w = False
-        return {'yt_dlp': have_ytdlp() or bool(FAKE), 'whisper': w, 'job': dict(JOB, queued=len(QUEUE)), 'pace': ytpace.status()}
+        def pub(l): d = {k: v for k, v in l.items() if k != 'queue'}; d['queued'] = len(l['queue']); return d
+        cj, wj = pub(LANES['captions']), pub(LANES['whisper'])
+        # 'job' keeps the old shape (both lanes folded together) for the pages that read it; 'lanes' has each one
+        job = {k: (cj[k] + wj[k] if isinstance(cj[k], int) and not isinstance(cj[k], bool) else cj[k] or wj[k]) for k in cj}
+        job['running'] = cj['running'] or wj['running']; job['note'] = ' '.join(x for x in (cj['note'], wj['note']) if x)
+        return {'yt_dlp': have_ytdlp() or bool(FAKE), 'whisper': w, 'job': job, 'lanes': {'captions': cj, 'whisper': wj}, 'pace': ytpace.status(), 'keep_audio': keep_audio(), 'audio_kept': kept_audio_stats()}
 
-    def is_active(vid, kind): return (JOB['current'], JOB['method']) == (vid, kind) or (vid, kind) in QUEUE
+    def is_active(vid, kind):
+        l = LANES.get(kind)
+        return bool(l) and ((l['current'], l['method']) == (vid, kind) or (vid, kind) in l['queue'])
 
     @app.get('/api/transcript/{vid}')
     def t_get(vid: str):
@@ -205,7 +255,8 @@ def setup(app, DB):
             d = dict(r); d['cues'] = json.loads(d['cues']) if d['cues'] else []; d.pop('text', None); d['active'] = is_active(vid, d['kind'])
             d['edited'] = sum(1 for x in d['cues'] if len(x) > 2 and x[2])
             out[d['kind']] = d
-        out['pace'] = ytpace.status(); out['note'] = JOB.get('note') or ''
+        out['audio_kept'] = bool(kept_file(audio_store(), vid)); out['keep_audio'] = keep_audio()
+        out['pace'] = ytpace.status(); out['note'] = ' '.join(x for x in (LANES['captions']['note'], LANES['whisper']['note']) if x)
         return out
 
     @app.post('/api/transcript/{vid}')
@@ -215,6 +266,8 @@ def setup(app, DB):
             c = con(); r = c.execute("select cues from transcripts where video_id=? and kind=? and status='ok'", (vid, b.method)).fetchone(); c.close()
             if r and r['cues'] and any(len(x) > 2 and x[2] for x in json.loads(r['cues'])):
                 return {'error': 'This transcript has lines you edited. Delete it first if you want a fresh copy.', 'edited': True}
+        if b.method == 'whisper' and b.force:
+            c = con(); c.execute("delete from transcripts where video_id=? and kind='whisper'", (vid,)); reindex(c, vid); c.commit(); c.close()
         if not (have_ytdlp() or FAKE): return {'error': 'yt-dlp is not installed. Run install_transcripts.bat, then restart.'}
         if b.method == 'whisper':
             import voice
@@ -267,7 +320,28 @@ def setup(app, DB):
         todo = [(v, b.method) for v in ids if v not in done][:2000]
         return {'queued': enqueue(todo), 'skipped': len(ids) - len(todo)}
 
+    class KeepIn(BaseModel): keep_audio: bool
+    @app.post('/api/transcripts/settings')
+    def t_settings(b: KeepIn):
+        set_setting('keep_audio', '1' if b.keep_audio else '0'); return {'ok': 1, 'keep_audio': b.keep_audio}
+
+    @app.delete('/api/transcript/{vid}/audio')
+    def t_audio_del(vid: str):
+        f = kept_file(audio_store(), vid)
+        if f: os.remove(f)
+        return {'ok': 1, 'removed': bool(f)}
+
+    @app.post('/api/transcripts/audio/clear')
+    def t_audio_clear():
+        st = audio_store(); n = 0
+        if os.path.isdir(st):
+            for f in os.listdir(st):
+                p = os.path.join(st, f)
+                if os.path.isfile(p): os.remove(p); n += 1
+        return {'ok': 1, 'removed': n}
+
     @app.post('/api/transcripts/cancel')
     def t_cancel():
-        with LOCK: QUEUE.clear(); JOB['cancel'] = True
+        with LOCK:
+            for l in LANES.values(): l['queue'].clear(); l['cancel'] = True
         return {'ok': 1}
