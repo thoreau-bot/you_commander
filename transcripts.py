@@ -10,6 +10,7 @@ from pydantic import BaseModel
 
 FAKE = os.environ.get('ORG_TRANSCRIPT_FAKE')   # tests only
 QUEUE_LEN = lambda: 0   # set by setup(): how many transcript jobs are queued or running (the feed poller waits for them)
+LANES_PUBLIC = lambda: {}; AUDIO_STATS = lambda: {}; KEEP_AUDIO = lambda: False   # set by setup(); read by the Jobs page
 SCHEMA = """
 create table if not exists transcripts(video_id TEXT, kind TEXT, status TEXT, model TEXT, language TEXT,
   text TEXT, cues TEXT, error TEXT, fetched_at TEXT, PRIMARY KEY(video_id, kind));
@@ -96,6 +97,7 @@ def whisper_audio(vid, keep=False, store=None):
     -> list[(start,text)]"""
     import voice
     if FAKE:
+        if os.environ.get('ORG_TRANSCRIPT_FAKE_SLOW'): time.sleep(float(os.environ['ORG_TRANSCRIPT_FAKE_SLOW']))
         if keep and store:
             os.makedirs(store, exist_ok=True)
             if not kept_file(store, vid): open(os.path.join(store, vid + '.m4a'), 'wb').write(b'fake audio')
@@ -402,7 +404,22 @@ def setup(app, DB):
         return {'ok': 1, 'removed': n}
 
     @app.post('/api/transcripts/cancel')
-    def t_cancel():
+    def t_cancel(lane: str | None = None):
         with LOCK:
-            for l in LANES.values(): l['queue'].clear(); l['cancel'] = True
+            for k, l in LANES.items():
+                if lane and k != lane: continue
+                l['queue'].clear(); l['cancel'] = True
         return {'ok': 1}
+
+    def lanes_public():
+        out = {}
+        c = con()
+        for k, l in LANES.items():
+            d = {x: v for x, v in l.items() if x != 'queue'}; d['queued'] = len(l['queue'])
+            if l['current']:
+                r = c.execute("select title from videos where video_id=?", (l['current'],)).fetchone(); d['current_title'] = r[0] if r else None
+            d['next'] = [v for v, _ in l['queue'][:5]]
+            out[k] = d
+        c.close(); return out
+    global LANES_PUBLIC, AUDIO_STATS, KEEP_AUDIO
+    LANES_PUBLIC, AUDIO_STATS, KEEP_AUDIO = lanes_public, kept_audio_stats, keep_audio

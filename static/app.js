@@ -226,6 +226,16 @@
     p.addEventListener('mousedown',ev=>ev.preventDefault());p.onclick=ev=>{const q=ev.target.closest('[data-e]');if(q){ins(q.dataset.e);p.remove()}};const close=ev=>{if(!bar.contains(ev.target)){p.remove();document.removeEventListener('mousedown',close,true)}};setTimeout(()=>document.addEventListener('mousedown',close,true),0)}};
   el.addEventListener('keydown',e=>{if(!(e.ctrlKey||e.metaKey)||e.altKey)return;const k=e.key.toLowerCase();const m={b:'**',i:'_',u:'__',h:'=='}[k];if(m){e.preventDefault();e.stopPropagation();wrap(m)}});
   return bar};
+ // ---- Jobs link: appears in the top bar (or the Commander rail) only while something runs in the background,
+ //      with a count, so a batch started anywhere stays visible everywhere. Polls lightly; stops when the tab is hidden.
+ yc.jobsBadge=n=>{let a=document.getElementById('jobslink');
+  if(!a){const nav=document.querySelector('.topbar nav');const rail=document.querySelector('aside nav.side');if(!nav&&!rail)return;
+   a=document.createElement('a');a.id='jobslink';a.href='/jobs';a.title='What is running in the background';
+   if(nav){a.className='jobs';nav.appendChild(a)}else{a.className='si jobs';a.innerHTML='<svg width=14 height=14 viewBox="0 0 16 16" fill=none stroke=currentColor stroke-width=1.7 stroke-linecap=round><circle cx="8" cy="8" r="6"/><path d="M8 5v3.5l2 1.5"/></svg>Jobs';rail.appendChild(a)}}
+  if(a.classList.contains('si')){let b=a.querySelector('.badge');if(!b){b=document.createElement('span');b.className='badge';a.appendChild(b)}b.textContent=n||'';a.style.display=n?'':'none'}
+  else{a.innerHTML='Jobs <span class=badge>'+(n||'')+'</span>';a.style.display=n||location.pathname=='/jobs'?'':'none'}};
+ if(location.pathname!=='/jobs'){let JT=null;const tick=async()=>{if(document.hidden)return;try{const r=await fetch('/api/jobs');if(r.ok){const d=await r.json();yc.jobsBadge(d.active)}}catch(e){}};
+  tick();JT=setInterval(tick,4000);document.addEventListener('visibilitychange',()=>{if(!document.hidden)tick()})}
  // status nodes announce politely
  if(!document.documentElement.lang)document.documentElement.lang='en';
  document.querySelectorAll('#info,#vs,#st,#pos,#toast').forEach(el=>{if(!el.getAttribute('role')){el.setAttribute('role','status');el.setAttribute('aria-live','polite')}});

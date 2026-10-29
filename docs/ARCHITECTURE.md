@@ -12,7 +12,7 @@ Single-process FastAPI app serving static HTML pages (vanilla JS, no build step)
 | `feed.py` | Feed: channel identity (`channels`, `video_channel`, the resolver worker), `/feed` and the `/api/feed/*` endpoints |
 | `ytpace.py` | One shared pace for every request to youtube.com: a 429 anywhere pauses all workers, with backoff |
 | `feed_fetch.py` | Feed: per-channel Atom fetch with conditional GETs, the Shorts HEAD probe, the tiered background poller, `feed_items` |
-| `ui.html` `feed.html` `triage.html` `watch.html` `history.html` `import.html` | Pages |
+| `ui.html` `feed.html` `triage.html` `watch.html` `history.html` `jobs.html` `import.html` | Pages (`/jobs` shows every background job; the link appears only while one runs) |
 | `static/app.css` `static/app.js` | Shared visual system (tokens, controls, light/dark) and the `?` help overlay; served at `/static/` |
 | `tools/make_demo.py` | Builds an invented demo library |
 | `tests/` | pytest smoke tests and a JS syntax check of every page |

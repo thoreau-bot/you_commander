@@ -211,3 +211,5 @@ label{display:inline-flex;align-items:center;gap:7px;color:var(--fg2)}
 .rbar .emo button{width:30px;height:30px;min-height:0;padding:0;border:0;background:none;font-size:18px;border-radius:var(--rs)}.rbar .emo button:hover{background:var(--sf2)}
 .rich mark{background:var(--amb-s);color:inherit;border-radius:2px;padding:0 2px;box-shadow:inset 0 -2px 0 var(--amb)}
 .rich sup,.rich sub{font-size:.75em}.rich u{text-decoration-thickness:1px;text-underline-offset:2px}
+.topbar nav a.jobs{display:none;color:var(--ac);font-weight:600}.topbar nav a.jobs .badge,aside nav.side a.jobs .badge{display:inline-block;min-width:18px;padding:1px 6px;border-radius:999px;background:var(--ac);color:var(--ac-fg);font-size:11px;font-weight:600;text-align:center;margin-left:4px}
+aside nav.side a.jobs{display:none}

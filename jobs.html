@@ -1,0 +1,60 @@
+<!doctype html><meta charset=utf-8><title>YouCommander · Jobs</title><link rel=icon href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='8' fill='%232a5bd7'/%3E%3Cg fill='none' stroke='white' stroke-width='2.6' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='9,13 16,7.5 23,13'/%3E%3Cpolyline points='9,20 16,14.5 23,20'/%3E%3Cline x1='12' y1='26' x2='20' y2='26'/%3E%3C/g%3E%3C/svg%3E"><meta name=viewport content="width=device-width,initial-scale=1">
+<link rel=stylesheet href="/static/app.css">
+<style>
+main{max-width:980px;margin:auto;padding:18px 22px 60px}
+.job{margin-top:14px;box-shadow:var(--sh)}
+.job .panel-h .r{display:flex;gap:8px;align-items:center}
+.job .body{padding:12px 14px;display:flex;flex-direction:column;gap:8px}
+.prog{height:6px;background:var(--bd);border-radius:5px;overflow:hidden}.prog i{display:block;height:100%;background:var(--ac);width:0;transition:width .3s}
+.kv{display:grid;grid-template-columns:140px minmax(0,1fr);gap:4px 12px;font-size:var(--fs-s)}.kv b{color:var(--mut);font-weight:500}.kv span{min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.idle .body{color:var(--mut)}
+.badge{display:inline-block;min-width:18px;padding:1px 6px;border-radius:999px;background:var(--ac);color:var(--ac-fg);font-size:11px;font-weight:600;text-align:center}
+.settings .row2{display:flex;flex-wrap:wrap;gap:8px 12px;align-items:center}
+.settings .path{font-family:var(--mono);font-size:var(--fs-s);color:var(--fg2);word-break:break-all}
+.note{color:var(--mut);font-size:var(--fs-s);max-width:72ch}
+</style>
+<div class=topbar><a class=brand href="/" title="Back to Commander"><svg width=24 height=24 viewBox="0 0 32 32" role=img aria-label=YouCommander><rect width=32 height=32 rx=8 fill="var(--ac)"/><g fill=none stroke="var(--ac-fg)" stroke-width=2.6 stroke-linecap=round stroke-linejoin=round><polyline points="9,13 16,7.5 23,13"/><polyline points="9,20 16,14.5 23,20"/><line x1=12 y1=26 x2=20 y2=26 /></g></svg></a><nav><a href="/">Commander</a><a href="/feed" title="New uploads from the channels in your library">Feed</a><a href="/triage" title="Sort the inbox one video at a time">Triage</a><a href="/watch" title="The player with notes, loop and queue">Watch</a><a href="/history">History</a><a class=here>Jobs</a></nav><span class=fill></span><span id=sum class=meta></span><button class="ghost help" data-help title="Keyboard shortcuts (?)">?</button></div>
+<main>
+<h1 class=vt>Jobs<small id=hs></small></h1>
+<p class=note>Everything YouCommander is doing in the background, wherever you started it. This page stays reachable from the Jobs link in the top bar while anything is running.</p>
+<div id=jobs></div>
+
+<div class="panel job settings" id=sett>
+ <div class=panel-h>Whisper audio</div>
+ <div class=body>
+  <label class=row2 title="Keep each video’s downloaded audio (about 1 MB per minute) so a better model later can re-transcribe without asking YouTube again. Applies from the next video on, even mid-batch."><input type=checkbox id=keep> Keep the audio of videos transcribed with Whisper</label>
+  <div class=kv><b>Folder</b><span class=path id=adir></span><b>Kept</b><span id=akept></span><b>Free space</b><span id=afree></span><b>Model</b><span id=amodel></span></div>
+  <div class=row2><button id=chdir class="sm" title="Keep the audio somewhere else, such as a bigger drive. Files already kept can be moved there. Safe while a batch is running: the next video goes to the new folder.">Change Folder…</button><button id=defdir class="sm ghost" style="display:none" title="Back to audio/whisper next to the database, moving the files">Use Default</button><button id=clear class="sm ghost" title="Delete every kept audio file">Delete All Kept Audio</button><span id=mv class=mut></span></div>
+ </div>
+</div>
+<p class=note style="margin-top:18px">Captions come from YouTube’s caption track; transcripts come from Whisper on this computer. A YouTube pause (after an HTTP 429) holds every lane that talks to YouTube and lifts itself.</p>
+</main>
+<div id=help><div class=card><h2>Keyboard shortcuts<span class=mut>Esc or ? closes</span></h2><div class=cols><div><dl><dt><kbd>Esc</kbd></dt><dd>back to Commander</dd></dl></div></div></div></div>
+<script src="/static/app.js"></script>
+<script>
+const J=async(u,o)=>(await fetch(u,o)).json(),P=(u,b)=>J(u,{method:'POST',headers:{'content-type':'application/json'},body:JSON.stringify(b||{})}),esc=s=>(s||'').replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+const n=x=>Number(x||0).toLocaleString();const gb=b=>{b=b||0;return b>=1e9?(b/1e9).toFixed(b<1e10?1:0)+' GB':b>=1e6?Math.round(b/1e6)+' MB':b>=1e3?Math.round(b/1e3)+' kB':b+' B'};
+let D=null;
+function lane(id,title,j,words){const run=j&&j.running;const pct=run&&j.total?Math.round(100*j.done/j.total):0;
+ return `<div class="panel job${run?'':' idle'}"><div class=panel-h>${title}${run?' <span class=badge>'+n(j.queued+1)+'</span>':''}<span class=r>${run?`<button class="sm ghost" data-cancel="${id}">Cancel</button>`:''}</span></div><div class=body>${run?`<div class=prog><i style="width:${pct}%"></i></div><div class=kv><b>Progress</b><span>${n(j.done)} of ${n(j.total)} · ${n(j.ok)} ${words.ok}${j.none?', '+n(j.none)+' '+words.none:''}${j.err?', '+n(j.err)+' failed':''}</span><b>Now</b><span title="${esc(j.current||'')}">${esc(j.current_title||j.current||'')}</span>${j.next&&j.next.length?`<b>Next</b><span>${n(j.queued)} waiting</span>`:''}${j.note?`<b>Note</b><span>${esc(j.note)}</span>`:''}</div>`:`Nothing running.${j&&j.total?' Last batch: '+n(j.ok)+' '+words.ok+(j.none?', '+n(j.none)+' '+words.none:'')+(j.err?', '+n(j.err)+' failed':'')+'.':''}`}</div></div>`}
+function feedJob(j){const run=j&&j.running;const pct=run&&j.total?Math.round(100*j.done/j.total):0;const kind=(j&&j.kind||'').endsWith(':shorts')?'Telling Shorts apart':'Checking channels';
+ return `<div class="panel job${run?'':' idle'}"><div class=panel-h>Feed check${run?' <span class=badge>'+n(j.total-j.done)+'</span>':''}<span class=r>${run?`<button class="sm ghost" data-cancel="feed">Cancel</button>`:''}</span></div><div class=body>${run?`<div class=prog><i style="width:${pct}%"></i></div><div class=kv><b>${kind}</b><span>${n(j.done)} of ${n(j.total)}${j.new?', '+n(j.new)+' new':''}${j.failed?', '+n(j.failed)+' could not be read':''}</span>${j.note?`<b>Note</b><span>${esc(j.note)}</span>`:''}</div>`:'Nothing running.'}</div></div>`}
+function draw(){const d=D;if(!d)return;const L=d.lanes||{};
+ jobs.innerHTML=lane('captions','Captions (YouTube)',L.captions,{ok:'found',none:'without captions'})+lane('whisper','Transcripts (Whisper)',L.whisper,{ok:'transcribed',none:'skipped'})+feedJob(d.feed||{})+(d.resolve&&d.resolve.running?`<div class="panel job"><div class=panel-h>Resolving channels<span class=r><button class="sm ghost" data-cancel="resolve">Cancel</button></span></div><div class=body><div class=prog><i style="width:${d.resolve.total?Math.round(100*d.resolve.done/d.resolve.total):0}%"></i></div><div class=kv><b>Progress</b><span>${n(d.resolve.done)} of ${n(d.resolve.total)}</span></div></div></div>`:'')+(d.pace&&d.pace.paused?`<div class="panel job"><div class=panel-h>YouTube pause</div><div class=body>YouTube asked us to slow down. Every lane that talks to YouTube waits until ${esc(d.pace.resume_at)}, then carries on by itself.</div></div>`:'');
+ hs.textContent=d.active?d.active+' running':'nothing running';sum.textContent='';
+ keep.checked=!!d.keep_audio;const a=d.audio||{};adir.textContent=a.dir||'';adir.title=a.dir||'';akept.textContent=`${n(a.files)} file${a.files==1?'':'s'}, ${gb(a.bytes)}`;afree.textContent=a.free!=null?gb(a.free):'unknown';amodel.textContent=d.whisper_model||'';
+ defdir.style.display=a.is_default?'none':'';const m=a.move||{};chdir.disabled=defdir.disabled=clear.disabled=!!m.running;mv.textContent=m.running?`Moving ${n(m.done)} of ${n(m.total)}…`:m.error?'Move failed: '+m.error:''}
+async function load(){D=await J('/api/jobs');draw();yc.jobsBadge&&yc.jobsBadge(D.active)}
+jobs.onclick=async e=>{const b=e.target.closest('[data-cancel]');if(!b)return;const k=b.dataset.cancel;
+ if(k=='feed')await P('/api/feed/fetch/cancel');else if(k=='resolve')await P('/api/feed/resolve/cancel');else await P('/api/transcripts/cancel?lane='+k);
+ yc.toast('Stopping after the current item');load()};
+keep.onchange=async()=>{await P('/api/transcripts/settings',{keep_audio:keep.checked});yc.toast(keep.checked?'Audio from Whisper runs will be kept from the next video on.':'Audio will be deleted after each run from the next video on (kept files stay).');load()};
+async function changeDir(def){const a=D.audio||{};let v='';
+ if(!def){v=await yc.prompt({anchor:chdir,label:'Folder for kept Whisper audio (an absolute path; created if missing)',value:a.is_default?'':a.dir,ok:'Use This Folder'});if(v==null)return;if(!v.trim()){yc.toast('Type a folder path, or press Use Default');return}}
+ const mv=a.files?await yc.confirm({anchor:def?defdir:chdir,message:`Move the ${n(a.files)} kept file${a.files==1?'':'s'} (${gb(a.bytes)}) there too? If not, they stay put and only new audio goes to the new folder.`,ok:'Move Files'}):false;
+ const r=await P('/api/transcripts/settings',{audio_dir:def?'':v.trim(),move:!!mv});if(r.error){yc.toast(r.error,7000);return}yc.toast(mv?'Moving in the background.':'Folder changed.',4000);load()}
+chdir.onclick=()=>changeDir(false);defdir.onclick=()=>changeDir(true);
+clear.onclick=async()=>{const a=D.audio||{};if(!a.files){yc.toast('Nothing kept');return}if(!await yc.confirm({anchor:clear,message:`Delete all ${n(a.files)} kept audio files (${gb(a.bytes)})? Transcripts stay; re-transcribing would download again.`,ok:'Delete All',danger:true}))return;const r=await P('/api/transcripts/audio/clear');yc.toast(`Deleted ${n(r.removed)} file${r.removed==1?'':'s'}`);load()};
+addEventListener('keydown',e=>{if(e.ctrlKey||e.metaKey||e.altKey||yc.typing(document.activeElement)||yc.onControl(e))return;if(e.key=='Escape'){e.preventDefault();if(yc.escapeControl(e))return;if(yc.popOpen&&yc.popOpen())return;location.href='/'}});
+load();setInterval(load,1500);
+</script>

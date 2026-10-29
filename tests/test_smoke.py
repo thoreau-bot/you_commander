@@ -223,3 +223,21 @@ def test_whisper_audio_folder_can_change_and_move(client, tmp_path):
     assert client.get('/api/transcripts/audio').json()['is_default'] is True
     client.post('/api/transcripts/audio/clear'); client.post('/api/transcripts/settings', json={'keep_audio': False})
     client.delete('/api/transcript/bbbbbbbbbbb', params={'kind': 'whisper'})
+
+def test_jobs_page_and_summary(client):
+    if client.get('/api/summary').json()['videos'] == 0: test_import_flow(client)
+    r = client.get('/jobs'); assert r.status_code == 200 and '<title>' in r.text
+    j = client.get('/api/jobs').json()
+    assert set(j) >= {'active', 'lanes', 'feed', 'resolve', 'audio', 'keep_audio', 'pace', 'whisper_model'} and j['active'] == 0
+    client.post('/api/transcripts/queue', json={'ids': ['aaaaaaaaaaa', 'bbbbbbbbbbb'], 'method': 'whisper', 'force': True})
+    seen = False
+    for _ in range(100):
+        j = client.get('/api/jobs').json()
+        if j['lanes']['whisper']['running']: seen = True; assert j['active'] >= 1 and j['lanes']['whisper']['current'] in ('aaaaaaaaaaa', 'bbbbbbbbbbb'); break
+        time.sleep(0.02)
+    for _ in range(200):
+        if not client.get('/api/jobs').json()['lanes']['whisper']['running']: break
+        time.sleep(0.05)
+    assert client.get('/api/jobs').json()['active'] == 0
+    assert client.post('/api/transcripts/cancel?lane=whisper').json()['ok']
+    for v in ('aaaaaaaaaaa', 'bbbbbbbbbbb'): client.delete(f'/api/transcript/{v}', params={'kind': 'whisper'})

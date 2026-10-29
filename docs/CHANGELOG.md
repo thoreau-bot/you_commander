@@ -32,6 +32,10 @@ Commander
 - With more than 300 ticked, the Triage button reads "Triage the First 300 Together" (one Triage page holds 300), and the batch page continues: a **Next 300** button (`⇧N`) with a "page 2 of 27" counter, and Confirm All / Drop All move on to the next page instead of back to Commander
 - The bulk bar's **Get Captions** reads YouTube's caption track (it was labelled Get Transcripts); a new **Get Transcripts** button transcribes the ticked videos with Whisper on this computer, one at a time in the background, asking first above 20 videos. Captions are YouTube's; transcripts are Whisper's, everywhere in the app
 
+Jobs page
+- **Jobs** (`/jobs`): everything running in the background on one page, wherever it was started: the captions lane, the Whisper lane, a feed check, channel resolving, a YouTube pause, and an audio move, each with progress, the current video, and Cancel. A **Jobs** link with a count appears in the top bar (and the Commander rail) only while something is running, so a batch you started on Commander is still in view from Watch or History
+- The Whisper audio settings live there too (Keep Audio, the folder, free space, model, Change Folder…, Use Default, Delete All Kept Audio) and can be changed while a batch runs: the next video uses the new setting
+
 Whisper
 - **Its own lane.** Captions (YouTube) and Whisper (local) now run in separate background queues, so a long Whisper batch never delays a caption fetch. The Commander status line reports each lane; the feed's background check only waits for the captions lane
 - **Audio folder**: with Keep Audio on, the Whisper row shows where the audio lives, how many files and how big, and the drive's free space. **Change Folder…** points it at any folder (an archive drive, say; created if missing, checked writable) and offers to move the files already kept, in the background with progress, copy-and-delete across drives. **Use Default** brings it back to `audio/whisper` next to the database

@@ -239,6 +239,15 @@ import transcripts
 transcripts.setup(app,DB)
 import feed
 feed.setup(app,DB)
+# ---------------- Jobs: everything running in the background, on one page ----------------
+import feed_fetch, ytpace
+@app.get('/jobs',response_class=HTMLResponse)
+def jobs_page(): return open(os.path.join(os.path.dirname(__file__),'jobs.html'),encoding='utf-8').read()
+@app.get('/api/jobs')
+def jobs():
+    lanes=transcripts.LANES_PUBLIC();fj=dict(feed_fetch.JOB);rj=dict(feed.JOB);st=transcripts.AUDIO_STATS()
+    active=sum(1 for l in lanes.values() if l['running'])+(1 if fj.get('running') else 0)+(1 if rj.get('running') else 0)+(1 if st.get('move',{}).get('running') else 0)
+    return {'active':active,'lanes':lanes,'feed':fj,'resolve':rj,'audio':st,'keep_audio':transcripts.KEEP_AUDIO(),'pace':ytpace.status(),'whisper_model':voice.CFG['whisper_model']}
 @app.get('/api/voice/status')
 def voice_status():
     o=voice.ollama_status() if voice.CFG['fake_transcript'] is None or True else {}
