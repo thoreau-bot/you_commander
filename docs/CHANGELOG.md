@@ -1,7 +1,18 @@
 # Changelog
 
-## Unreleased — Feed, step 1 (branch feed-step1)
-Channel identity, the groundwork for the Feed page (design: the project's feed-design doc). Regression suite: 19 checks (6 new), all green.
+## Unreleased — Feed, steps 1 and 2 (branch feed-step1)
+The Feed page: first channel identity, then the new videos themselves (design: the project's feed-design doc). Regression suite: 24 checks (11 new), all green.
+
+Step 2 — New Videos
+- The Feed page opens on **New Videos**. Three states lead into each other: *learn your channels* (Resolve Channels) → *your channels are ready* (Fetch New Videos) → the feed. Each state has one button, and finishing one lands you on the next
+- **Fetch New Videos** asks every channel's public feed (no key, no sign-in) for its latest uploads, four at a time, with progress; videos appear in the list as channels answer. Afterwards the button reads **Check Now**
+- The feed is newest first, grouped by day (Today, Yesterday, weekday, date): thumbnail, title, age, channel, view count. Videos already in the library are left out. `Space` previews in place, `W` is Watch in Theater with the rest of the list as the queue, `Y` opens on YouTube, `X` dismisses (Undo with `Z`), `/` filters, `1` `2` `3` switch All / Videos / Shorts
+- **Shorts** are told apart with one small request per new video and get their own chip (with a count) and a badge on the thumbnail
+- **Background checks**: ticked after the first fetch, untick on the page. Channels are checked on a tier picked from your own library: hourly if you have watched, noted or saved 3+ of their videos; every 6 h for two; daily for one. The Channels view shows each channel's tier (Auto · Hourly …) with a per-channel override (Hourly / Every 6 h / Daily / Off) and a New column. A channel that keeps failing is tried at most daily; a 429 stops the pass early
+- The Channels panel from step 1 lives behind the **Channels** tab (`C`), with a "needs attention" pill while anything is unresolved; `G` still jumps here from Commander, History and Watch
+- Privacy table: two new rows (channel feeds, Shorts check); the feed requests carry no cookies or account
+
+Step 1 — Channel identity
 - New **Feed** page in the topbar and the Commander rail; `G` (Go to My Feed) jumps to it from Commander, History and the Watch page (with no video loaded). For now it holds one thing: the Channels panel
 - **Resolve Channels** (`R`) finds the stable YouTube id behind every channel in the library: one oEmbed lookup for each video imported before this version (to get the channel's page link), then one visit to each distinct channel page to read its `UC…` id. Progress and a Cancel button while it runs; the result is a per-channel list with handle, video count and how the id was found
 - Channels are keyed on the id, never on the name, so two channels called the same thing stay two channels

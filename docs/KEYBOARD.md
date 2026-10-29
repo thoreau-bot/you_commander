@@ -75,10 +75,17 @@ The video always has the keyboard on this page: the stage carries the same ring 
 ## Feed
 | Key | Action |
 |---|---|
-| `R` | Resolve Channels (Cancel while running) |
-| `/` | filter channels |
-| `↑` `↓` | move |
-| `Esc` | back to Commander |
+| `↑` `↓` `Home` `End` | move |
+| `Space` | preview the highlighted video in place |
+| `W` | Watch in Theater, with the rest of the list as the queue |
+| `Y` | open on YouTube |
+| `X` | dismiss (`Z` undoes while the toast shows) |
+| `R` | Fetch New Videos / Check Now (Cancel while running); in the Channels view, Resolve Channels |
+| `1` `2` `3` | All, Videos, Shorts |
+| `/` | filter |
+| `C` | Channels view, and back |
+| click a column title | sort by it (Channels view) |
+| `Esc` | close the preview, then back to Commander |
 
 ## History
 | Key | Action |

@@ -180,8 +180,12 @@ def setup(app, DB):
     @app.get('/api/feed/channels')
     def channels():
         c = con()
-        chans = [dict(r) for r in c.execute("""select ch.*, (select count(*) from video_channel x where x.channel_id=ch.channel_id) n_library
+        import feed_fetch as ff
+        auto = ff.compute_tiers(c)
+        chans = [dict(r) for r in c.execute("""select ch.*, (select count(*) from video_channel x where x.channel_id=ch.channel_id) n_library,
+                                                (select count(*) from feed_items i where i.channel_id=ch.channel_id and i.state='new') n_new
                                                 from channels ch order by n_library desc, title collate nocase""")]
+        for ch in chans: ch['auto_tier'] = auto.get(ch['channel_id'], 'daily'); ch['eff_tier'] = ff.effective_tier(ch.get('tier', 'auto'), ch['auto_tier'])
         unres = [dict(r) for r in c.execute("select * from channel_unresolved order by n desc, title collate nocase")]
         tot = c.execute("select count(*) from videos where unavailable=0").fetchone()[0]
         linked = c.execute("select count(*) from video_channel").fetchone()[0]
@@ -205,3 +209,53 @@ def setup(app, DB):
     def retry():
         c = con(); c.execute("delete from channel_unresolved"); c.commit(); c.close()
         return dict(started=start(DB))
+
+    # ---------------------------------------------------------------- step 2: new videos
+    import feed_fetch as ff
+    from pydantic import BaseModel
+    ff.ensure_schema(DB); ff.start_poller(DB)
+
+    @app.get('/api/feed/summary')
+    def f_summary():
+        c = con(); s = ff.summary(c); c.close(); s['job'] = dict(ff.JOB); s['resolve'] = dict(JOB); return s
+
+    @app.get('/api/feed/items')
+    def f_items(view: str = 'newest', limit: int = 200, offset: int = 0, shorts: str | None = None, channel: str | None = None, q: str | None = None):
+        c = con(); r = ff.items(c, view, min(limit, 500), offset, shorts, channel, q); c.close(); return r
+
+    @app.post('/api/feed/fetch')
+    def f_fetch(kind: str = 'manual'):
+        c = con(); first = ff.setting(c, 'first_pass_at') is None; c.close()
+        return dict(started=ff.start_pass(DB, 'first' if first else 'manual'))
+
+    @app.post('/api/feed/fetch/cancel')
+    def f_cancel(): ff.JOB['cancel'] = True; return {'ok': 1}
+
+    @app.get('/api/feed/fetch/status')
+    def f_status(): return dict(ff.JOB)
+
+    class St(BaseModel): video_ids: list[str]; state: str
+    @app.post('/api/feed/items/state')
+    def f_state(b: St):
+        if b.state not in ('new', 'dismissed', 'pulled', 'watched', 'hidden', 'seen'): return {'error': 'bad state'}
+        c = con(); t = ff.now(); n = 0
+        for v in dict.fromkeys(b.video_ids):
+            n += c.execute("update feed_items set state=?,state_at=? where video_id=?", (b.state, t, v)).rowcount
+        c.commit(); c.close(); return {'ok': 1, 'changed': n}
+
+    class Sett(BaseModel): polling: bool | None = None
+    @app.post('/api/feed/settings')
+    def f_settings(b: Sett):
+        c = con()
+        if b.polling is not None: ff.set_setting(c, 'polling', '1' if b.polling else '0')
+        c.commit(); c.close(); return {'ok': 1}
+
+    class ChSet(BaseModel): tier: str | None = None; muted: int | None = None; poll_enabled: int | None = None
+    @app.post('/api/feed/channel/{cid}')
+    def f_channel(cid: str, b: ChSet):
+        if b.tier is not None and b.tier not in ('auto', *ff.TIERS): return {'error': 'bad tier'}
+        c = con()
+        for f in ('tier', 'muted', 'poll_enabled'):
+            v = getattr(b, f)
+            if v is not None: c.execute(f"update channels set {f}=? where channel_id=?", (v, cid))
+        c.commit(); c.close(); return {'ok': 1}

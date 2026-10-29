@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<feed xmlns:yt="http://www.youtube.com/xml/schemas/2015" xmlns:media="http://search.yahoo.com/mrss/" xmlns="http://www.w3.org/2005/Atom">
+ <link rel="self" href="https://www.youtube.com/feeds/videos.xml?channel_id=UC3f4ceb5349be81_dbe418f"/>
+ <id>yt:channel:3f4ceb5349be81_dbe418f</id>
+ <yt:channelId>3f4ceb5349be81_dbe418f</yt:channelId>
+ <title>Fake Channel</title>
+ <link rel="alternate" href="https://www.youtube.com/channel/UC3f4ceb5349be81_dbe418f"/>
+ <author><name>Fake Channel</name><uri>https://www.youtube.com/channel/UC3f4ceb5349be81_dbe418f</uri></author>
+ <published>2020-01-01T00:00:00+00:00</published>
+ <entry>
+  <id>yt:video:Rnew0000002</id>
+  <yt:videoId>Rnew0000002</yt:videoId>
+  <yt:channelId>UC3f4ceb5349be81_dbe418f</yt:channelId>
+  <title>From channel b</title>
+  <link rel="alternate" href="https://www.youtube.com/watch?v=Rnew0000002"/>
+  <author><name>Fake Channel</name><uri>https://www.youtube.com/channel/UC3f4ceb5349be81_dbe418f</uri></author>
+  <published>2026-10-29T01:00:00+00:00</published>
+  <updated>2026-10-29T01:00:00+00:00</updated>
+  <media:group>
+   <media:title>From channel b</media:title>
+   <media:content url="https://www.youtube.com/v/Rnew0000002?version=3" type="application/x-shockwave-flash" width="640" height="390"/>
+   
+   <media:description>A description</media:description>
+   <media:community>
+    <media:starRating count="12" average="5.00" min="1" max="5"/>
+    <media:statistics views="10"/>
+   </media:community>
+  </media:group>
+ </entry>
+</feed>

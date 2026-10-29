@@ -9,14 +9,15 @@ Single-process FastAPI app serving static HTML pages (vanilla JS, no build step)
 | `watch.py` | Watch state/log, marks (notes), queue, history, `/watch` and `/history` |
 | `transcripts.py` | Caption fetch (`yt-dlp`, json3), Whisper path, background worker, transcript search |
 | `voice.py` | Local `faster-whisper` transcription, optional Ollama tag extraction |
-| `feed.py` | Feed (in progress): channel identity — `channels`, `video_channel`, the resolver worker, `/feed` |
+| `feed.py` | Feed: channel identity (`channels`, `video_channel`, the resolver worker), `/feed` and the `/api/feed/*` endpoints |
+| `feed_fetch.py` | Feed: per-channel Atom fetch with conditional GETs, the Shorts HEAD probe, the tiered background poller, `feed_items` |
 | `ui.html` `feed.html` `triage.html` `watch.html` `history.html` `import.html` | Pages |
 | `static/app.css` `static/app.js` | Shared visual system (tokens, controls, light/dark) and the `?` help overlay; served at `/static/` |
 | `tools/make_demo.py` | Builds an invented demo library |
 | `tests/` | pytest smoke tests and a JS syntax check of every page |
 
 ## Data
-SQLite in WAL mode. Key tables: `videos`, `playlists`, `playlist_items`, `tags`/`video_tags`, `notes`, `watch_state`, `watch_log`, `video_marks`, `transcripts(video_id, kind, status, text, cues, …)`, `bulk_log`, `channels` / `video_channel` (feed). Full-text: `video_fts` (contentless) and `transcript_fts`. `importer.ensure_schema` and each module's `setup()` create/migrate tables idempotently.
+SQLite in WAL mode. Key tables: `videos`, `playlists`, `playlist_items`, `tags`/`video_tags`, `notes`, `watch_state`, `watch_log`, `video_marks`, `transcripts(video_id, kind, status, text, cues, …)`, `bulk_log`, `channels` / `video_channel` / `feed_items` / `feed_settings` / `feed_log` (feed). Full-text: `video_fts` (contentless) and `transcript_fts`. `importer.ensure_schema` and each module's `setup()` create/migrate tables idempotently.
 
 ## Player
 Uses the YouTube IFrame API. Because focus inside a cross-origin iframe cannot be controlled, "player mode" drives the player through the API and captures keys on the parent page.

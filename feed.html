@@ -4,63 +4,122 @@
 main{max-width:1120px;margin:auto;padding:18px 22px 60px}
 .panel{margin-top:14px;box-shadow:var(--sh);overflow:clip}
 .panel-h{position:sticky;top:66px;z-index:3;background:var(--sf);box-shadow:0 -14px 0 0 var(--bg)}
-.row.head{position:sticky;top:var(--hh,108px);z-index:2}   /* --hh is set per panel from the title bar's real height */
-#unpanel .row{grid-template-columns:minmax(0,1fr) 220px 90px 150px}
-.row.head button.sort{justify-content:flex-start;gap:5px;min-height:24px;height:24px;padding:0 6px;margin-left:-6px;border:0;background:none;color:var(--mut);font-size:var(--fs-s);font-weight:600;border-radius:var(--rs)}.row.head button.sort:hover,.row.head button.sort.on{color:var(--fg)}.row.head button.sort.num{justify-content:flex-end;margin-left:0;margin-right:-6px;width:100%}.row.head .arrow{font-size:9px;color:var(--ac);min-width:9px}
-.showall{display:flex;justify-content:center;padding:8px}
 .panel-h .r{display:flex;gap:8px;align-items:center}
 .status{display:flex;flex-wrap:wrap;align-items:center;gap:10px 16px;padding:10px 14px;border-bottom:1px solid var(--bd);color:var(--fg2)}
 .status .prog{width:220px;height:6px;background:var(--bd);border-radius:5px;overflow:hidden}.status .prog i{display:block;height:100%;background:var(--ac);width:0;transition:width .3s}
 .tools{display:flex;gap:8px;flex-wrap:wrap;align-items:center;padding:10px 14px;border-bottom:1px solid var(--bd)}
 .search{position:relative;display:flex;align-items:center}.search input{width:280px;padding-right:34px}.search kbd{position:absolute;right:9px;pointer-events:none}
+.tools .chips{display:flex;gap:4px}
 .row{display:grid;grid-template-columns:minmax(0,1fr) 220px 90px 90px;gap:12px;padding:9px 14px;border-bottom:1px solid var(--bd);align-items:center}
-.row.head{color:var(--mut);font-size:var(--fs-s);font-weight:600;padding:7px 14px;background:var(--sf2)}
+.row.head{position:sticky;top:var(--hh,108px);z-index:2;color:var(--mut);font-size:var(--fs-s);font-weight:600;padding:7px 14px;background:var(--sf2)}
+.row.head button.sort{justify-content:flex-start;gap:5px;min-height:24px;height:24px;padding:0 6px;margin-left:-6px;border:0;background:none;color:var(--mut);font-size:var(--fs-s);font-weight:600;border-radius:var(--rs)}.row.head button.sort:hover,.row.head button.sort.on{color:var(--fg)}.row.head button.sort.num{justify-content:flex-end;margin-left:0;margin-right:-6px;width:100%}.row.head .arrow{font-size:9px;color:var(--ac);min-width:9px}
 .row:last-child{border-bottom:0}.row>div{min-width:0}
 .row .t{overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-weight:500}
 .row small{color:var(--mut);font-variant-numeric:tabular-nums;font-size:var(--fs-s);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;display:block}
 .row .num{text-align:right;font-variant-numeric:tabular-nums}
 .row.f{background:var(--ac-s);box-shadow:inset 3px 0 0 var(--ac)}
 .row.bad .t{color:var(--bad)}
-.lbl{margin:18px 0 0}
-@media(max-width:800px){.row{grid-template-columns:minmax(0,1fr) 70px}.row>:nth-child(2),.row>:nth-child(4){display:none}}
+#unpanel .row{grid-template-columns:minmax(0,1fr) 220px 90px 150px}
+#chlist .row{grid-template-columns:minmax(0,1fr) 180px 70px 70px 150px}
+.row select{height:26px;padding:0 6px;font-size:var(--fs-s);max-width:150px}
+/* the feed itself */
+.vrow{display:grid;grid-template-columns:118px minmax(0,1fr) 150px 90px;gap:12px;padding:8px 14px;border-bottom:1px solid var(--bd);align-items:center;cursor:default}
+.vrow.head{position:sticky;top:var(--hh,108px);z-index:2;color:var(--mut);font-size:var(--fs-s);font-weight:600;padding:7px 14px;background:var(--sf2)}
+.vrow:last-child{border-bottom:0}.vrow>div{min-width:0}
+.vrow:hover{background:var(--sf2)}.vrow.f{background:var(--ac-s);box-shadow:inset 3px 0 0 var(--ac)}
+.vrow .th{width:118px;aspect-ratio:16/9;background:var(--sf2);border-radius:var(--rs);overflow:hidden;position:relative;display:block}
+.vrow .th img{width:100%;height:100%;object-fit:cover;display:block}
+.vrow .th .tag{position:absolute;right:4px;bottom:4px;padding:1px 6px;border-radius:999px;background:rgba(0,0,0,.72);color:#fff;font-size:11px;font-weight:600}
+.vrow .t{font-weight:500;overflow:hidden;text-overflow:ellipsis;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;white-space:normal}
+.vrow .t a{color:inherit}.vrow .t a:hover{text-decoration:underline}
+.vrow small{color:var(--mut);font-variant-numeric:tabular-nums;font-size:var(--fs-s);display:block;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.vrow .num{text-align:right;font-variant-numeric:tabular-nums;color:var(--fg2)}
+.vrow.open{background:var(--sf2);border-bottom-color:transparent}
+.prev{padding:0 14px 14px;border-bottom:1px solid var(--bd)}
+.prev .stage{max-width:min(100%,900px)}
+.prev .acts{display:flex;flex-wrap:wrap;gap:6px;margin-top:10px;align-items:center}.prev .acts .sp{flex:1}
+.divider{padding:6px 14px;background:var(--sf2);color:var(--mut);font-size:var(--fs-s);font-weight:600;border-bottom:1px solid var(--bd)}
+.lead{display:flex;flex-direction:column;align-items:center;gap:10px;padding:48px 20px;text-align:center}
+.lead b{font-size:var(--fs-l)}.lead p{margin:0;color:var(--mut);max-width:56ch}
+.lead .glyph{width:44px;height:44px;border-radius:12px;background:var(--ac-s);color:var(--ac);display:flex;align-items:center;justify-content:center}
+.foot{color:var(--mut);font-size:var(--fs-s);margin-top:18px;max-width:72ch}
+.loadmore{display:flex;justify-content:center;padding:14px 10px}
+.viewtabs{display:flex;gap:2px;align-items:center}
+@media(max-width:800px){.row,#chlist .row{grid-template-columns:minmax(0,1fr) 70px}.row>:nth-child(2),.row>:nth-child(4),.row>:nth-child(5){display:none}.vrow,.vrow.head{grid-template-columns:90px minmax(0,1fr)}.vrow>:nth-child(3),.vrow>:nth-child(4){display:none}.vrow .th{width:90px}}
 </style>
 <div class=topbar><a class=brand href="/" title="Back to Commander"><svg width=24 height=24 viewBox="0 0 32 32" role=img aria-label=YouCommander><rect width=32 height=32 rx=8 fill="var(--ac)"/><g fill=none stroke="var(--ac-fg)" stroke-width=2.6 stroke-linecap=round stroke-linejoin=round><polyline points="9,13 16,7.5 23,13"/><polyline points="9,20 16,14.5 23,20"/><line x1=12 y1=26 x2=20 y2=26 /></g></svg></a><nav><a href="/">Commander</a><a class=here>Feed</a><a href="/triage" title="Sort the inbox one video at a time">Triage</a><a href="/watch" title="The player with notes, loop and queue">Watch</a><a href="/history">History</a></nav><span class=fill></span><span id=sum class=meta></span><button class="ghost help" data-help title="Keyboard shortcuts (?)">?</button></div>
-<main><h1 class=vt>Feed<small>Step 1 of the Feed: knowing your channels</small></h1>
-<p class=mut style="margin:6px 0 0;max-width:72ch">The feed will follow every channel in your library. Takeout files only carry video IDs, so each channel's YouTube identity is looked up once from the videos you already have. Nothing is written to YouTube.</p>
+<main>
+<h1 class=vt style="display:flex;align-items:center;gap:14px">Feed<span class=viewtabs id=views role=tablist></span><span style="flex:1"></span><span id=hsum class=mut style="font-weight:400;font-size:var(--fs-s)"></span></h1>
 
-<div class=panel id=unpanel style="display:none">
- <div class=panel-h>Not Yet Resolved<span id=unn class=mut style="font-weight:400"></span><span class=r><button id=retry class="sm">Retry All</button></span></div>
- <div class=status><span>These channel pages could not be read. Most often the channel is gone or renamed (a 404); sometimes YouTube refused the request for now. Their videos stay in the library; they just will not be followed until this resolves. Resolve Channels leaves them alone; Retry All tries them again.</span></div>
- <div id=unlist></div>
- <div class=showall id=unmore style="display:none"><button class="sm ghost" id=unall>Show All</button></div>
+<!-- ============ the feed (Newest) ============ -->
+<div id=vfeed>
+ <div class=panel id=fpanel>
+  <div class=panel-h><span id=ftitle>New Videos</span><span id=fn class=mut style="font-weight:400"></span><span class=r><button id=fcancel class="sm ghost" style="display:none">Cancel</button><button id=fetchb class=pri>Fetch New Videos<kbd>R</kbd></button></span></div>
+  <div class=status id=fstatus><span id=fstxt>Checking…</span><span class=prog id=fprog style="display:none"><i id=fpbar></i></span></div>
+  <div class=tools id=ftools><div class=search><input id=fq2 placeholder="Filter by title or channel" aria-label="Filter the feed"><kbd>/</kbd></div><span class=chips id=fchips role=group aria-label="Show"></span><span style="flex:1"></span><label class=mut style="display:flex;gap:6px;align-items:center;font-size:var(--fs-s)"><input type=checkbox id=pollon> Check for new videos in the background</label></div>
+  <div id=flist></div>
+  <div class=loadmore id=fmore style="display:none"><button class="sm ghost" id=fmoreb>Show More</button></div>
+ </div>
+ <p class=foot id=ffoot></p>
 </div>
 
-<div class=panel id=chpanel>
- <div class=panel-h>Channels<span id=chn class=mut style="font-weight:400"></span><span class=r><button id=cancel class="sm ghost" style="display:none">Cancel</button><button id=resolve class="pri">Resolve Channels<kbd>R</kbd></button></span></div>
- <div class=status id=status><span id=stxt>Checking…</span><span class=prog id=prog style="display:none"><i id=pbar></i></span></div>
- <div class=tools id=tools><div class=search><input id=fq placeholder="Filter by channel or handle" aria-label="Filter channels"><kbd>/</kbd></div><span id=cnt class=mut></span></div>
- <div id=list></div>
+<!-- ============ channels ============ -->
+<div id=vchannels style="display:none">
+ <div class=panel id=unpanel style="display:none">
+  <div class=panel-h>Not Yet Resolved<span id=unn class=mut style="font-weight:400"></span><span class=r><button id=retry class="sm">Retry All</button></span></div>
+  <div class=status><span>These channel pages could not be read. Most often the channel is gone or renamed (a 404); sometimes YouTube refused the request for now. Their videos stay in the library; they just will not be followed until this resolves. Resolve Channels leaves them alone; Retry All tries them again.</span></div>
+  <div id=unlist></div>
+  <div class=loadmore id=unmore style="display:none"><button class="sm ghost" id=unall>Show All</button></div>
+ </div>
+ <div class=panel id=chpanel>
+  <div class=panel-h>Channels<span id=chn class=mut style="font-weight:400"></span><span class=r><button id=cancel class="sm ghost" style="display:none">Cancel</button><button id=resolve class=pri>Resolve Channels<kbd>R</kbd></button></span></div>
+  <div class=status id=status><span id=stxt>Checking…</span><span class=prog id=prog style="display:none"><i id=pbar></i></span></div>
+  <div class=tools id=tools><div class=search><input id=fq placeholder="Filter by channel or handle" aria-label="Filter channels"><kbd>/</kbd></div><span id=cnt class=mut></span></div>
+  <div id=chlist></div>
+ </div>
+ <p class=foot>Network use, only when you press Resolve Channels: one title lookup (YouTube oEmbed) per video that was imported before this version, then one visit to each channel's page to read its id. No API key, no quota. See docs/PRIVACY.md.</p>
 </div>
-
-<p class=mut style="font-size:var(--fs-s);margin-top:18px;max-width:72ch">Network use, only when you press Resolve Channels: one title lookup (YouTube oEmbed) per video that was imported before this version, then one visit to each channel's page to read its id. No API key, no quota. See docs/PRIVACY.md.</p>
 </main>
 <div id=help><div class=card>
  <h2>Keyboard shortcuts<span class=mut>Esc or ? closes</span></h2>
- <div class=cols><div><dl><dt><kbd>R</kbd></dt><dd>Resolve Channels (or Cancel while running)</dd><dt><kbd>/</kbd></dt><dd>filter channels</dd><dt>click a column title</dt><dd>sort by it; again to reverse (remembered on this computer)</dd><dt><kbd>↑</kbd><kbd>↓</kbd></dt><dd>move</dd><dt><kbd>Home</kbd><kbd>End</kbd></dt><dd>first, last (the round buttons at bottom left do the same by mouse)</dd><dt><kbd>Esc</kbd></dt><dd>back to Commander</dd></dl></div></div>
+ <div class=cols>
+  <div><h3>New Videos</h3><dl><dt><kbd>↑</kbd><kbd>↓</kbd></dt><dd>move</dd><dt><kbd>Home</kbd><kbd>End</kbd></dt><dd>first, last (the round buttons at bottom left do the same by mouse)</dd><dt><kbd>Space</kbd></dt><dd>play here</dd><dt><kbd>W</kbd></dt><dd>Watch in Theater, with the rest of the list as the queue</dd><dt><kbd>Y</kbd></dt><dd>open on YouTube</dd><dt><kbd>X</kbd></dt><dd>dismiss (Z undoes while the toast shows)</dd><dt><kbd>R</kbd></dt><dd>Fetch New Videos (or Cancel while running)</dd><dt><kbd>/</kbd></dt><dd>filter</dd><dt><kbd>1</kbd><kbd>2</kbd><kbd>3</kbd></dt><dd>All, Videos, Shorts</dd></dl></div>
+  <div><h3>Pages &amp; views</h3><dl><dt><kbd>C</kbd></dt><dd>Channels view, and back</dd><dt>click a column title</dt><dd>sort by it; again to reverse (remembered on this computer)</dd><dt><kbd>Esc</kbd></dt><dd>close the preview, then back to Commander</dd></dl></div>
+ </div>
 </div></div>
 <script src="/static/app.js"></script>
+<script src="https://www.youtube.com/iframe_api"></script>
 <script>
-const J=async(u,o)=>(await fetch(u,o)).json(),esc=s=>(s||'').replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+const J=async(u,o)=>(await fetch(u,o)).json(),P=(u,b)=>J(u,{method:'POST',headers:{'content-type':'application/json'},body:JSON.stringify(b||{})}),esc=s=>(s||'').replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
 const n=x=>Number(x||0).toLocaleString();
-let D={channels:[],unresolved:[],videos:0,linked:0,pending:{need_url:0,need_id:0,unresolved:0}},RUN=false,FI=0,POLL=null,LASTJ=null,UNALL=false;
-// Every column in both lists sorts: click a header, again to reverse. Remembered on this computer.
-const CH_COLS=[['title','Channel'],['handle','Handle'],['n_library','Videos'],['resolved_from','Found by']],UN_COLS=[['title','Channel'],['error','Reason'],['n','Videos'],['tried_at','Last tried']];
-const NUMC={n_library:1,n:1};const ld=(k,def)=>{let v=null;try{v=JSON.parse(localStorage.getItem(k)||'null')}catch(e){}return v||def};
+const kfmt=x=>x==null?'':x>=1e6?(x/1e6).toFixed(1).replace(/\.0$/,'')+'M':x>=1e3?(x/1e3).toFixed(x<1e4?1:0).replace(/\.0$/,'')+'k':String(x);
+const ago=s=>{if(!s)return'';const d=(Date.now()-new Date(s+'Z'))/1000;if(d<3600)return Math.max(1,Math.floor(d/60))+' min ago';if(d<86400)return Math.floor(d/3600)+' h ago';if(d<86400*14)return Math.floor(d/86400)+' d ago';return new Date(s+'Z').toLocaleDateString(undefined,{month:'short',day:'numeric'})};
+const when=s=>{if(!s)return'';const d=new Date(s.replace(' ','T')+'Z');return d.toLocaleDateString(undefined,{month:'short',day:'numeric'})+' '+d.toLocaleTimeString(undefined,{hour:'numeric',minute:'2-digit'})};
+const ld=(k,def)=>{let v=null;try{v=JSON.parse(localStorage.getItem(k)||'null')}catch(e){}return v||def};
+let VIEW=ld('feedView','feed');                      // 'feed' | 'channels'
+let D={channels:[],unresolved:[],videos:0,linked:0,pending:{need_url:0,need_id:0,unresolved:0}},S={},RUN=false,FRUN=false,FI=0,CI=0,POLL=null,FPOLL=null,LASTJ=null,LASTF=null,UNALL=false;
+let ITEMS=[],SHOW=ld('feedShow','all'),OPEN=null,PLAYER=null,PAGE=0,MORE=false;
+const SHOWS={all:['All',null],videos:['Videos','hide'],shorts:['Shorts','only']};
+
+// ---------------------------------------------------------------- views
+function paintViews(){views.innerHTML=[['feed','New Videos'],['channels','Channels']].map(([k,l])=>`<button role=tab data-v=${k} class="sm ${k==VIEW?'on':'ghost'}" aria-selected="${k==VIEW}">${l}${k=='channels'&&D.pending&&(D.pending.need_url||D.pending.need_id)?' <span class=pill>needs attention</span>':''}</button>`).join('');
+ vfeed.style.display=VIEW=='feed'?'':'none';vchannels.style.display=VIEW=='channels'?'':'none'}
+function setView(v){VIEW=v;try{localStorage.setItem('feedView',JSON.stringify(v))}catch(e){}closePreview();paintViews();draw();pinHeads()}
+views.onclick=e=>{const b=e.target.closest('[data-v]');if(b)setView(b.dataset.v)};
+
+// ---------------------------------------------------------------- sorting (both channel lists)
+const CH_COLS=[['title','Channel'],['handle','Handle'],['n_library','Videos'],['n_new','New'],['eff_tier','Checked']],UN_COLS=[['title','Channel'],['error','Reason'],['n','Videos'],['tried_at','Last tried']];
+const NUMC={n_library:1,n:1,n_new:1};
 let CSORT=ld('feedChSort',{k:'n_library',d:-1}),USORT=ld('feedUnSort',{k:'n',d:-1});
 const sortBy=(rows,S)=>[...rows].sort((a,b)=>{const x=a[S.k],y=b[S.k];const c=NUMC[S.k]?(x||0)-(y||0):String(x||'').localeCompare(String(y||''),undefined,{sensitivity:'base',numeric:true});return c*S.d||String(a.title||'').localeCompare(String(b.title||''))});
 const head=(cols,S)=>'<div class="row head" role=row>'+cols.map(([c,l])=>`<button class="sort${NUMC[c]?' num':''}${c==S.k?' on':''}" data-sort=${c} aria-sort="${c==S.k?(S.d>0?'ascending':'descending'):'none'}" title="Sort by ${l.toLowerCase()}">${l}<span class=arrow aria-hidden=true>${c==S.k?(S.d>0?'▲':'▼'):''}</span></button>`).join('')+'</div>';
-function wireSort(el,S,key){el.querySelectorAll('[data-sort]').forEach(b=>b.onclick=()=>{const c=b.dataset.sort;const n=c==S.k?{k:c,d:-S.d}:{k:c,d:NUMC[c]||c=='tried_at'?-1:1};Object.assign(S,n);try{localStorage.setItem(key,JSON.stringify(S))}catch(e){}FI=0;draw()})}
-function shown(){const q=fq.value.trim().toLowerCase();return sortBy(D.channels.filter(c=>!q||((c.title||'')+' '+(c.handle||'')).toLowerCase().includes(q)),CSORT)}
+function wireSort(el,S,key){el.querySelectorAll('[data-sort]').forEach(b=>b.onclick=()=>{const c=b.dataset.sort;const nn=c==S.k?{k:c,d:-S.d}:{k:c,d:NUMC[c]||c=='tried_at'?-1:1};Object.assign(S,nn);try{localStorage.setItem(key,JSON.stringify(S))}catch(e){}CI=0;draw()})}
+function pinHeads(){document.querySelectorAll('.panel').forEach(p=>{const h=p.querySelector('.panel-h');if(h)p.style.setProperty('--hh',(66+h.offsetHeight)+'px')})}
+addEventListener('resize',pinHeads);
+
+// ---------------------------------------------------------------- channels view (step 1)
+function shownCh(){const q=fq.value.trim().toLowerCase();return sortBy(D.channels.filter(c=>!q||((c.title||'')+' '+(c.handle||'')).toLowerCase().includes(q)),CSORT)}
+const TIERL={auto:'Auto',hourly:'Hourly',sixhourly:'Every 6 h',daily:'Daily',off:'Off'};
 function statusLine(j){
  if(j&&j.running){const t=j.total||0,d=j.done||0;prog.style.display='';pbar.style.width=(t?100*d/t:0)+'%';
   return j.phase=='urls'?`Looking up channel pages for your videos: ${n(d)} of ${n(t)}.`:`Reading channel ids: ${n(d)} of ${n(t)}${j.failed?', '+n(j.failed)+' could not be read':''}.`}
@@ -70,41 +129,127 @@ function statusLine(j){
  if(!p.need_url&&!p.need_id)return(p.unresolved?`Every reachable channel is linked: ${n(D.linked)} of ${n(D.videos)} videos.`:`Every video is linked to its channel: ${n(D.linked)} of ${n(D.videos)}.`)+un;
  const parts=[];if(p.need_url)parts.push(`${n(p.need_url)} video${p.need_url>1?'s':''} still need${p.need_url>1?'':'s'} a channel page`);if(p.need_id)parts.push(`${n(p.need_id)} channel${p.need_id>1?'s':''} still need${p.need_id>1?'':'s'} an id`);
  return parts.join(' and ')+'. Press Resolve Channels.'+un}
-// pinned column rows sit exactly under their panel's title bar, whatever that bar's height is (it holds a button)
-function pinHeads(){document.querySelectorAll('.panel').forEach(p=>{const h=p.querySelector('.panel-h');if(h)p.style.setProperty('--hh',(66+h.offsetHeight)+'px')})}
-addEventListener('resize',pinHeads);
-function draw(j){if(j!==undefined)LASTJ=j;j=LASTJ;
+function drawChannels(j){if(j!==undefined)LASTJ=j;j=LASTJ;
  RUN=!!(j&&j.running);resolve.style.display=RUN?'none':'';cancel.style.display=RUN?'':'none';resolve.disabled=!D.videos;
  stxt.textContent=statusLine(j);if(j&&j.note)stxt.textContent+=' '+j.note;
  chn.textContent=D.channels.length?n(D.channels.length)+' channel'+(D.channels.length>1?'s':''):'';
- sum.textContent=D.videos?`${n(D.linked)} of ${n(D.videos)} videos linked`:'';
- const L=shown();FI=Math.min(FI,Math.max(0,L.length-1));cnt.textContent=fq.value.trim()?`${L.length} shown`:'';
+ const L=shownCh();CI=Math.min(CI,Math.max(0,L.length-1));cnt.textContent=fq.value.trim()?`${L.length} shown`:'';
  tools.style.display=D.channels.length?'':'none';
- list.innerHTML=L.length?head(CH_COLS,CSORT)+L.map((c,k)=>`<div class="row${k==FI?' f':''}"><div><div class=t>${esc(c.title)}</div><small>${esc(c.channel_id)}</small></div><small>${esc(c.handle||'')}</small><div class=num>${n(c.n_library)}</div><div><span class=pill title="${c.resolved_from=='url'?'The id was in the channel link':c.resolved_from=='page'||c.resolved_from=='redirect'?'Read from the channel page':c.resolved_from=='ytdlp'?'Read by yt-dlp':''}">${esc({url:'link',page:'page',redirect:'page',ytdlp:'yt-dlp',known:'kept'}[c.resolved_from]||c.resolved_from||'')}</span></div></div>`).join('')
+ chlist.innerHTML=L.length?head(CH_COLS,CSORT)+L.map((c,k)=>`<div class="row${k==CI?' f':''}" data-c="${c.channel_id}"><div><div class=t>${esc(c.title)}</div><small>${esc(c.channel_id)}${c.poll_error?' · <span style="color:var(--bad)">'+esc(c.poll_error)+'</span>':''}</small></div><small>${esc(c.handle||'')}</small><div class=num>${n(c.n_library)}</div><div class=num>${c.n_new?n(c.n_new):'<span class=mut>–</span>'}</div><div><select data-tier="${c.channel_id}" aria-label="How often to check ${esc(c.title)}" title="Auto picks from how much of this channel you have saved or watched (now: ${TIERL[c.auto_tier]||c.auto_tier})">${Object.entries(TIERL).map(([k,l])=>`<option value=${k}${k==c.tier?' selected':''}>${k=='auto'?'Auto · '+(TIERL[c.auto_tier]||''):l}</option>`).join('')}</select></div></div>`).join('')
   :D.channels.length?`<div class=empty><b>No channel matches</b>Nothing matches “${esc(fq.value.trim())}”.</div>`
   :`<div class=empty><div class=glyph><svg width=20 height=20 viewBox="0 0 16 16" fill=none stroke=currentColor stroke-width=1.7 stroke-linecap=round stroke-linejoin=round><path d="M2 4.5h12M2 8h12M2 11.5h8"/></svg></div><b>No channels resolved yet</b>${D.videos?'Press Resolve Channels to look up the channel behind each of your videos.':'There are no videos in the library yet.'}</div>`;
- wireSort(list,CSORT,'feedChSort');
- const f=list.querySelector('.f');if(f)f.scrollIntoView({block:'nearest'});
+ wireSort(chlist,CSORT,'feedChSort');
+ chlist.querySelectorAll('[data-tier]').forEach(s=>s.onchange=async()=>{await P('/api/feed/channel/'+s.dataset.tier,{tier:s.value});yc.toast('Saved');load()});
+ const f=chlist.querySelector('.f');if(f&&VIEW=='channels')f.scrollIntoView({block:'nearest'});
  const U=sortBy(D.unresolved,USORT);unpanel.style.display=U.length?'':'none';unn.textContent=U.length?n(U.length)+' channel'+(U.length>1?'s':''):'';
  const show=UNALL?U:U.slice(0,10);unmore.style.display=U.length>10?'':'none';unall.textContent=UNALL?'Show Fewer':`Show All ${n(U.length)}`;
- unlist.innerHTML=(U.length?head(UN_COLS,USORT):'')+show.map(u=>`<div class="row bad"><div><div class=t>${esc(u.title||u.channel_url)}</div><small>${esc(u.channel_url)}</small></div><small title="${esc(u.error||'')}">${esc(reason(u.error))}</small><div class=num>${n(u.n)}</div><small>${esc(when(u.tried_at))}</small></div>`).join('');wireSort(unlist,USORT,'feedUnSort');pinHeads()}
+ unlist.innerHTML=(U.length?head(UN_COLS,USORT):'')+show.map(u=>`<div class="row bad"><div><div class=t>${esc(u.title||u.channel_url)}</div><small>${esc(u.channel_url)}</small></div><small title="${esc(u.error||'')}">${esc(reason(u.error))}</small><div class=num>${n(u.n)}</div><small>${esc(when(u.tried_at))}</small></div>`).join('');wireSort(unlist,USORT,'feedUnSort')}
 const reason=e=>{e=e||'';if(/http 404|http 410/.test(e))return'Channel gone or renamed (404)';if(/429|throttl|could not fetch/.test(e))return'YouTube refused the request; try later';if(/no channel id/.test(e))return'Page had no channel id';return e};
-const when=s=>{if(!s)return'';const d=new Date(s.replace(' ','T')+'Z');return d.toLocaleDateString(undefined,{month:'short',day:'numeric'})+' '+d.toLocaleTimeString(undefined,{hour:'numeric',minute:'2-digit'})};
-async function load(j){D=await J('/api/feed/channels');draw(j)}
-async function poll(){const j=await J('/api/feed/resolve/status');if(j.running){draw(j);POLL=setTimeout(poll,700)}else{POLL=null;await load(j);if(j.started)yc.toast(j.failed?`Done. ${n(j.failed)} channel page${j.failed>1?'s':''} could not be read; they are listed under Not Yet Resolved at the top.`:'Done. Every video has its channel.',6000)}}
-resolve.onclick=async()=>{if(RUN)return;const r=await J('/api/feed/resolve',{method:'POST'});if(!r.started){yc.toast('Already running');return}RUN=true;draw({running:true,phase:'urls',total:0,done:0});if(!POLL)poll()};
-cancel.onclick=async()=>{await J('/api/feed/resolve/cancel',{method:'POST'});yc.toast('Stopping after the current lookup')};
-retry.onclick=async()=>{const r=await J('/api/feed/unresolved/retry',{method:'POST'});if(r.started){RUN=true;draw({running:true,phase:'ids',total:0,done:0});if(!POLL)poll()}};
-fq.oninput=()=>{FI=0;draw()};
-unall.onclick=()=>{UNALL=!UNALL;draw()};
-addEventListener('keydown',e=>{const a=document.activeElement;if(a&&a.tagName=='INPUT'){if(e.key=='Escape'){e.preventDefault();if(fq.value){fq.value='';draw()}else a.blur()}else if(e.key=='Enter'||e.key=='ArrowDown'){a.blur();draw();e.preventDefault()}return}
+
+// ---------------------------------------------------------------- the feed (step 2)
+function ready(){return D.videos&&!D.pending.need_url&&!D.pending.need_id&&D.channels.length}
+function fstatusLine(j){
+ if(j&&j.running){const t=j.total||0,d=j.done||0;fprog.style.display='';fpbar.style.width=(t?100*d/t:0)+'%';
+  const base=j.kind&&j.kind.endsWith(':shorts')?`Telling Shorts apart: ${n(d)} of ${n(t)}.`:`Checking channels: ${n(d)} of ${n(t)}${j.new?', '+n(j.new)+' new so far':''}${j.failed?', '+n(j.failed)+' could not be read':''}.`;
+  return base+(j.kind=='first'||j.kind=='first:shorts'?' New videos appear below as they arrive.':'')}
+ fprog.style.display='none';
+ if(!D.videos)return'No videos yet. Import from Takeout first.';
+ if(!ready())return'';
+ if(!S.first_pass_at)return`${n(S.channels)} channels are ready. Press Fetch New Videos to see what they have posted lately.`;
+ const lr=S.last_run;let s=`${n(S.new)} new video${S.new==1?'':'s'}${S.new_shorts?' ('+n(S.new_shorts)+' Shorts)':''} from ${n(S.channels)} channels.`;
+ if(S.last_polled)s+=` Last checked ${ago(S.last_polled)}`+(lr&&lr.failed?`, ${n(lr.failed)} channel${lr.failed>1?'s':''} could not be read.`:'.');
+ if(S.polling){const t=S.tiers||{};s+=` Checking in the background: ${[t.hourly?n(t.hourly)+' hourly':'',t.sixhourly?n(t.sixhourly)+' every 6 h':'',t.daily?n(t.daily)+' daily':''].filter(Boolean).join(', ')}.`}
+ if(S.unknown_len)s+=` ${n(S.unknown_len)} still being told apart from Shorts.`;
+ return s}
+function shownItems(){const q=fq2.value.trim().toLowerCase();return ITEMS.filter(i=>!q||((i.title||'')+' '+(i.channel||'')).toLowerCase().includes(q))}
+function drawFeed(j){if(j!==undefined)LASTF=j;j=LASTF;
+ FRUN=!!(j&&j.running);fetchb.style.display=FRUN?'none':'';fcancel.style.display=FRUN?'':'none';
+ fetchb.innerHTML=(S.first_pass_at?'Check Now':'Fetch New Videos')+'<kbd>R</kbd>';fetchb.disabled=!ready();
+ const st=fstatusLine(j);fstxt.textContent=st+(j&&j.note?' '+j.note:'');fstatus.style.display=st||FRUN?'':'none';
+ pollon.checked=!!S.polling;pollon.disabled=!S.first_pass_at;
+ fchips.innerHTML=Object.entries(SHOWS).map(([k,v])=>`<button data-s=${k} class="sm ${k==SHOW?'on':'ghost'}" aria-pressed="${k==SHOW}">${v[0]}${k=='shorts'&&S.new_shorts?' <span class=pill>'+n(S.new_shorts)+'</span>':''}</button>`).join('');
+ ftools.style.display=S.first_pass_at?'':'none';
+ const L=shownItems();FI=Math.min(FI,Math.max(0,L.length-1));fn.textContent=S.new?n(S.new):'';
+ hsum.textContent=VIEW=='feed'&&S.first_pass_at?`${n(S.new)} new`:'';
+ if(!ready()){
+  flist.innerHTML=`<div class=lead><div class=glyph><svg width=22 height=22 viewBox="0 0 16 16" fill=none stroke=currentColor stroke-width=1.7 stroke-linecap=round stroke-linejoin=round><path d="M2 4.5h12M2 8h12M2 11.5h8"/></svg></div><b>${D.videos?'First, let the app learn your channels':'Nothing to follow yet'}</b><p>${D.videos?'The feed follows every channel you have saved a video from. One pass over the library finds each channel’s identity; after that, new uploads show up here.':'Import your playlists from a Google Takeout and the feed will follow every channel in them.'}</p>${D.videos?'<button class=pri id=golearn>Resolve Channels<kbd>R</kbd></button>':'<a class=btn href="/import">Import from Takeout</a>'}</div>`;
+  const g=document.getElementById('golearn');if(g)g.onclick=()=>{setView('channels');resolve.click()};return}
+ if(!S.first_pass_at&&!FRUN&&!ITEMS.length){
+  flist.innerHTML=`<div class=lead><div class=glyph><svg width=22 height=22 viewBox="0 0 16 16" fill=none stroke=currentColor stroke-width=1.7 stroke-linecap=round stroke-linejoin=round><path d="M8 2v8M4.5 6.5 8 10l3.5-3.5M3 13h10"/></svg></div><b>Your channels are ready</b><p>${n(S.channels)} channels, from ${n(D.linked)} saved videos. Fetching asks each channel’s public feed for its latest uploads: no key, no sign-in, nothing written to YouTube. The first pass takes a few minutes; videos appear as they arrive.</p><button class=pri id=gofetch>Fetch New Videos<kbd>R</kbd></button></div>`;
+  document.getElementById('gofetch').onclick=()=>fetchb.click();return}
+ if(!L.length){flist.innerHTML=ITEMS.length?`<div class=empty><b>No video matches</b>Nothing matches “${esc(fq2.value.trim())}”.</div>`:FRUN?`<div class=empty><b>Fetching…</b>New videos appear here as each channel answers.</div>`:`<div class=empty><b>Nothing new since you last looked</b>${SHOW=='shorts'?'No new Shorts from your channels.':SHOW=='videos'?'No new videos; try All to include Shorts.':'Check Now asks every channel again; the background check does it on its own.'}</div>`;fmore.style.display='none';return}
+ let last=null,html='<div class="vrow head"><span></span><span>Video</span><span>Channel</span><span class=num>Views</span></div>';
+ L.forEach((i,k)=>{const day=i.published_at.slice(0,10);if(day!==last){last=day;html+=`<div class=divider>${dayLabel(day)}</div>`}
+  const open=OPEN===i.video_id;
+  html+=`<div class="vrow${k==FI?' f':''}${open?' open':''}" data-v="${i.video_id}" data-k=${k}><a class=th href="https://youtu.be/${i.video_id}" target=_blank rel=noopener tabindex=-1 aria-label="Open on YouTube">${i.thumb_url?`<img src="${esc(i.thumb_url)}" alt="" loading=lazy>`:''}${i.is_short?'<span class=tag>Short</span>':i.is_short==null?'<span class=tag title="Not yet told apart from Shorts">?</span>':''}</a><div><div class=t><a href="/watch?v=${i.video_id}" data-w="${i.video_id}">${esc(i.title)}</a></div><small>${ago(i.published_at)}${i.duration_s?' · '+clock(i.duration_s):''}</small></div><div><small title="${esc(i.handle||'')}">${esc(i.channel)}</small></div><div class=num title="${i.views_at?'As of '+when(i.views_at):''}">${kfmt(i.views)}</div></div>`;
+  if(open)html+=`<div class=prev><div class=stage id="st_${i.video_id}"><div id="pl_${i.video_id}"></div></div><div class=acts><button data-act=w>Watch in Theater<kbd>W</kbd></button><button data-act=y class=ghost>Open on YouTube<kbd>Y</kbd></button><span class=sp></span><button data-act=x class=ghost>Dismiss<kbd>X</kbd></button></div></div>`});
+ flist.innerHTML=html;fmore.style.display=MORE?'':'none';
+ const f=flist.querySelector('.vrow.f');if(f&&VIEW=='feed')f.scrollIntoView({block:'nearest'})}
+const clock=s=>{s=Math.floor(s||0);const h=Math.floor(s/3600),m=Math.floor(s%3600/60),x=s%60;return(h?h+':'+String(m).padStart(2,'0'):m)+':'+String(x).padStart(2,'0')};
+function dayLabel(day){const d=new Date(day+'T12:00:00Z'),t=new Date();const dd=Math.round((Date.UTC(t.getFullYear(),t.getMonth(),t.getDate())-Date.UTC(d.getUTCFullYear(),d.getUTCMonth(),d.getUTCDate()))/86400000);return dd<=0?'Today':dd==1?'Yesterday':dd<7?d.toLocaleDateString(undefined,{weekday:'long'}):d.toLocaleDateString(undefined,{month:'long',day:'numeric'})}
+function draw(j){if(VIEW=='channels')drawChannels(j);else drawFeed(j);paintViews();pinHeads()}
+
+// ---------------------------------------------------------------- preview (same embed as Commander)
+function destroyPlayer(){try{PLAYER&&PLAYER.destroy()}catch(e){}PLAYER=null}
+function closePreview(){if(OPEN==null)return;destroyPlayer();OPEN=null;drawFeed()}
+function openPreview(id){if(OPEN===id){closePreview();return}destroyPlayer();OPEN=id;drawFeed();
+ const mk=()=>{PLAYER=new YT.Player('pl_'+id,{host:'https://www.youtube-nocookie.com',videoId:id,playerVars:{autoplay:1,rel:0,playsinline:1},events:{onReady:e=>e.target.playVideo()}})};
+ if(window.YT&&YT.Player)mk();else{const t=setInterval(()=>{if(window.YT&&YT.Player){clearInterval(t);mk()}},200)}
+ try{fetch('/api/watch/'+id+'/open',{method:'POST',headers:{'content-type':'application/json'},body:JSON.stringify({source:'feed'})})}catch(e){}}
+function watchFrom(){const L=shownItems();if(!L.length){yc.toast('Nothing to watch here');return}const k=Math.max(0,Math.min(L.length-1,FI));const ids=L.map(x=>x.video_id).slice(0,300);if(!ids.includes(L[k].video_id))ids.unshift(L[k].video_id);try{localStorage.setItem('watchIds',JSON.stringify(ids))}catch(e){}location.href='/watch?q=1&v='+L[k].video_id}
+async function dismiss(ids){ids=ids.filter(Boolean);if(!ids.length)return;const L=shownItems();const nextId=(L[FI+1]||L[FI-1]||{}).video_id;
+ await P('/api/feed/items/state',{video_ids:ids,state:'dismissed'});if(ids.includes(OPEN)){destroyPlayer();OPEN=null}
+ ITEMS=ITEMS.filter(i=>!ids.includes(i.video_id));S.new=Math.max(0,(S.new||0)-ids.length);const k=ITEMS.findIndex(i=>i.video_id==nextId);FI=k<0?Math.min(FI,Math.max(0,ITEMS.length-1)):k;drawFeed();
+ yc.toast(ids.length>1?`${ids.length} dismissed`:'Dismissed',5000,{undo:async()=>{await P('/api/feed/items/state',{video_ids:ids,state:'new'});await loadItems();yc.toast('Restored')}})}
+flist.onclick=e=>{const a=e.target.closest('[data-act]');if(a){const id=OPEN;if(a.dataset.act=='w'){FI=shownItems().findIndex(i=>i.video_id==id);watchFrom()}else if(a.dataset.act=='y')window.open('https://youtu.be/'+id,'_blank','noopener');else dismiss([id]);return}
+ const w=e.target.closest('[data-w]');if(w){e.preventDefault();FI=Number(w.closest('.vrow').dataset.k);watchFrom();return}
+ if(e.target.closest('a'))return;
+ const r=e.target.closest('.vrow[data-v]');if(!r)return;FI=Number(r.dataset.k);if(e.detail>1)return;openPreview(r.dataset.v)};
+fchips.onclick=e=>{const b=e.target.closest('[data-s]');if(!b)return;SHOW=b.dataset.s;try{localStorage.setItem('feedShow',JSON.stringify(SHOW))}catch(e){}FI=0;closePreview();loadItems()};
+fq2.oninput=()=>{FI=0;drawFeed()};fq.oninput=()=>{CI=0;drawChannels()};
+fmoreb.onclick=()=>loadItems(true);
+pollon.onchange=async()=>{await P('/api/feed/settings',{polling:pollon.checked});S.polling=pollon.checked;yc.toast(pollon.checked?'The app will check your channels in the background while it is running.':'Background checks are off. Check Now still works.');drawFeed()};
+
+// ---------------------------------------------------------------- loading
+async function loadItems(more){if(!more){PAGE=0}const lim=200,off=PAGE*lim;const q=new URLSearchParams({limit:lim,offset:off});const sh=SHOWS[SHOW][1];if(sh)q.set('shorts',sh);
+ const r=await J('/api/feed/items?'+q);MORE=r.length==lim;ITEMS=more?ITEMS.concat(r):r;if(more)PAGE++;drawFeed()}
+async function load(j){const [d,s]=await Promise.all([J('/api/feed/channels'),J('/api/feed/summary')]);D=d;S=s;draw(j);if(VIEW=='feed'&&S.first_pass_at)await loadItems()}
+async function poll(){const j=await J('/api/feed/resolve/status');if(j.running){drawChannels(j);POLL=setTimeout(poll,700)}else{POLL=null;await load(j);
+ if(j.started){if(j.failed)yc.toast(`Done. ${n(j.failed)} channel page${j.failed>1?'s':''} could not be read; they are listed under Not Yet Resolved.`,6000);else{yc.toast('Done. Every video has its channel. Next: Fetch New Videos.',6000);setView('feed')}}}}
+let FTICK=0;
+async function fpoll(){const j=await J('/api/feed/fetch/status');if(j.running){drawFeed(j);if(++FTICK%6==0){S=await J('/api/feed/summary');await loadItems()}FPOLL=setTimeout(fpoll,700)}else{FPOLL=null;LASTF=null;await load();
+ if(j.started)yc.toast(j.kind&&j.kind.startsWith('first')?`Done. ${n(j.new)} new video${j.new==1?'':'s'} from your channels.`:j.new?`${n(j.new)} new since last time.`:'Nothing new.',5000)}}
+resolve.onclick=async()=>{if(RUN)return;const r=await P('/api/feed/resolve');if(!r.started){yc.toast('Already running');return}RUN=true;drawChannels({running:true,phase:'urls',total:0,done:0});if(!POLL)poll()};
+cancel.onclick=async()=>{await P('/api/feed/resolve/cancel');yc.toast('Stopping after the current lookup')};
+retry.onclick=async()=>{const r=await P('/api/feed/unresolved/retry');if(r.started){RUN=true;drawChannels({running:true,phase:'ids',total:0,done:0});if(!POLL)poll()}};
+fetchb.onclick=async()=>{if(FRUN||!ready())return;const r=await P('/api/feed/fetch');if(!r.started){yc.toast('Already running');return}FRUN=true;drawFeed({running:true,kind:S.first_pass_at?'manual':'first',total:0,done:0});if(!FPOLL)fpoll()};
+fcancel.onclick=async()=>{await P('/api/feed/fetch/cancel');yc.toast('Stopping after the current channel')};
+unall.onclick=()=>{UNALL=!UNALL;drawChannels()};
+
+// ---------------------------------------------------------------- keys
+addEventListener('keydown',e=>{const a=document.activeElement;if(a&&a.tagName=='INPUT'&&a.type!='checkbox'){const box=VIEW=='feed'?fq2:fq;if(e.key=='Escape'){e.preventDefault();if(box.value){box.value='';draw()}else a.blur()}else if(e.key=='Enter'||e.key=='ArrowDown'){a.blur();draw();e.preventDefault()}return}
+ if(a&&a.tagName=='SELECT')return;
  if(e.ctrlKey||e.metaKey||e.altKey||yc.onControl(e))return;
- const L=shown(),k=e.key,kl=k.toLowerCase();
- if(k=='Escape'){e.preventDefault();if(yc.escapeControl(e))return;if(yc.popOpen&&yc.popOpen())return;location.href='/';return}
- if(k=='ArrowDown'){e.preventDefault();FI=Math.min(L.length-1,FI+1);draw()}else if(k=='ArrowUp'){e.preventDefault();FI=Math.max(0,FI-1);draw()}
- else if(k=='Home'&&L.length){e.preventDefault();FI=0;draw()}else if(k=='End'&&L.length){e.preventDefault();FI=L.length-1;draw()}
- else if(kl=='r'){e.preventDefault();(RUN?cancel:resolve).click()}
- else if(k=='/'){e.preventDefault();fq.focus()}});
+ const k=e.key,kl=k.toLowerCase();
+ if(k=='Escape'){e.preventDefault();if(yc.escapeControl(e))return;if(yc.popOpen&&yc.popOpen())return;if(OPEN){closePreview();return}location.href='/';return}
+ if(kl=='c'){e.preventDefault();setView(VIEW=='feed'?'channels':'feed');return}
+ if(k=='/'){e.preventDefault();(VIEW=='feed'?fq2:fq).focus();return}
+ if(VIEW=='channels'){const L=shownCh();
+  if(k=='ArrowDown'){e.preventDefault();CI=Math.min(L.length-1,CI+1);drawChannels()}else if(k=='ArrowUp'){e.preventDefault();CI=Math.max(0,CI-1);drawChannels()}
+  else if(k=='Home'&&L.length){e.preventDefault();CI=0;drawChannels()}else if(k=='End'&&L.length){e.preventDefault();CI=L.length-1;drawChannels()}
+  else if(kl=='r'){e.preventDefault();(RUN?cancel:resolve).click()}return}
+ const L=shownItems();
+ if(k=='ArrowDown'){e.preventDefault();FI=Math.min(L.length-1,FI+1);drawFeed()}else if(k=='ArrowUp'){e.preventDefault();FI=Math.max(0,FI-1);drawFeed()}
+ else if(k=='Home'&&L.length){e.preventDefault();FI=0;drawFeed()}else if(k=='End'&&L.length){e.preventDefault();FI=L.length-1;drawFeed()}
+ else if(k==' '&&L[FI]){e.preventDefault();openPreview(L[FI].video_id)}
+ else if(kl=='w'){e.preventDefault();watchFrom()}
+ else if(kl=='y'&&L[FI]){e.preventDefault();window.open('https://youtu.be/'+L[FI].video_id,'_blank','noopener')}
+ else if(kl=='x'&&L[FI]){e.preventDefault();dismiss([L[FI].video_id])}
+ else if(kl=='r'){e.preventDefault();(FRUN?fcancel:fetchb).click()}
+ else if(k=='1'||k=='2'||k=='3'){e.preventDefault();SHOW=['all','videos','shorts'][Number(k)-1];try{localStorage.setItem('feedShow',JSON.stringify(SHOW))}catch(e){}FI=0;closePreview();loadItems()}});
 yc.jump();
-(async()=>{const j=await J('/api/feed/resolve/status');await load(j.running?j:null);if(j.running)poll()})();
+(async()=>{const [j,f]=await Promise.all([J('/api/feed/resolve/status'),J('/api/feed/fetch/status')]);await load(j.running?j:null);
+ if(!ready()&&D.videos&&!j.running)setView('channels');
+ if(j.running)poll();if(f.running){drawFeed(f);fpoll()}
+ ffoot.textContent='Network use: one request to each channel’s public feed when you press Fetch, and one small request per new video to tell Shorts apart. Background checks only run while the app is open and only if the box above is ticked. No key, no sign-in, nothing written to YouTube. See docs/PRIVACY.md.'})();
 </script>

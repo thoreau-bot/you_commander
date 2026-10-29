@@ -93,3 +93,101 @@ def test_phase_a_backfills_pre_1_9_rows_and_unresolved_is_reported(lib):
     c.execute("delete from videos where video_id in ('eeeeeeeeeee','fffffffffff')")
     c.execute("delete from video_channel where video_id in ('eeeeeeeeeee','fffffffffff')")
     c.execute("delete from channel_unresolved"); c.commit(); c.close()
+
+
+# ---------------------------------------------------------------- step 2: new videos
+def _ff(): return sys.modules['feed_fetch']
+
+@pytest.fixture(scope='module')
+def resolved(lib):
+    """The library with every channel resolved (step 1), whatever order the tests ran in."""
+    if lib.get('/api/feed/channels').json()['linked'] < 4:
+        lib.post('/api/feed/resolve'); _wait(lib)
+    return lib
+
+def _wait_fetch(client, secs=10):
+    for _ in range(int(secs / 0.05)):
+        if not client.get('/api/feed/fetch/status').json().get('running'): return
+        time.sleep(0.05)
+    raise AssertionError('fetch still running')
+
+def test_atom_parser_is_namespace_agnostic_and_tolerant(resolved):
+    lib = resolved
+    ff = _ff()
+    raw = open(os.path.join(ff.FIX, 'UC33585ccd6083d99f36099d.xml'), 'rb').read()
+    e = ff.parse_atom(raw)
+    assert [x['video_id'] for x in e] == ['Snew0000001', 'Unew0000001', 'aaaaaaaaaaa', 'Rnew0000001']
+    r = e[3]
+    assert r['title'] == 'A regular upload' and r['views'] == 4200 and r['rating_n'] == 12 and r['description'] == 'Long form, with & entity'
+    assert r['thumb'].endswith('/Rnew0000001/hqdefault.jpg')
+    assert ff.iso_utc('2026-10-27T09:00:00-07:00') == '2026-10-27T16:00:00'   # offsets are normalised to UTC
+    assert ff.parse_atom(raw.replace(b'xmlns:yt="http://www.youtube.com/xml/schemas/2015"', b'xmlns:yt="http://example.com/other"'))[0]['video_id'] == 'Snew0000001'
+
+def test_first_pass_fetches_every_channel_and_probes_shorts(resolved):
+    client = resolved
+    s = client.get('/api/feed/summary').json()
+    assert s['first_pass_at'] is None and s['new'] == 0 and s['polling'] is False
+    assert client.post('/api/feed/fetch').json()['started']
+    _wait_fetch(client)
+    j = client.get('/api/feed/fetch/status').json()
+    assert j['kind'] == 'first:shorts' and j['failed'] >= 2          # channel c (bad xml) and d (no feed); a fifth channel may linger from the phase-A test
+    errs = {c['handle']: c['poll_error'] for c in client.get('/api/feed/channels').json()['channels']}
+    assert errs['@fake-c'].startswith('parse:') and errs['@fake-d'] == 'fake: no feed' and errs['@fake-a'] is None
+    s = client.get('/api/feed/summary').json()
+    assert s['first_pass_at'] and s['polling'] is True                # polling turns itself on after the first pass
+    items = client.get('/api/feed/items').json()
+    ids = [i['video_id'] for i in items]
+    assert ids == ['Rnew0000002', 'Snew0000001', 'Unew0000001', 'Rnew0000001']   # newest first, across channels
+    assert 'aaaaaaaaaaa' not in ids                                   # already in the library: not "new to you"
+    by = {i['video_id']: i for i in items}
+    assert by['Snew0000001']['is_short'] == 1 and by['Rnew0000001']['is_short'] == 0 and by['Unew0000001']['is_short'] is None
+    assert by['Rnew0000002']['thumb_url'] is None and by['Rnew0000001']['views'] == 4200
+    assert [i['video_id'] for i in client.get('/api/feed/items?shorts=only').json()] == ['Snew0000001']
+    assert 'Snew0000001' not in [i['video_id'] for i in client.get('/api/feed/items?shorts=hide').json()]
+    assert s['new'] == 4 and s['new_shorts'] == 1 and s['unknown_len'] == 1
+    log = s['last_run']; assert log['kind'] == 'first' and log['channels'] >= 4 and log['new_items'] == 4 and log['failed'] >= 2
+
+def test_repoll_is_conditional_and_refreshes_views(resolved):
+    client = resolved; ff = _ff()
+    db = os.environ['ORG_DB']
+    # unchanged fixture -> 304-equivalent, no new rows
+    client.post('/api/feed/fetch'); _wait_fetch(client)
+    j = client.get('/api/feed/fetch/status').json()
+    assert j['new'] == 0 and j['unchanged'] == 2 and j['failed'] >= 2
+    # bump the views in channel b's fixture and touch it -> the row's views refresh, nothing duplicates
+    p = os.path.join(ff.FIX, 'UC3f4ceb5349be81_dbe418f.xml'); raw = open(p).read()
+    open(p, 'w').write(raw.replace('views="10"', 'views="999"')); os.utime(p, (time.time() + 5, time.time() + 5))
+    client.post('/api/feed/fetch'); _wait_fetch(client)
+    it = {i['video_id']: i for i in client.get('/api/feed/items').json()}
+    assert it['Rnew0000002']['views'] == 999 and len(it) == 4
+    open(p, 'w').write(raw); os.utime(p, (time.time() + 10, time.time() + 10))
+
+def test_dismiss_and_channel_settings(resolved):
+    client = resolved
+    assert client.post('/api/feed/items/state', json={'video_ids': ['Unew0000001'], 'state': 'dismissed'}).json()['changed'] == 1
+    assert 'Unew0000001' not in [i['video_id'] for i in client.get('/api/feed/items').json()]
+    client.post('/api/feed/items/state', json={'video_ids': ['Unew0000001'], 'state': 'new'})
+    chans = {c['handle']: c for c in client.get('/api/feed/channels').json()['channels']}
+    a = chans['@fake-a']
+    assert a['n_new'] == 3 and a['tier'] == 'auto' and a['eff_tier'] in ('hourly', 'sixhourly', 'daily')
+    assert client.post(f"/api/feed/channel/{a['channel_id']}", json={'tier': 'off'}).json()['ok']
+    chans = {c['handle']: c for c in client.get('/api/feed/channels').json()['channels']}
+    assert chans['@fake-a']['eff_tier'] == 'off'
+    assert 'error' in client.post(f"/api/feed/channel/{a['channel_id']}", json={'tier': 'weekly'}).json()
+    client.post(f"/api/feed/channel/{a['channel_id']}", json={'tier': 'auto'})
+    # mute hides the channel's items from the feed without touching them
+    client.post(f"/api/feed/channel/{a['channel_id']}", json={'muted': 1})
+    assert all(i['channel_id'] != a['channel_id'] for i in client.get('/api/feed/items').json())
+    client.post(f"/api/feed/channel/{a['channel_id']}", json={'muted': 0})
+    assert client.get('/api/feed/summary').json()['new'] == 4
+
+def test_tiers_follow_library_signals(resolved):
+    lib = resolved
+    ff = _ff(); db = os.environ['ORG_DB']; c = sqlite3.connect(db)
+    t = ff.compute_tiers(c)
+    chans = {r[1]: r[0] for r in c.execute("select channel_id,handle from channels")}
+    # test library: bbbbbbbbbbb is in two playlists but one video per channel -> daily everywhere unless watched
+    assert t[chans['@fake-a']] == 'daily'
+    c.execute("insert into watch_log(video_id,at,source) values('aaaaaaaaaaa',datetime('now'),'test')") if 'at' in {r[1] for r in c.execute('pragma table_info(watch_log)')} else None
+    c.commit(); t = ff.compute_tiers(c)
+    c.execute("delete from watch_log where source='test'"); c.commit(); c.close()

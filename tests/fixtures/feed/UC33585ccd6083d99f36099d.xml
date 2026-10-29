@@ -1,0 +1,90 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<feed xmlns:yt="http://www.youtube.com/xml/schemas/2015" xmlns:media="http://search.yahoo.com/mrss/" xmlns="http://www.w3.org/2005/Atom">
+ <link rel="self" href="https://www.youtube.com/feeds/videos.xml?channel_id=UC33585ccd6083d99f36099d"/>
+ <id>yt:channel:33585ccd6083d99f36099d</id>
+ <yt:channelId>33585ccd6083d99f36099d</yt:channelId>
+ <title>Fake Channel</title>
+ <link rel="alternate" href="https://www.youtube.com/channel/UC33585ccd6083d99f36099d"/>
+ <author><name>Fake Channel</name><uri>https://www.youtube.com/channel/UC33585ccd6083d99f36099d</uri></author>
+ <published>2020-01-01T00:00:00+00:00</published>
+ <entry>
+  <id>yt:video:Snew0000001</id>
+  <yt:videoId>Snew0000001</yt:videoId>
+  <yt:channelId>UC33585ccd6083d99f36099d</yt:channelId>
+  <title>A new Short</title>
+  <link rel="alternate" href="https://www.youtube.com/watch?v=Snew0000001"/>
+  <author><name>Fake Channel</name><uri>https://www.youtube.com/channel/UC33585ccd6083d99f36099d</uri></author>
+  <published>2026-10-28T10:00:00+00:00</published>
+  <updated>2026-10-28T10:00:00+00:00</updated>
+  <media:group>
+   <media:title>A new Short</media:title>
+   <media:content url="https://www.youtube.com/v/Snew0000001?version=3" type="application/x-shockwave-flash" width="640" height="390"/>
+   <media:thumbnail url="https://i2.ytimg.com/vi/Snew0000001/hqdefault.jpg" width="480" height="360"/>
+   <media:description>A description</media:description>
+   <media:community>
+    <media:starRating count="12" average="5.00" min="1" max="5"/>
+    <media:statistics views="900"/>
+   </media:community>
+  </media:group>
+ </entry>
+ <entry>
+  <id>yt:video:Unew0000001</id>
+  <yt:videoId>Unew0000001</yt:videoId>
+  <yt:channelId>UC33585ccd6083d99f36099d</yt:channelId>
+  <title>Length unknown one</title>
+  <link rel="alternate" href="https://www.youtube.com/watch?v=Unew0000001"/>
+  <author><name>Fake Channel</name><uri>https://www.youtube.com/channel/UC33585ccd6083d99f36099d</uri></author>
+  <published>2026-10-27T09:00:00-07:00</published>
+  <updated>2026-10-27T09:00:00-07:00</updated>
+  <media:group>
+   <media:title>Length unknown one</media:title>
+   <media:content url="https://www.youtube.com/v/Unew0000001?version=3" type="application/x-shockwave-flash" width="640" height="390"/>
+   <media:thumbnail url="https://i2.ytimg.com/vi/Unew0000001/hqdefault.jpg" width="480" height="360"/>
+   <media:description>A description</media:description>
+   <media:community>
+    <media:starRating count="12" average="5.00" min="1" max="5"/>
+    <media:statistics views="150"/>
+   </media:community>
+  </media:group>
+ </entry>
+ <entry>
+  <id>yt:video:aaaaaaaaaaa</id>
+  <yt:videoId>aaaaaaaaaaa</yt:videoId>
+  <yt:channelId>UC33585ccd6083d99f36099d</yt:channelId>
+  <title>Already saved</title>
+  <link rel="alternate" href="https://www.youtube.com/watch?v=aaaaaaaaaaa"/>
+  <author><name>Fake Channel</name><uri>https://www.youtube.com/channel/UC33585ccd6083d99f36099d</uri></author>
+  <published>2026-10-20T00:00:00+00:00</published>
+  <updated>2026-10-20T00:00:00+00:00</updated>
+  <media:group>
+   <media:title>Already saved</media:title>
+   <media:content url="https://www.youtube.com/v/aaaaaaaaaaa?version=3" type="application/x-shockwave-flash" width="640" height="390"/>
+   <media:thumbnail url="https://i2.ytimg.com/vi/aaaaaaaaaaa/hqdefault.jpg" width="480" height="360"/>
+   <media:description>A description</media:description>
+   <media:community>
+    <media:starRating count="12" average="5.00" min="1" max="5"/>
+    <media:statistics views="5000"/>
+   </media:community>
+  </media:group>
+ </entry>
+ <entry>
+  <id>yt:video:Rnew0000001</id>
+  <yt:videoId>Rnew0000001</yt:videoId>
+  <yt:channelId>UC33585ccd6083d99f36099d</yt:channelId>
+  <title>A regular upload</title>
+  <link rel="alternate" href="https://www.youtube.com/watch?v=Rnew0000001"/>
+  <author><name>Fake Channel</name><uri>https://www.youtube.com/channel/UC33585ccd6083d99f36099d</uri></author>
+  <published>2026-10-26T12:30:00+00:00</published>
+  <updated>2026-10-26T12:30:00+00:00</updated>
+  <media:group>
+   <media:title>A regular upload</media:title>
+   <media:content url="https://www.youtube.com/v/Rnew0000001?version=3" type="application/x-shockwave-flash" width="640" height="390"/>
+   <media:thumbnail url="https://i2.ytimg.com/vi/Rnew0000001/hqdefault.jpg" width="480" height="360"/>
+   <media:description>Long form, with &amp; entity</media:description>
+   <media:community>
+    <media:starRating count="12" average="5.00" min="1" max="5"/>
+    <media:statistics views="4200"/>
+   </media:community>
+  </media:group>
+ </entry>
+</feed>
