@@ -25,6 +25,10 @@ Watch page
 - The transcript header is flat: Follow Along, Note on Line, Voice on Line, Copy and Remove sit on their own line under Find, with no ⋯ button
 - The video endpoint tolerates a video with no triage row
 
+Commander
+- After Load 200 More, the "n in view" count in the bulk bar updates
+- With more than 300 ticked, the Triage button reads "Triage the First 300 Together" (one Triage page holds 300; it takes the first 300 in list order) instead of a number that never changed
+
 YouTube rate limits (`ytpace.py`)
 - Every request the app makes to youtube.com (caption fetches, feed checks, Shorts probes, the yt-dlp channel fallback) now shares one pace: a 429 anywhere pauses all of them for 5 minutes, doubling on repeats up to an hour, and resets after a quiet half hour. The Watch and Feed pages say "YouTube asked us to slow down; resuming at …" while it lasts
 - Caption fetches skip yt-dlp's player-JS and config requests (`player_skip`), roughly halving the requests per video
