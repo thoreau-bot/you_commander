@@ -20,6 +20,9 @@ Step 2 — New Videos
 Watch page
 - **Correct a transcript line in place**: an *edit* control next to *pin* on every line. Enter saves, Shift+Enter adds a line break, Esc cancels. The time stays, search follows the new words, corrected lines carry a ✎ and the header counts them. Getting the captions again will not overwrite corrected lines (delete the transcript first)
 - **Rich notes**: a formatting bar over the Note box, the note-at-this-time box and the inline note editor: bold, italic, underline, strikethrough, highlight, superscript, subscript and an emoji picker; `Ctrl+B` / `I` / `U` / `H` in the box. Notes are stored as plain text with light marks (`**bold**`, `_italic_`, `__underline__`, `~~strike~~`, `==highlight==`, `^super^`, `~sub~`; `\*` keeps a literal), so they stay readable everywhere and searchable. Notes at times can span lines (Shift+Enter)
+- **Change a line's time**: click the time on any transcript line, type a new one (83, 1:23, 1:23.5 or 1:02:03), Enter. The list re-sorts if the line moves
+- Transcript row actions (*edit*, *pin*) sit together at the right, a fixed gap apart, where *pin* already was
+- The transcript header is flat: Follow Along, Note on Line, Voice on Line, Copy and Remove sit on their own line under Find, with no ⋯ button
 - The video endpoint tolerates a video with no triage row
 
 Step 1 — Channel identity

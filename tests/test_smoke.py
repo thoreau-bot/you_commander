@@ -122,3 +122,20 @@ def test_transcript_line_can_be_corrected_in_place(client):
     r = client.post('/api/transcript/ccccccccccc', json={'method': 'captions'}).json()
     assert r.get('edited') and 'error' in r
     client.delete('/api/transcript/ccccccccccc', params={'kind': 'captions'})
+
+def test_transcript_line_time_can_be_changed_and_list_resorts(client):
+    if client.get('/api/summary').json()['videos'] == 0: test_import_flow(client)
+    client.post('/api/transcript/ddddddddddd', json={'method': 'captions'})
+    for _ in range(100):
+        t = client.get('/api/transcript/ddddddddddd').json()
+        if t['captions']['status'] == 'ok': break
+        time.sleep(0.05)
+    cues = t['captions']['cues']; text3 = cues[3][1]
+    # move line 3 to before line 0
+    r = client.patch('/api/transcript/ddddddddddd/cue', json={'kind': 'captions', 'k': 3, 't': 0.5}).json()
+    assert r['ok'] and r['k'] == 1 and r['t'] == 0.5 and r['text'] == text3      # line 0 is at 0.0, so it lands second
+    t = client.get('/api/transcript/ddddddddddd').json()['captions']
+    assert t['cues'][1] == [0.5, text3, 1] and [c[0] for c in t['cues']] == sorted(c[0] for c in t['cues'])
+    assert 'error' in client.patch('/api/transcript/ddddddddddd/cue', json={'kind': 'captions', 'k': 1, 't': -3}).json()
+    assert 'error' in client.patch('/api/transcript/ddddddddddd/cue', json={'kind': 'captions', 'k': 1}).json()
+    client.delete('/api/transcript/ddddddddddd', params={'kind': 'captions'})

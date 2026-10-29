@@ -94,6 +94,7 @@ The video always has the keyboard on this page: the stage carries the same ring 
 | `Ctrl+B` `Ctrl+I` `Ctrl+U` `Ctrl+H` | bold, italic, underline, highlight on the selection (or start a mark; press again to step out) |
 | `Shift+Enter` | new line in a note |
 | edit (on a transcript line) | correct the line in place; `Enter` saves, `Esc` cancels |
+| click a line's time | change it (83, 1:23, 1:23.5, 1:02:03); `Enter` saves |
 
 ## History
 | Key | Action |

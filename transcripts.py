@@ -203,22 +203,31 @@ def setup(app, DB):
             if not (voice.whisper_installed() or FAKE): return {'error': 'Whisper is not installed. Run install_voice.bat.'}
         return {'queued': enqueue([(vid, b.method)], front=True)}
 
-    class CueEdit(BaseModel): kind: str; k: int; text: str
+    class CueEdit(BaseModel): kind: str; k: int; text: str | None = None; t: float | None = None
     @app.patch('/api/transcript/{vid}/cue')
     def t_cue(vid: str, b: CueEdit):
-        """Correct one transcript line in place. The cue keeps its time; the joined text and the search index follow.
-        Edited lines are remembered (cue[2] = 1) so a re-fetch can warn before overwriting them."""
+        """Correct one transcript line in place: its words, its time, or both. The joined text and the search index follow.
+        A changed time re-sorts the lines, and the reply carries the line's new index. Edited lines are remembered
+        (cue[2] = 1) so a re-fetch can warn before overwriting them."""
         if b.kind not in ('captions', 'whisper'): return JSONResponse({'error': 'bad kind'}, 400)
-        text = re.sub(r'\s+', ' ', b.text).strip()
-        if not text: return {'error': 'The line cannot be empty. Delete the transcript instead if it is wrong throughout.'}
+        if b.text is None and b.t is None: return {'error': 'Nothing to change'}
         c = con(); r = c.execute("select cues from transcripts where video_id=? and kind=? and status='ok'", (vid, b.kind)).fetchone()
         if not r or not r['cues']: c.close(); return {'error': 'No such transcript'}
         cues = json.loads(r['cues'])
         if not 0 <= b.k < len(cues): c.close(); return {'error': 'No such line'}
-        cues[b.k] = [cues[b.k][0], text, 1]
+        t0, text = cues[b.k][0], cues[b.k][1]
+        if b.text is not None:
+            text = re.sub(r'\s+', ' ', b.text).strip()
+            if not text: c.close(); return {'error': 'The line cannot be empty. Delete the transcript instead if it is wrong throughout.'}
+        if b.t is not None:
+            if b.t < 0 or b.t > 86400: c.close(); return {'error': 'That time is out of range'}
+            t0 = round(float(b.t), 2)
+        cues[b.k] = [t0, text, 1]
+        order = sorted(range(len(cues)), key=lambda i: (cues[i][0], i))
+        cues = [cues[i] for i in order]; k2 = order.index(b.k)
         c.execute("update transcripts set cues=?,text=? where video_id=? and kind=?", (json.dumps(cues), ' '.join(x[1] for x in cues), vid, b.kind))
         reindex(c, vid); c.commit(); c.close()
-        return {'ok': 1, 'edited': sum(1 for x in cues if len(x) > 2 and x[2])}
+        return {'ok': 1, 'k': k2, 't': t0, 'text': text, 'edited': sum(1 for x in cues if len(x) > 2 and x[2])}
 
     @app.delete('/api/transcript/{vid}')
     def t_del(vid: str, kind: str = 'captions'):
