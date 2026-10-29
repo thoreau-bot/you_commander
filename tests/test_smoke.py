@@ -139,3 +139,16 @@ def test_transcript_line_time_can_be_changed_and_list_resorts(client):
     assert 'error' in client.patch('/api/transcript/ddddddddddd/cue', json={'kind': 'captions', 'k': 1, 't': -3}).json()
     assert 'error' in client.patch('/api/transcript/ddddddddddd/cue', json={'kind': 'captions', 'k': 1}).json()
     client.delete('/api/transcript/ddddddddddd', params={'kind': 'captions'})
+
+def test_transcript_queue_takes_a_method(client):
+    if client.get('/api/summary').json()['videos'] == 0: test_import_flow(client)
+    r = client.post('/api/transcripts/queue', json={'ids': ['aaaaaaaaaaa'], 'method': 'whisper'}).json()
+    assert r.get('queued') == 1
+    for _ in range(100):
+        t = client.get('/api/transcript/aaaaaaaaaaa').json()
+        if t['whisper']['status'] == 'ok': break
+        time.sleep(0.05)
+    assert t['whisper']['status'] == 'ok' and t['captions']['status'] == 'missing'
+    assert client.post('/api/transcripts/queue', json={'ids': ['aaaaaaaaaaa'], 'method': 'whisper'}).json() == {'queued': 0, 'skipped': 1}
+    assert client.post('/api/transcripts/queue', json={'ids': ['aaaaaaaaaaa'], 'method': 'nope'}).status_code == 400
+    client.delete('/api/transcript/aaaaaaaaaaa', params={'kind': 'whisper'})

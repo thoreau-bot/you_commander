@@ -16,6 +16,7 @@ Press `?` on any page for an overlay with that page's shortcuts (`Esc` or `?` cl
 | `W` | Watch in Theater: the open (or highlighted) video on the Watch page, carrying on from where it is; with 2+ ticked, those in list order. Also in the rail. From an open preview the preview pauses; the Watch page picks up at the same moment in the same play state, and `Esc` there brings you back with the same video open, at the Watch page's time and play state. `E` does the same with Triage. |
 | `H` | History |
 | `G` | Go to My Feed |
+| `⇧N` (batch Triage) | next 300 of a larger selection |
 | `Esc` | Close preview, or clear filters |
 | `Z` | Undo, while an undo toast is showing (Watch: note delete, Drop) |
 | In preview: `K` `J` `L` `M` `Y` `E` | Play-pause, back 10 s, forward 10 s, mute, open on YouTube, triage this video (from this moment; `Esc` in Triage comes back) |

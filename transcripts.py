@@ -97,7 +97,7 @@ def whisper_audio(vid):
         shutil.rmtree(d, ignore_errors=True)
 
 class One(BaseModel): method: str = 'captions'; force: bool = False
-class Many(BaseModel): tag: int | None = None; ids: list[str] | None = None; force: bool = False
+class Many(BaseModel): tag: int | None = None; ids: list[str] | None = None; force: bool = False; method: str = 'captions'
 
 def setup(app, DB):
     c = sqlite3.connect(DB); c.executescript(SCHEMA); migrate(c); c.commit(); c.close()
@@ -253,14 +253,18 @@ def setup(app, DB):
 
     @app.post('/api/transcripts/queue')
     def t_queue(b: Many):
+        if b.method not in ('captions', 'whisper'): return JSONResponse({'error': 'bad method'}, 400)
         if not (have_ytdlp() or FAKE): return {'error': 'yt-dlp is not installed. Run install_transcripts.bat, then restart.'}
+        if b.method == 'whisper':
+            import voice
+            if not (voice.whisper_installed() or FAKE): return {'error': 'Whisper is not installed. Run install_voice.bat, then restart.'}
         c = con()
         if b.ids: ids = list(dict.fromkeys(b.ids))
         elif b.tag: ids = [r[0] for r in c.execute("select video_id from video_tags where tag_id=?", (b.tag,))]
         else: ids = []
-        done = {r[0] for r in c.execute("select video_id from transcripts where kind='captions' and status in ('ok','none')")} if not b.force else set()
+        done = {r[0] for r in c.execute("select video_id from transcripts where kind=? and status in ('ok','none')", (b.method,))} if not b.force else set()
         c.close()
-        todo = [(v, 'captions') for v in ids if v not in done][:2000]
+        todo = [(v, b.method) for v in ids if v not in done][:2000]
         return {'queued': enqueue(todo), 'skipped': len(ids) - len(todo)}
 
     @app.post('/api/transcripts/cancel')

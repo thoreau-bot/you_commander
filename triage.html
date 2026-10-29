@@ -59,7 +59,7 @@
   <div><h3>Video</h3><dl>
    <dt><kbd>F</kbd></dt><dd>video controls on: Space, arrows, J L, M, 0–9, &lt; &gt;; then F is fullscreen and Esc turns them off</dd><dt><kbd>K</kbd></dt><dd>play, pause</dd><dt><kbd>J</kbd><kbd>L</kbd></dt><dd>−10s, +10s</dd><dt><kbd>M</kbd></dt><dd>sound</dd><dt><kbd>W</kbd></dt><dd>Watch in Theater, from this moment (also with video controls on); Esc there comes back here</dd><dt><kbd>G</kbd></dt><dd>open on YouTube</dd></dl></div>
   <div><h3>Batch</h3><dl>
-   <dt><kbd>Enter</kbd></dt><dd>with nothing highlighted: confirm all</dd><dt><kbd>X</kbd></dt><dd>drop all</dd><dt><kbd>↑</kbd><kbd>↓</kbd></dt><dd>highlight a video</dd><dt><kbd>Space</kbd></dt><dd>preview it</dd><dt><kbd>R</kbd></dt><dd>take it out of the batch</dd><dt><kbd>Enter</kbd></dt><dd>on a highlighted video: fold, unfold</dd><dt><kbd>Esc</kbd><kbd>←</kbd></dt><dd>back to the controls</dd><dt><kbd>V</kbd></dt><dd>voice note (Space previews here)</dd></dl></div>
+   <dt><kbd>Enter</kbd></dt><dd>with nothing highlighted: confirm all</dd><dt><kbd>X</kbd></dt><dd>drop all</dd><dt><kbd>⇧N</kbd></dt><dd>next 300 of a larger selection (Confirm All and Drop All also move on)</dd><dt><kbd>↑</kbd><kbd>↓</kbd></dt><dd>highlight a video</dd><dt><kbd>Space</kbd></dt><dd>preview it</dd><dt><kbd>R</kbd></dt><dd>take it out of the batch</dd><dt><kbd>Enter</kbd></dt><dd>on a highlighted video: fold, unfold</dd><dt><kbd>Esc</kbd><kbd>←</kbd></dt><dd>back to the controls</dd><dt><kbd>V</kbd></dt><dd>voice note (Space previews here)</dd></dl></div>
   <div><h3>Elsewhere</h3><dl><dt><kbd>Esc</kbd></dt><dd>back to Commander</dd><dt>right-click</dt><dd>the same actions as a menu</dd></dl></div>
  </div>
 </div></div>
@@ -183,7 +183,8 @@ function bchips(v){return v.tags.map(t=>`<span class="${chipClass(t)}" title="${
 function brender(){
  const snap=[...OP].map(id=>({id,t:(PL[id]&&PL[id].getCurrentTime)?PL[id].getCurrentTime():0}));snap.forEach(x=>{try{PL[x.id].destroy()}catch(e){}delete PL[x.id]});OP.clear();
  const open=new Set([...document.querySelectorAll('#batch details')].filter(d=>!d.open).map(d=>d.dataset.v));
- batch.innerHTML=`<h2>Triaging ${BV.length} videos together</h2><div class=intro>Tags added or removed in the controls above apply to all of them; the × on a tag below changes only that video. Enter confirms all, X drops all. Press ? for the rest of the keys.</div>`+
+ const nx=bnextInfo();
+ batch.innerHTML=`<h2 style="display:flex;align-items:center;gap:12px;flex-wrap:wrap">Triaging ${BV.length} videos together${nx?`<span class=mut style="font-weight:400;font-size:var(--fs)">page ${nx.page-1} of ${nx.pages}</span><button id=bnext class="sm ghost" title="Leave these as they are and open the next 300 of your selection (${nx.left} left after this page)">Next 300<kbd>⇧N</kbd></button>`:''}</h2><div class=intro>Tags added or removed in the controls above apply to all of them; the × on a tag below changes only that video. Enter confirms all, X drops all. Press ? for the rest of the keys.</div>`+
   BV.map(v=>`<details open data-v="${v.video_id}"><summary><span>${esc(v.title||'(title unavailable — private or removed)')}</span><span class="mut x"><button data-prev="${v.video_id}" class="sm ghost" title="Show or hide the video here (Space while this video is highlighted)">Preview<kbd>Space</kbd></button><button data-out="${v.video_id}" class="sm ghost" title="Take this video out of the batch; it stays untouched (R while this video is highlighted)">Remove from Batch<kbd>R</kbd></button></span></summary><div class=bin><div>${esc(v.channel||v.video_id)} <span class=mut>·</span> <a href="https://youtu.be/${v.video_id}" target=_blank rel=noopener>Open on YouTube</a></div><div class=chips>${bchips(v)}</div><div class=mut style="font-size:var(--fs-s)">In ${esc(v.playlists.map(p=>p.title+' ('+p.account_id+')').join(', ')||'—')}</div><div class="bpv stage" data-pv="${v.video_id}" style="display:none"></div></div></details>`).join('');
  open.forEach(id=>{const d=batch.querySelector(`details[data-v="${id}"]`);if(d)d.open=false});
  WARN.forEach(id=>{const d=batch.querySelector(`details[data-v="${id}"]`);if(d&&BV.find(v=>v.video_id==id&&!v.tags.some(t=>t.name!='Inbox')))d.classList.add('warn');else WARN.delete(id)});
@@ -223,6 +224,7 @@ addEventListener('keydown',async e=>{
  const d=batch.querySelector(`details[data-v="${BF}"]`);if(!d){BF=null;return}
  if(k==' '){eat();d.querySelector('[data-prev]').click();return}
  if(k=='Enter'){eat();d.open=!d.open;bapply(true);return}
+ if(kl=='n'&&e.shiftKey&&bnextInfo()){eat();bnext();return}
  if(kl=='r'){eat();const ids=[...batch.querySelectorAll('details')].map(x=>x.dataset.v),at=ids.indexOf(BF);d.querySelector('[data-out]').click();ids.splice(at,1);BF=ids[Math.min(at,ids.length-1)]||null;return}
  if(['x','s','v','g','m','arrowright'].includes(kl)){eat();yc.toast('That key is for the controls above; Esc or ← goes back to them',2200)}
 },true);
@@ -233,7 +235,11 @@ window.binit=async function(){
  if(!ids.length&&sp.get('ids'))ids=sp.get('ids').split(',').filter(Boolean);
  if(!ids.length){batch.innerHTML='<div class=empty><b>No videos selected</b>Tick two or more videos on the Commander page, then press T.<br><a href="/">Back to Commander</a></div>';return}
  IDS=ids;await brefresh();if(!BV.length){batch.innerHTML='<div class=empty><b>Those videos were not found</b><a href="/">Back to Commander</a></div>'}};
+// A selection larger than one page: Commander stored the whole list in batchAll; pages advance 300 at a time.
+function bnextInfo(){let a=null;try{a=JSON.parse(localStorage.getItem('batchAll')||'null')}catch(e){}if(!a||!a.ids||a.ids.length<=a.at+300)return null;return {left:a.ids.length-(a.at+300),page:Math.floor(a.at/300)+2,pages:Math.ceil(a.ids.length/300),all:a}}
+function bnext(){const n=bnextInfo();if(!n){bdone();return}const at=n.all.at+300,ids=n.all.ids.slice(at,at+300);try{localStorage.setItem('batchIds',JSON.stringify(ids));localStorage.setItem('batchAll',JSON.stringify({ids:n.all.ids,at}))}catch(e){}location.href='/triage?batch=1'}
 batch.addEventListener('click',async e=>{
+ if(e.target.closest('#bnext')){bnext();return}
  const r=e.target.dataset.r,v=e.target.dataset.bv,pv=e.target.dataset.prev,out=e.target.dataset.out;
  if(r&&v){e.preventDefault();await J(`/api/video/${v}/tags/${r}`,{method:'DELETE'});await brefresh()}
  else if(pv){e.preventDefault();e.stopPropagation();togglePrev(pv)}
@@ -247,7 +253,7 @@ create=async name=>{const r=await P('/api/tags/path',{path:name});TAGS=await J('
 bo.onclick=()=>{};
 go=yc.busy(async a=>{
  if(!BV.length)return;
- if(a=='drop'){if(!await yc.confirm({anchor:bd,message:'Drop all '+BV.length+' videos? They stay in the library but out of every published playlist.',ok:'Drop All',danger:true}))return;for(const v of BV)await P(`/api/video/${v.video_id}/triage`,{action:'drop'});bdone();return}
+ if(a=='drop'){if(!await yc.confirm({anchor:bd,message:'Drop all '+BV.length+' videos? They stay in the library but out of every published playlist.',ok:'Drop All',danger:true}))return;for(const v of BV)await P(`/api/video/${v.video_id}/triage`,{action:'drop'});bfinish();return}
  if(a!='confirm')return;
  if(BV.length>=2&&!await yc.confirm({anchor:bc,message:'Confirm all '+BV.length+' videos with the tags shown?',ok:'Confirm All'}))return;
  const pend=Object.values(VPROC);if(pend.length){vstat('Waiting for the voice note to finish…');await Promise.all(pend)}
@@ -257,8 +263,10 @@ go=yc.busy(async a=>{
  if(bad.length){bad.forEach(v=>{WARN.add(v.video_id);const d=batch.querySelector(`details[data-v="${v.video_id}"]`);d.classList.add('warn');d.open=true});batch.querySelector('details.warn').scrollIntoView({block:'center'});vstat(bad.length+' video'+(bad.length>1?'s have':' has')+' no tag yet (outlined in red). Add a tag for all (T), or take them out of the batch.');return}
  const nt=note.value.trim();
  for(const v of BV){const body=nt?((v.note||'').trim()?v.note.trim()+'\n'+nt:nt):null;await P(`/api/video/${v.video_id}/triage`,{action:'confirm',note:body})}
- bdone()});
-function bdone(){try{localStorage.removeItem('batchIds')}catch(e){}location.href='/'}
+ bfinish()});
+function bdone(){try{localStorage.removeItem('batchIds');localStorage.removeItem('batchAll')}catch(e){}location.href='/'}
+// Confirm All / Drop All on a page that has more behind it goes to the next 300 rather than back to Commander.
+function bfinish(){bnextInfo()?bnext():bdone()}
 bc.onclick=()=>go('confirm');bd.onclick=()=>go('drop');bc.innerHTML='Confirm All<kbd>Enter</kbd>';bd.innerHTML='Drop All<kbd>X</kbd>';bv.innerHTML='Voice Note<kbd>V</kbd>';bv.title='Record a voice note (V). Press V again to stop.';
 bc.title='Confirm every video in the batch with its tags, and finish (Enter)';
 voiceDone=async(vid,a)=>{if(!IDS.includes(vid))return;

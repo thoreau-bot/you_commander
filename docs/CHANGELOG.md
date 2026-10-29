@@ -27,7 +27,8 @@ Watch page
 
 Commander
 - After Load 200 More, the "n in view" count in the bulk bar updates
-- With more than 300 ticked, the Triage button reads "Triage the First 300 Together" (one Triage page holds 300; it takes the first 300 in list order) instead of a number that never changed
+- With more than 300 ticked, the Triage button reads "Triage the First 300 Together" (one Triage page holds 300), and the batch page continues: a **Next 300** button (`⇧N`) with a "page 2 of 27" counter, and Confirm All / Drop All move on to the next page instead of back to Commander
+- The bulk bar's **Get Captions** reads YouTube's caption track (it was labelled Get Transcripts); a new **Get Transcripts** button transcribes the ticked videos with Whisper on this computer, one at a time in the background, asking first above 20 videos. Captions are YouTube's; transcripts are Whisper's, everywhere in the app
 
 YouTube rate limits (`ytpace.py`)
 - Every request the app makes to youtube.com (caption fetches, feed checks, Shorts probes, the yt-dlp channel fallback) now shares one pace: a 429 anywhere pauses all of them for 5 minutes, doubling on repeats up to an hour, and resets after a quiet half hour. The Watch and Feed pages say "YouTube asked us to slow down; resuming at …" while it lasts
