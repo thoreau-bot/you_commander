@@ -85,6 +85,7 @@ The video always has the keyboard on this page: the stage carries the same ring 
 | `/` | filter |
 | `C` | Channels view, and back |
 | click a column title | sort by it (Channels view) |
+| Link… / Remove | on a Not Yet Resolved row: paste the channel's current link, or leave it out of the feed |
 | `Esc` | close the preview, then back to Commander |
 
 ## History

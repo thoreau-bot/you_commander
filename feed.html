@@ -19,7 +19,7 @@ main{max-width:1120px;margin:auto;padding:18px 22px 60px}
 .row .num{text-align:right;font-variant-numeric:tabular-nums}
 .row.f{background:var(--ac-s);box-shadow:inset 3px 0 0 var(--ac)}
 .row.bad .t{color:var(--bad)}
-#unpanel .row{grid-template-columns:minmax(0,1fr) 220px 90px 150px}
+#unpanel .row{grid-template-columns:minmax(0,1fr) 200px 70px 130px 150px}#unpanel .row .acts{display:flex;gap:4px;justify-content:flex-end}
 #chlist .row{grid-template-columns:minmax(0,1fr) 180px 70px 70px 150px}
 .row select{height:26px;padding:0 6px;font-size:var(--fs-s);max-width:150px}
 /* the feed itself */
@@ -67,7 +67,7 @@ main{max-width:1120px;margin:auto;padding:18px 22px 60px}
 <div id=vchannels style="display:none">
  <div class=panel id=unpanel style="display:none">
   <div class=panel-h>Not Yet Resolved<span id=unn class=mut style="font-weight:400"></span><span class=r><button id=retry class="sm">Retry All</button></span></div>
-  <div class=status><span>These channel pages could not be read. Most often the channel is gone or renamed (a 404); sometimes YouTube refused the request for now. Their videos stay in the library; they just will not be followed until this resolves. Resolve Channels leaves them alone; Retry All tries them again.</span></div>
+  <div class=status><span>These channel pages could not be read. Most often the channel is gone or renamed (a 404); sometimes YouTube refused the request for now. Their videos stay in the library; they just will not be followed until this resolves. Resolve Channels leaves them alone; Retry All tries them again. If a channel has moved (YouTube sometimes swaps an @handle for a random string), paste its new link with Link…; if nothing works, Remove it from the feed.</span></div>
   <div id=unlist></div>
   <div class=loadmore id=unmore style="display:none"><button class="sm ghost" id=unall>Show All</button></div>
  </div>
@@ -96,7 +96,7 @@ const kfmt=x=>x==null?'':x>=1e6?(x/1e6).toFixed(1).replace(/\.0$/,'')+'M':x>=1e3
 const ago=s=>{if(!s)return'';const d=(Date.now()-new Date(s+'Z'))/1000;if(d<3600)return Math.max(1,Math.floor(d/60))+' min ago';if(d<86400)return Math.floor(d/3600)+' h ago';if(d<86400*14)return Math.floor(d/86400)+' d ago';return new Date(s+'Z').toLocaleDateString(undefined,{month:'short',day:'numeric'})};
 const when=s=>{if(!s)return'';const d=new Date(s.replace(' ','T')+'Z');return d.toLocaleDateString(undefined,{month:'short',day:'numeric'})+' '+d.toLocaleTimeString(undefined,{hour:'numeric',minute:'2-digit'})};
 const ld=(k,def)=>{let v=null;try{v=JSON.parse(localStorage.getItem(k)||'null')}catch(e){}return v||def};
-let VIEW=ld('feedView','feed');                      // 'feed' | 'channels'
+let VIEW='feed';                                      // 'feed' | 'channels'; decided on load from the library, never remembered
 let D={channels:[],unresolved:[],videos:0,linked:0,pending:{need_url:0,need_id:0,unresolved:0}},S={},RUN=false,FRUN=false,FI=0,CI=0,POLL=null,FPOLL=null,LASTJ=null,LASTF=null,UNALL=false;
 let ITEMS=[],SHOW=ld('feedShow','all'),OPEN=null,PLAYER=null,PAGE=0,MORE=false;
 const SHOWS={all:['All',null],videos:['Videos','hide'],shorts:['Shorts','only']};
@@ -104,15 +104,15 @@ const SHOWS={all:['All',null],videos:['Videos','hide'],shorts:['Shorts','only']}
 // ---------------------------------------------------------------- views
 function paintViews(){views.innerHTML=[['feed','New Videos'],['channels','Channels']].map(([k,l])=>`<button role=tab data-v=${k} class="sm ${k==VIEW?'on':'ghost'}" aria-selected="${k==VIEW}">${l}${k=='channels'&&D.pending&&(D.pending.need_url||D.pending.need_id)?' <span class=pill>needs attention</span>':''}</button>`).join('');
  vfeed.style.display=VIEW=='feed'?'':'none';vchannels.style.display=VIEW=='channels'?'':'none'}
-function setView(v){VIEW=v;try{localStorage.setItem('feedView',JSON.stringify(v))}catch(e){}closePreview();paintViews();draw();pinHeads()}
+function setView(v){VIEW=v;closePreview();paintViews();draw();pinHeads()}
 views.onclick=e=>{const b=e.target.closest('[data-v]');if(b)setView(b.dataset.v)};
 
 // ---------------------------------------------------------------- sorting (both channel lists)
-const CH_COLS=[['title','Channel'],['handle','Handle'],['n_library','Videos'],['n_new','New'],['eff_tier','Checked']],UN_COLS=[['title','Channel'],['error','Reason'],['n','Videos'],['tried_at','Last tried']];
+const CH_COLS=[['title','Channel'],['handle','Handle'],['n_library','Videos'],['n_new','New'],['eff_tier','Checked']],UN_COLS=[['title','Channel'],['error','Reason'],['n','Videos'],['tried_at','Last tried'],['_','']];
 const NUMC={n_library:1,n:1,n_new:1};
 let CSORT=ld('feedChSort',{k:'n_library',d:-1}),USORT=ld('feedUnSort',{k:'n',d:-1});
 const sortBy=(rows,S)=>[...rows].sort((a,b)=>{const x=a[S.k],y=b[S.k];const c=NUMC[S.k]?(x||0)-(y||0):String(x||'').localeCompare(String(y||''),undefined,{sensitivity:'base',numeric:true});return c*S.d||String(a.title||'').localeCompare(String(b.title||''))});
-const head=(cols,S)=>'<div class="row head" role=row>'+cols.map(([c,l])=>`<button class="sort${NUMC[c]?' num':''}${c==S.k?' on':''}" data-sort=${c} aria-sort="${c==S.k?(S.d>0?'ascending':'descending'):'none'}" title="Sort by ${l.toLowerCase()}">${l}<span class=arrow aria-hidden=true>${c==S.k?(S.d>0?'▲':'▼'):''}</span></button>`).join('')+'</div>';
+const head=(cols,S)=>'<div class="row head" role=row>'+cols.map(([c,l])=>c=='_'?'<span></span>':`<button class="sort${NUMC[c]?' num':''}${c==S.k?' on':''}" data-sort=${c} aria-sort="${c==S.k?(S.d>0?'ascending':'descending'):'none'}" title="Sort by ${l.toLowerCase()}">${l}<span class=arrow aria-hidden=true>${c==S.k?(S.d>0?'▲':'▼'):''}</span></button>`).join('')+'</div>';
 function wireSort(el,S,key){el.querySelectorAll('[data-sort]').forEach(b=>b.onclick=()=>{const c=b.dataset.sort;const nn=c==S.k?{k:c,d:-S.d}:{k:c,d:NUMC[c]||c=='tried_at'?-1:1};Object.assign(S,nn);try{localStorage.setItem(key,JSON.stringify(S))}catch(e){}CI=0;draw()})}
 function pinHeads(){document.querySelectorAll('.panel').forEach(p=>{const h=p.querySelector('.panel-h');if(h)p.style.setProperty('--hh',(66+h.offsetHeight)+'px')})}
 addEventListener('resize',pinHeads);
@@ -143,7 +143,9 @@ function drawChannels(j){if(j!==undefined)LASTJ=j;j=LASTJ;
  const f=chlist.querySelector('.f');if(f&&VIEW=='channels')f.scrollIntoView({block:'nearest'});
  const U=sortBy(D.unresolved,USORT);unpanel.style.display=U.length?'':'none';unn.textContent=U.length?n(U.length)+' channel'+(U.length>1?'s':''):'';
  const show=UNALL?U:U.slice(0,10);unmore.style.display=U.length>10?'':'none';unall.textContent=UNALL?'Show Fewer':`Show All ${n(U.length)}`;
- unlist.innerHTML=(U.length?head(UN_COLS,USORT):'')+show.map(u=>`<div class="row bad"><div><div class=t>${esc(u.title||u.channel_url)}</div><small>${esc(u.channel_url)}</small></div><small title="${esc(u.error||'')}">${esc(reason(u.error))}</small><div class=num>${n(u.n)}</div><small>${esc(when(u.tried_at))}</small></div>`).join('');wireSort(unlist,USORT,'feedUnSort')}
+ unlist.innerHTML=(U.length?head(UN_COLS,USORT):'')+show.map(u=>`<div class="row bad"><div><div class=t>${esc(u.title||u.channel_url)}</div><small>${esc(u.channel_url)}</small></div><small title="${esc(u.error||'')}">${esc(reason(u.error))}</small><div class=num>${n(u.n)}</div><small>${esc(when(u.tried_at))}</small><div class=acts><button class="sm" data-link="${esc(u.channel_url)}" title="Paste the channel's current link, a video from it, or its UC… id">Link…</button><button class="sm ghost" data-drop="${esc(u.channel_url)}" title="Stop trying: leave it out of the feed. Its videos stay in the library.">Remove</button></div></div>`).join('');wireSort(unlist,USORT,'feedUnSort');
+ unlist.querySelectorAll('[data-link]').forEach(b=>b.onclick=async()=>{const v=await yc.prompt({anchor:b,label:'Paste the channel’s current link, any video from it, or its id (UC…)',value:'',ok:'Link'});if(!v)return;const r=await P('/api/feed/unresolved/link',{channel_url:b.dataset.link,link:v});if(r.error){yc.toast(r.error,6000);return}yc.toast(`Linked. ${r.linked} video${r.linked==1?'':'s'} now follow this channel.`,5000);load()});
+ unlist.querySelectorAll('[data-drop]').forEach(b=>b.onclick=async()=>{const t=D.unresolved.find(u=>u.channel_url==b.dataset.drop)||{};if(!await yc.confirm({anchor:b,message:`Stop trying to follow “${t.title||b.dataset.drop}”? Its ${t.n||''} video${t.n==1?'':'s'} stay in the library; the feed just will not include this channel. Retry All will not bring it back.`,ok:'Remove',danger:true}))return;const r=await P('/api/feed/unresolved/remove',{channel_url:b.dataset.drop});yc.toast(`Removed from the feed (${r.videos} video${r.videos==1?'':'s'} kept in the library).`,5000);load()})}
 const reason=e=>{e=e||'';if(/http 404|http 410/.test(e))return'Channel gone or renamed (404)';if(/429|throttl|could not fetch/.test(e))return'YouTube refused the request; try later';if(/no channel id/.test(e))return'Page had no channel id';return e};
 
 // ---------------------------------------------------------------- the feed (step 2)
@@ -249,7 +251,8 @@ addEventListener('keydown',e=>{const a=document.activeElement;if(a&&a.tagName=='
  else if(k=='1'||k=='2'||k=='3'){e.preventDefault();SHOW=['all','videos','shorts'][Number(k)-1];try{localStorage.setItem('feedShow',JSON.stringify(SHOW))}catch(e){}FI=0;closePreview();loadItems()}});
 yc.jump();
 (async()=>{const [j,f]=await Promise.all([J('/api/feed/resolve/status'),J('/api/feed/fetch/status')]);await load(j.running?j:null);
- if(!ready()&&D.videos&&!j.running)setView('channels');
+ // any channel resolved -> New Videos. Only a library with no channels at all opens on the Channels tab.
+ if(!ready()&&D.videos)setView('channels');
  if(j.running)poll();if(f.running){drawFeed(f);fpoll()}
  ffoot.textContent='Network use: one request to each channel’s public feed when you press Fetch, and one small request per new video to tell Shorts apart. Background checks only run while the app is open and only if the box above is ticked. No key, no sign-in, nothing written to YouTube. See docs/PRIVACY.md.'})();
 </script>

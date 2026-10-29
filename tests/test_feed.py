@@ -206,3 +206,40 @@ def test_one_stuck_video_does_not_block_the_feed(resolved):
     client.post('/api/feed/unresolved/retry'); _wait(client)
     c = sqlite3.connect(db); assert c.execute("select channel_url from videos where video_id='NOURL000001'").fetchone()[0] == ''
     c.execute("delete from videos where video_id='NOURL000001'"); c.commit(); c.close()
+
+def test_manual_link_and_remove_for_stubborn_channels(resolved):
+    client = resolved; db = os.environ['ORG_DB']
+    c = sqlite3.connect(db)
+    for i, h in enumerate(('nochannel-m1', 'nochannel-m2', 'nochannel-m3', 'nochannel-m4')):
+        c.execute("insert into videos(video_id,title,channel,channel_url,title_source) values(?,?,?,?,'oembed')", (f'MOVED00000{i}', f'Moved {i}', f'Moved Channel {i}', f'https://www.youtube.com/@{h}'))
+    c.commit(); c.close()
+    client.post('/api/feed/resolve'); _wait(client)
+    un = {u['channel_url']: u for u in client.get('/api/feed/channels').json()['unresolved']}
+    assert all(f'https://www.youtube.com/@nochannel-m{k}' in un for k in (1, 2, 3, 4))
+    # 1. a /channel/UC… link
+    r = client.post('/api/feed/unresolved/link', json={'channel_url': 'https://www.youtube.com/@nochannel-m1', 'link': 'https://www.youtube.com/channel/UCmanual0000000000000001'}).json()
+    assert r['ok'] and r['channel_id'] == 'UCmanual0000000000000001' and r['linked'] == 1
+    # 2. a bare id
+    r = client.post('/api/feed/unresolved/link', json={'channel_url': 'https://www.youtube.com/@nochannel-m2', 'link': 'UCmanual0000000000000002'}).json()
+    assert r['ok'] and r['linked'] == 1
+    # 3. a new @handle (resolved through the fake page)
+    r = client.post('/api/feed/unresolved/link', json={'channel_url': 'https://www.youtube.com/@nochannel-m3', 'link': 'https://www.youtube.com/@renamed-channel'}).json()
+    assert r['ok'] and r['channel_id'].startswith('UC')
+    # 4. nonsense is refused with a sentence
+    r = client.post('/api/feed/unresolved/link', json={'channel_url': 'https://www.youtube.com/@nochannel-m4', 'link': 'hello'}).json()
+    assert 'error' in r
+    d = client.get('/api/feed/channels').json()
+    assert [u['channel_url'] for u in d['unresolved']] == ['https://www.youtube.com/@nochannel-m4']
+    assert 'UCmanual0000000000000001' in {ch['channel_id'] for ch in d['channels']}
+    assert next(ch for ch in d['channels'] if ch['channel_id'] == 'UCmanual0000000000000001')['resolved_from'] == 'manual'
+    # remove: gone from the list, not pending, and Retry All does not bring it back
+    r = client.post('/api/feed/unresolved/remove', json={'channel_url': 'https://www.youtube.com/@nochannel-m4'}).json()
+    assert r['ok'] and r['videos'] == 1
+    d = client.get('/api/feed/channels').json()
+    assert d['unresolved'] == [] and d['pending'] == {'need_url': 0, 'need_id': 0, 'unresolved': 0}
+    client.post('/api/feed/unresolved/retry'); _wait(client)
+    assert client.get('/api/feed/channels').json()['unresolved'] == []
+    c = sqlite3.connect(db)
+    assert c.execute("select channel_url from videos where video_id='MOVED000003'").fetchone()[0] == '-'
+    c.execute("delete from videos where video_id like 'MOVED%'"); c.execute("delete from video_channel where video_id like 'MOVED%'")
+    c.execute("delete from channels where channel_id like 'UCmanual%' or channel_url like '%renamed-channel'"); c.commit(); c.close()

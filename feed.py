@@ -14,6 +14,7 @@ distinct channel in phase B, nothing automatic. See docs/PRIVACY.md.
 """
 import os, re, json, sqlite3, threading, time, random, urllib.request, urllib.error, urllib.parse, datetime as dt
 from fastapi.responses import HTMLResponse
+from pydantic import BaseModel
 
 FAKE = os.environ.get('ORG_FEED_FAKE')   # tests only: no network, channel pages are invented
 SCHEMA = """
@@ -98,9 +99,9 @@ def resolve_url(url):
 # ---------------------------------------------------------------- the worker
 def pending(path):
     c = sqlite3.connect(path)
-    # channel_url: NULL = never looked up since 1.9, '' = looked up and YouTube gave no channel link (not re-counted; Retry All clears it)
+    # channel_url: NULL = never looked up since 1.9, '' = looked up and YouTube gave no channel link (Retry All clears it), '-' = given up on by the user
     a = c.execute("select count(*) from videos where channel_url is null and title_source='oembed' and unavailable=0").fetchone()[0]
-    b = c.execute("""select count(distinct channel_url) from videos v where channel_url is not null and channel_url<>''
+    b = c.execute("""select count(distinct channel_url) from videos v where channel_url is not null and channel_url not in ('','-')
                      and not exists(select 1 from video_channel x where x.video_id=v.video_id)
                      and channel_url not in (select channel_url from channel_unresolved)""").fetchone()[0]
     u = c.execute("select count(*) from channel_unresolved").fetchone()[0]
@@ -136,7 +137,7 @@ def _worker(path):
         if JOB['cancel']: return
         # ---- phase B: one page fetch per distinct channel URL that has no id yet
         # URLs already tried and failed are left alone here; Retry All clears channel_unresolved first, which is the only way back in
-        rows = c.execute("""select channel_url, min(channel) title, count(*) n from videos v where channel_url is not null and channel_url<>''
+        rows = c.execute("""select channel_url, min(channel) title, count(*) n from videos v where channel_url is not null and channel_url not in ('','-')
                             and not exists(select 1 from video_channel x where x.video_id=v.video_id)
                             and channel_url not in (select channel_url from channel_unresolved) group by channel_url order by n desc""").fetchall()
         JOB.update(phase='ids', total=len(rows), done=0, ok=0, failed=0)
@@ -213,9 +214,57 @@ def setup(app, DB):
         c = con(); c.execute("delete from channel_unresolved"); c.execute("update videos set channel_url=NULL where channel_url=''"); c.commit(); c.close()
         return dict(started=start(DB))
 
+    class Manual(BaseModel): channel_url: str; link: str
+    @app.post('/api/feed/unresolved/link')
+    def link_manually(b: Manual):
+        """The user pastes the channel's current link (any shape: /channel/UC…, /@handle, a video URL, or a bare UC… id).
+        Resolve that, then link every library video that carried the old URL."""
+        old = b.channel_url.strip(); given = b.link.strip()
+        if not old or not given: return {'error': 'Paste the channel link first.'}
+        cid, how = None, ''
+        if UC.fullmatch(given): cid, how = given, 'manual'
+        elif id_from_url(given): cid, how = id_from_url(given), 'manual'
+        elif re.search(r'youtu\.?be', given):
+            vm = re.search(r'(?:v=|youtu\.be/|/shorts/|/embed/)([A-Za-z0-9_-]{11})', given)
+            if vm:
+                # a video link: ask oEmbed for its channel page, then resolve that
+                import importer
+                st, res = importer._fetch_one(vm.group(1))
+                if st == 'ok' and res.get('author_url'):
+                    cid, how = resolve_url(res['author_url'])
+                    if cid: how = 'manual'
+                else: return {'error': 'That video could not be looked up on YouTube.'}
+            else:
+                cid, how = resolve_url(given)
+                if cid: how = 'manual'
+        else:
+            return {'error': 'That does not look like a YouTube link or a channel id (UC…).'}
+        if not cid: return {'error': f'Could not read a channel id from that link ({how}).'}
+        c = con()
+        title = (c.execute("select min(channel) from videos where channel_url=?", (old,)).fetchone() or [None])[0]
+        c.execute("""insert into channels(channel_id,title,handle,channel_url,resolved_from,created_at) values(?,?,?,?,?,?)
+                     on conflict(channel_id) do update set channel_url=excluded.channel_url, handle=coalesce(excluded.handle,channels.handle)""",
+                  (cid, title or cid, handle_from_url(given) or handle_from_url(old), given if given.startswith('http') else old, how, now()))
+        c.execute("update videos set channel_url=? where channel_url=?", (given if given.startswith('http') else old, old))
+        c.execute("insert or replace into video_channel(video_id,channel_id) select video_id,? from videos where channel_url=?", (cid, given if given.startswith('http') else old))
+        c.execute("delete from channel_unresolved where channel_url=?", (old,))
+        n = c.execute("select count(*) from video_channel where channel_id=?", (cid,)).fetchone()[0]
+        c.commit(); c.close()
+        return {'ok': 1, 'channel_id': cid, 'linked': n}
+
+    class Drop(BaseModel): channel_url: str
+    @app.post('/api/feed/unresolved/remove')
+    def remove_unresolved(b: Drop):
+        """Give up on this channel: it leaves the Not Yet Resolved list for good and the feed will not follow it.
+        Its videos stay in the library untouched. Marked with channel_url='-' so neither Resolve nor Retry All re-tries it."""
+        old = b.channel_url.strip(); c = con()
+        n = c.execute("update videos set channel_url='-' where channel_url=?", (old,)).rowcount
+        c.execute("delete from channel_unresolved where channel_url=?", (old,))
+        c.commit(); c.close()
+        return {'ok': 1, 'videos': n}
+
     # ---------------------------------------------------------------- step 2: new videos
     import feed_fetch as ff
-    from pydantic import BaseModel
     ff.ensure_schema(DB); ff.start_poller(DB)
 
     @app.get('/api/feed/summary')
