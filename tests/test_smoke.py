@@ -100,3 +100,25 @@ def test_transcripts_both_versions_and_search(client):
     client.delete('/api/transcript/bbbbbbbbbbb', params={'kind': 'captions'})
     assert client.get('/api/transcript/bbbbbbbbbbb').json()['captions']['status'] == 'missing'
     assert client.get('/api/transcript/bbbbbbbbbbb').json()['whisper']['status'] == 'ok'
+
+def test_transcript_line_can_be_corrected_in_place(client):
+    if client.get('/api/summary').json()['videos'] == 0: test_import_flow(client)
+    assert client.post('/api/transcript/ccccccccccc', json={'method': 'captions'}).json()['queued'] == 1
+    for _ in range(100):
+        t = client.get('/api/transcript/ccccccccccc').json()
+        if t['captions']['status'] == 'ok': break
+        time.sleep(0.05)
+    cues = t['captions']['cues']; assert len(cues) > 3 and t['captions']['edited'] == 0
+    r = client.patch('/api/transcript/ccccccccccc/cue', json={'kind': 'captions', 'k': 2, 'text': '  The  FEP film   tears here. '}).json()
+    assert r['ok'] and r['edited'] == 1
+    t = client.get('/api/transcript/ccccccccccc').json()['captions']
+    assert t['cues'][2][0] == cues[2][0] and t['cues'][2][1] == 'The FEP film tears here.' and t['cues'][2][2] == 1 and t['edited'] == 1
+    # search sees the correction, and no longer the old words
+    assert any(v['video_id'] == 'ccccccccccc' for v in client.get('/api/videos', params={'search': 'FEP film tears'}).json())
+    # empty / out of range refused
+    assert 'error' in client.patch('/api/transcript/ccccccccccc/cue', json={'kind': 'captions', 'k': 2, 'text': '  '}).json()
+    assert 'error' in client.patch('/api/transcript/ccccccccccc/cue', json={'kind': 'captions', 'k': 99999, 'text': 'x'}).json()
+    # a re-fetch will not silently overwrite edits; force does
+    r = client.post('/api/transcript/ccccccccccc', json={'method': 'captions'}).json()
+    assert r.get('edited') and 'error' in r
+    client.delete('/api/transcript/ccccccccccc', params={'kind': 'captions'})

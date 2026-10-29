@@ -88,6 +88,13 @@ The video always has the keyboard on this page: the stage carries the same ring 
 | Link… / Remove | on a Not Yet Resolved row: paste the channel's current link, or leave it out of the feed |
 | `Esc` | close the preview, then back to Commander |
 
+### Notes (Watch page)
+| Key | Action |
+|---|---|
+| `Ctrl+B` `Ctrl+I` `Ctrl+U` `Ctrl+H` | bold, italic, underline, highlight on the selection (or start a mark; press again to step out) |
+| `Shift+Enter` | new line in a note |
+| edit (on a transcript line) | correct the line in place; `Enter` saves, `Esc` cancels |
+
 ## History
 | Key | Action |
 |---|---|

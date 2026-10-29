@@ -17,6 +17,11 @@ Step 2 — New Videos
 - Pinned column titles tuck 1px under a fixed-height panel title bar, so no sliver of the list shows between them while scrolling, at any display scale or zoom
 - **Fix: "database is locked" / black Watch page.** The background check held the database's write lock for long stretches (it committed every 50 channels), so the Watch page's open call and caption saves failed while a pass was running. The fetch and resolve workers now commit per channel, every page connection waits up to 30 s instead of 5, the background check waits 90 s after start-up and holds off while the app has been used in the last two minutes, and a wake-up checks at most 400 channels. A regression test runs page writes against a live pass
 
+Watch page
+- **Correct a transcript line in place**: an *edit* control next to *pin* on every line. Enter saves, Shift+Enter adds a line break, Esc cancels. The time stays, search follows the new words, corrected lines carry a ✎ and the header counts them. Getting the captions again will not overwrite corrected lines (delete the transcript first)
+- **Rich notes**: a formatting bar over the Note box, the note-at-this-time box and the inline note editor: bold, italic, underline, strikethrough, highlight, superscript, subscript and an emoji picker; `Ctrl+B` / `I` / `U` / `H` in the box. Notes are stored as plain text with light marks (`**bold**`, `_italic_`, `__underline__`, `~~strike~~`, `==highlight==`, `^super^`, `~sub~`; `\*` keeps a literal), so they stay readable everywhere and searchable. Notes at times can span lines (Shift+Enter)
+- The video endpoint tolerates a video with no triage row
+
 Step 1 — Channel identity
 - New **Feed** page in the topbar and the Commander rail; `G` (Go to My Feed) jumps to it from Commander, History and the Watch page (with no video loaded). For now it holds one thing: the Channels panel
 - **Resolve Channels** (`R`) finds the stable YouTube id behind every channel in the library: one oEmbed lookup for each video imported before this version (to get the channel's page link), then one visit to each distinct channel page to read its `UC…` id. Progress and a Cancel button while it runs; the result is a per-channel list with handle, video count and how the id was found

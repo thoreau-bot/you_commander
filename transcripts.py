@@ -186,17 +186,39 @@ def setup(app, DB):
             out[k] = {'status': 'missing', 'active': is_active(vid, k)}
         for r in rows:
             d = dict(r); d['cues'] = json.loads(d['cues']) if d['cues'] else []; d.pop('text', None); d['active'] = is_active(vid, d['kind'])
+            d['edited'] = sum(1 for x in d['cues'] if len(x) > 2 and x[2])
             out[d['kind']] = d
         return out
 
     @app.post('/api/transcript/{vid}')
     def t_start(vid: str, b: One):
         if b.method not in ('captions', 'whisper'): return JSONResponse({'error': 'bad method'}, 400)
+        if not b.force:
+            c = con(); r = c.execute("select cues from transcripts where video_id=? and kind=? and status='ok'", (vid, b.method)).fetchone(); c.close()
+            if r and r['cues'] and any(len(x) > 2 and x[2] for x in json.loads(r['cues'])):
+                return {'error': 'This transcript has lines you edited. Delete it first if you want a fresh copy.', 'edited': True}
         if not (have_ytdlp() or FAKE): return {'error': 'yt-dlp is not installed. Run install_transcripts.bat, then restart.'}
         if b.method == 'whisper':
             import voice
             if not (voice.whisper_installed() or FAKE): return {'error': 'Whisper is not installed. Run install_voice.bat.'}
         return {'queued': enqueue([(vid, b.method)], front=True)}
+
+    class CueEdit(BaseModel): kind: str; k: int; text: str
+    @app.patch('/api/transcript/{vid}/cue')
+    def t_cue(vid: str, b: CueEdit):
+        """Correct one transcript line in place. The cue keeps its time; the joined text and the search index follow.
+        Edited lines are remembered (cue[2] = 1) so a re-fetch can warn before overwriting them."""
+        if b.kind not in ('captions', 'whisper'): return JSONResponse({'error': 'bad kind'}, 400)
+        text = re.sub(r'\s+', ' ', b.text).strip()
+        if not text: return {'error': 'The line cannot be empty. Delete the transcript instead if it is wrong throughout.'}
+        c = con(); r = c.execute("select cues from transcripts where video_id=? and kind=? and status='ok'", (vid, b.kind)).fetchone()
+        if not r or not r['cues']: c.close(); return {'error': 'No such transcript'}
+        cues = json.loads(r['cues'])
+        if not 0 <= b.k < len(cues): c.close(); return {'error': 'No such line'}
+        cues[b.k] = [cues[b.k][0], text, 1]
+        c.execute("update transcripts set cues=?,text=? where video_id=? and kind=?", (json.dumps(cues), ' '.join(x[1] for x in cues), vid, b.kind))
+        reindex(c, vid); c.commit(); c.close()
+        return {'ok': 1, 'edited': sum(1 for x in cues if len(x) > 2 and x[2])}
 
     @app.delete('/api/transcript/{vid}')
     def t_del(vid: str, kind: str = 'captions'):

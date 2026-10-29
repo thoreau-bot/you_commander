@@ -189,7 +189,7 @@ def video(vid:str):
     v=v[0]
     v['tags']=q("select t.id,t.name,t.description,vt.confirmed,vt.source from video_tags vt join tags t on t.id=vt.tag_id where vt.video_id=? order by t.name",(vid,))
     n=q("select body from notes where video_id=?",(vid,));v['note']=n[0]['body'] if n else ''
-    v['status']=q("select status from triage where video_id=?",(vid,))[0]['status']
+    st=q("select status from triage where video_id=?",(vid,));v['status']=st[0]['status'] if st else 'new'
     v['playlists']=q("select p.title,p.account_id from playlist_items i join playlists p on p.pk=i.playlist_pk where i.video_id=?",(vid,))
     return v
 class Ids(BaseModel): ids:list[str]

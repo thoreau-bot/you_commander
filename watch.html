@@ -14,7 +14,10 @@
 .acts{display:flex;flex-wrap:wrap;gap:2px 6px;margin:0 0 14px -9px}.acts button.ghost{padding:0 9px}
 .acts button:not(.pri){color:var(--fg2)}
 #mkbox{display:none;margin:0 0 12px;padding:10px 12px;border-radius:var(--r);background:var(--sf);border:1px solid var(--bd);box-shadow:var(--sh)}
-#mkbox #mkl{margin-bottom:6px;font-size:var(--fs-s)}#mkbox input{width:100%}
+#mkbox #mkl{margin-bottom:6px;font-size:var(--fs-s)}#mkbox textarea{width:100%;resize:vertical}
+.mkedit{width:100%}.mkedit textarea{width:100%;resize:vertical}
+.cuedit{width:100%;flex:1;resize:vertical;font:inherit;line-height:1.5}
+.tl .edm{color:var(--amb);font-size:var(--fs-s);margin-left:4px;opacity:.9}
 #ti{font-size:var(--fs-xl);margin-top:14px}#ch{margin-top:3px}#pls{font-size:var(--fs-s);margin-top:3px;color:var(--mut)}
 .sec{margin-top:22px}
 #marks{display:flex;flex-direction:column;gap:2px}
@@ -66,7 +69,7 @@
 <div class=acts>
  <button id=bmk class=ghost title="Add a typed note at this moment, or on the text you have selected in the transcript (B)">Note at This Time<kbd>B</kbd></button><button id=bvm class=ghost title="Record a spoken note at this moment, or on the selected transcript text (V)">Voice Note<kbd>V</kbd></button><button id=byt class=ghost title="Open this moment on YouTube for likes, comments, subscribe and the transcript (G)">YouTube at This Time<kbd>G</kbd></button><button id=bcp class=ghost title="Copy a link to this moment (C)">Copy Link Here<kbd>C</kbd></button>
 </div>
-<div id=mkbox><div class=mut id=mkl></div><input id=mkin placeholder="What happens here? Enter saves, Esc cancels" autocomplete=off aria-label="Note text"></div>
+<div id=mkbox><div class=mut id=mkl></div><textarea id=mkin rows=2 placeholder="What happens here? Enter saves, Shift+Enter for a new line, Esc cancels" aria-label="Note text"></textarea></div>
 <div class=sec><div class=lbl>Notes at times<small><kbd>B</kbd> typed · <kbd>V</kbd> voice</small></div><div id=marks></div></div>
 <div class=sec><div class=lbl>Transcript<small id=txs></small></div>
 <div id=tx class=panel><div id=txh></div><div id=txl><span class=mut style="padding:6px">Loading…</span></div></div></div>
@@ -93,7 +96,7 @@
    <dt><kbd>↑</kbd><kbd>↓</kbd></dt><dd>volume</dd><dt><kbd>M</kbd></dt><dd>sound on, off</dd><dt><kbd>0</kbd>–<kbd>9</kbd></dt><dd>jump to 0–90%</dd><dt><kbd>&lt;</kbd><kbd>&gt;</kbd></dt><dd>speed</dd>
    <dt><kbd>[</kbd><kbd>]</kbd><kbd>\</kbd></dt><dd>loop start, end, clear</dd><dt><kbd>F</kbd><kbd>Enter</kbd></dt><dd>fullscreen</dd><dt><kbd>Home</kbd><kbd>End</kbd></dt><dd>start, end of video</dd></dl></div>
   <div><h3>Notes and tags</h3><dl>
-   <dt><kbd>B</kbd></dt><dd>typed note on the selected text, or at this time</dd><dt><kbd>V</kbd></dt><dd>voice note, same rule</dd><dt><kbd>Shift</kbd>+<kbd>B</kbd> / <kbd>V</kbd></dt><dd>note on the highlighted transcript line</dd>
+   <dt><kbd>B</kbd></dt><dd>typed note on the selected text, or at this time</dd><dt><kbd>Ctrl</kbd>+<kbd>B</kbd> <kbd>I</kbd> <kbd>U</kbd> <kbd>H</kbd></dt><dd>in a note: bold, italic, underline, highlight (the bar above the box has strikethrough, super/subscript and emoji too)</dd><dt><kbd>Shift</kbd>+<kbd>Enter</kbd></dt><dd>new line in a note</dd><dt>edit (on a transcript line)</dt><dd>correct that line in place; Enter saves</dd><dt><kbd>V</kbd></dt><dd>voice note, same rule</dd><dt><kbd>Shift</kbd>+<kbd>B</kbd> / <kbd>V</kbd></dt><dd>note on the highlighted transcript line</dd>
    <dt><kbd>T</kbd></dt><dd>add a tag</dd><dt><kbd>N</kbd></dt><dd>the note box</dd><dt><kbd>Y</kbd></dt><dd>transcript: fetch it, or jump to it</dd></dl></div>
   <div><h3>Queue</h3><dl>
    <dt><kbd>PgUp</kbd><kbd>PgDn</kbd></dt><dd>previous, next</dd><dt><kbd>Q</kbd></dt><dd>into the queue, then ↑↓ choose, Enter plays</dd><dt><kbd>Alt</kbd>+<kbd>↑</kbd><kbd>↓</kbd></dt><dd>move a video (or drag it)</dd></dl></div>
@@ -196,23 +199,27 @@ function selAnchor(){const sel=getSelection();if(!sel||sel.isCollapsed||!sel.ran
 function lineAnchor(){const r=document.querySelector('#txl .tl.now');if(!r)return null;return {t:+r.dataset.t,quote:compact(r.children[1].textContent),label:'the highlighted line'}}
 const timeAnchor=()=>({t:Math.floor(cur()),quote:null,label:'this moment'});
 const autoAnchor=()=>selAnchor()||timeAnchor();
-function drawMarks(){$('marks').innerHTML=V.marks.map(m=>`<div class=mk data-t="${m.t}" data-id=${m.id}><span class=t>${fmt(m.t)}</span><span style="flex:1;min-width:0">${m.quote?`<div class=mq>“${esc(m.quote)}”</div>`:''}<span class=bd data-bd=${m.id} title="Double-click to edit">${m.source=='voice'?'<span class=pill title="Voice note">voice</span> ':''}${m.status=='transcribing'?'<i class=mut>transcribing…</i>':esc(m.body)}</span></span><button class="ed ghost sm" data-ed=${m.id} aria-label="Edit this note" title="Edit this note">Edit</button><button class="x ghost sm" data-del=${m.id} aria-label="Delete this note" title="Delete this note">✕</button></div>`).join('')||'<span class=mut>None yet. Select transcript text first to attach a note to it.</span>';
+function drawMarks(){$('marks').innerHTML=V.marks.map(m=>`<div class=mk data-t="${m.t}" data-id=${m.id}><span class=t>${fmt(m.t)}</span><span style="flex:1;min-width:0">${m.quote?`<div class=mq>“${esc(m.quote)}”</div>`:''}<span class=bd data-bd=${m.id} title="Double-click to edit">${m.source=='voice'?'<span class=pill title="Voice note">voice</span> ':''}${m.status=='transcribing'?'<i class=mut>transcribing…</i>':'<span class=rich>'+yc.rich(m.body)+'</span>'}</span></span><button class="ed ghost sm" data-ed=${m.id} aria-label="Edit this note" title="Edit this note">Edit</button><button class="x ghost sm" data-del=${m.id} aria-label="Delete this note" title="Delete this note">✕</button></div>`).join('')||'<span class=mut>None yet. Select transcript text first to attach a note to it.</span>';
  V.marks.filter(m=>m.status=='transcribing').forEach(m=>pollMark(m.id))}
 const POLLING=new Set();
 function pollMark(id){if(POLLING.has(id))return;POLLING.add(id);const go=async()=>{const r=await J('/api/watch/marks/'+id);const m=V&&V.marks.find(x=>x.id==id);if(!m||r.error){POLLING.delete(id);return}
  if(r.status=='transcribing'){setTimeout(go,1500);return}POLLING.delete(id);m.body=r.body;m.status=r.status;drawMarks()};setTimeout(go,1500)}
 $('marks').onclick=async e=>{if(e.target.tagName=='INPUT')return;const ed=e.target.closest('[data-ed]');if(ed){const sp=ed.closest('.mk').querySelector('[data-bd]');if(sp)editMark(sp);return}const d=e.target.closest('[data-del]')?.dataset.del;if(d){const gone=V.marks.find(m=>m.id==d);const idx=V.marks.indexOf(gone);await P('/api/watch/marks/'+d,null,'DELETE');V.marks=V.marks.filter(m=>m.id!=d);drawMarks();const nx=$('marks').querySelectorAll('.mk')[Math.min(idx,V.marks.length-1)];(nx?nx.querySelector('.x'):$('bmk')).focus();const vid=V.video_id;yc.toast('Note at '+fmt(gone.t)+' deleted.',6000,{undo:async()=>{const r=await P(`/api/watch/${vid}/marks`,{t:gone.t,body:gone.body,quote:gone.quote});if(V&&V.video_id==vid){V.marks.push({id:r.id,t:gone.t,body:gone.body,quote:gone.quote,source:gone.source,status:'ok'});V.marks.sort((x,y)=>x.t-y.t);drawMarks()}yc.toast('Note restored')}});return}const r=e.target.closest('[data-t]');if(r&&pl()){pl().seekTo(+r.dataset.t,true);pl().playVideo()}};
 function editMark(sp){const m=V.marks.find(x=>x.id==sp.dataset.bd);if(!m||m.status=='transcribing')return;
- const inp=document.createElement('input');inp.value=m.body;inp.style.width='100%';sp.replaceWith(inp);inp.focus();
- inp.onkeydown=async ev=>{ev.stopPropagation();if(ev.key=='Escape'){drawMarks()}else if(ev.key=='Enter'){const v=inp.value.trim();if(v){await P('/api/watch/marks/'+m.id,{body:v},'PATCH');m.body=v}drawMarks()}};inp.onblur=()=>drawMarks()}
+ const wrap=document.createElement('div');wrap.className='mkedit';const inp=document.createElement('textarea');inp.value=m.body;inp.rows=Math.min(6,Math.max(1,Math.ceil(m.body.length/60)));inp.setAttribute('aria-label','Edit this note');
+ wrap.appendChild(inp);sp.replaceWith(wrap);yc.richBar(inp);inp.focus();inp.setSelectionRange(inp.value.length,inp.value.length);
+ let closing=false;const done=async save=>{if(closing)return;closing=true;if(save){const v=inp.value.trim();if(v&&v!==m.body){await P('/api/watch/marks/'+m.id,{body:v},'PATCH');m.body=v}}drawMarks()};
+ inp.onkeydown=ev=>{ev.stopPropagation();if(ev.key=='Escape'){ev.preventDefault();done(false)}else if(ev.key=='Enter'&&!ev.shiftKey){ev.preventDefault();done(true)}};
+ inp.onblur=()=>setTimeout(()=>{if(!wrap.contains(document.activeElement))done(true)},0)}
 $('marks').ondblclick=e=>{const sp=e.target.closest('[data-bd]');if(sp)editMark(sp)};
 // ---- typed note ----
 let ANCH=null;
 function noteAt(a){if(REC)return;ANCH=a;if(pl())pl().pauseVideo();$('mkbox').style.display='block';$('mkl').textContent='Note at '+fmt(a.t)+(a.quote?' on '+a.label+': “'+a.quote.slice(0,90)+(a.quote.length>90?'…':'')+'”':'');$('mkin').value='';$('mkin').focus();hideSp()}
 function endNote(){$('mkbox').style.display='none';$('mkin').blur();ANCH=null;if(pl())pl().playVideo()}
+yc.richBar($('mkin'));yc.richBar($('note'));
 $('mkin').onkeydown=async e=>{e.stopPropagation();if(e.key=='Escape')endNote();
- else if(e.key=='Enter'&&!$('mkin').value.trim()){toast('Type the note first, or Esc to cancel')}
- else if(e.key=='Enter'&&$('mkin').value.trim()){const a=ANCH,body=$('mkin').value.trim();const r=await P(`/api/watch/${V.video_id}/marks`,{t:a.t,body,quote:a.quote});V.marks.push({id:r.id,t:a.t,body,quote:a.quote,source:'typed',status:'ok'});V.marks.sort((x,y)=>x.t-y.t);drawMarks();getSelection().removeAllRanges();endNote();toast('Note saved at '+fmt(a.t))}};
+ else if(e.key=='Enter'&&!e.shiftKey&&!$('mkin').value.trim()){e.preventDefault();toast('Type the note first, or Esc to cancel')}
+ else if(e.key=='Enter'&&!e.shiftKey&&$('mkin').value.trim()){e.preventDefault();const a=ANCH,body=$('mkin').value.trim();const r=await P(`/api/watch/${V.video_id}/marks`,{t:a.t,body,quote:a.quote});V.marks.push({id:r.id,t:a.t,body,quote:a.quote,source:'typed',status:'ok'});V.marks.sort((x,y)=>x.t-y.t);drawMarks();getSelection().removeAllRanges();endNote();toast('Note saved at '+fmt(a.t))}};
 // ---- voice note ----
 let REC=null,RCH=[],RSTREAM=null;
 async function voiceAt(a){if(REC||ANCH)return;if(!navigator.mediaDevices){toast('Microphone not available here');return}
@@ -311,9 +318,18 @@ let txF=true,TXMORE=false;
 function drawTx(){const q0=$('txq')?$('txq').value:'';txHead();if($('txq'))$('txq').value=q0;drawTxList()}
 function drawTxList(){const box=$('txl');const t=TXVIEW?TX[TXVIEW]:null;
  if(!t){box.innerHTML='<span class=mut style="padding:6px;display:block">'+(TX.captions.active||TX.whisper.active?'':'No transcript yet. Press Y to get the captions, or use a button above.')+'</span>';$('txs').textContent='';return}
- $('txs').textContent=t.cues.length+' lines';const q=($('txq')&&$('txq').value||'').trim().toLowerCase();
+ $('txs').textContent=t.cues.length+' lines'+(t.edited?' · '+t.edited+' corrected':'');const q=($('txq')&&$('txq').value||'').trim().toLowerCase();
  const hl=x=>{if(!q)return esc(x);const i=x.toLowerCase().indexOf(q);return i<0?esc(x):esc(x.slice(0,i))+'<mark>'+esc(x.slice(i,i+q.length))+'</mark>'+esc(x.slice(i+q.length))};
- box.innerHTML=t.cues.map((c,k)=>(!q||c[1].toLowerCase().includes(q))?`<div class=tl data-k=${k} data-t="${c[0]}"><span class=t>${fmt(c[0])}</span><span>${hl(c[1])}</span><span class=p data-pin=${k} title="Pin this line as a note at this time">pin</span></div>`:'').join('')||'<span class=mut style="padding:6px">No matches.</span>';TXNOW=-1;box.scrollTop=0}
+ box.innerHTML=t.cues.map((c,k)=>(!q||c[1].toLowerCase().includes(q))?`<div class=tl data-k=${k} data-t="${c[0]}"><span class=t>${fmt(c[0])}</span><span>${hl(c[1])}</span><span class=p data-edit=${k} title="Correct this line (Enter saves, Esc cancels)">edit</span><span class=p data-pin=${k} title="Pin this line as a note at this time">pin</span>${c[2]?'<span class=edm title="You corrected this line">✎</span>':''}</div>`:'').join('')||'<span class=mut style="padding:6px">No matches.</span>';TXNOW=-1;box.scrollTop=0}
+// Correct one transcript line in place. The time stays; the search index follows the new text.
+function editCue(k){const t=TX[TXVIEW];if(!t)return;const row=$('txl').querySelector(`.tl[data-k="${k}"]`);if(!row)return;const c=t.cues[k];
+ if(pl())pl().pauseVideo();TXHOLD=Date.now()+600000;
+ const ta=document.createElement('textarea');ta.className='cuedit';ta.value=c[1];ta.rows=Math.min(6,Math.max(2,Math.ceil(c[1].length/80)));ta.setAttribute('aria-label','Correct this transcript line');
+ const txt=row.children[1];txt.replaceWith(ta);row.querySelectorAll('.p').forEach(x=>x.style.display='none');ta.focus();ta.setSelectionRange(ta.value.length,ta.value.length);
+ const done=async save=>{ta.onblur=null;if(save){const v=ta.value.replace(/\s+/g,' ').trim();if(v&&v!==c[1]){const r=await P(`/api/transcript/${V.video_id}/cue`,{kind:TXVIEW,k,text:v},'PATCH');if(r.error){toast(r.error,6000)}else{t.cues[k]=[c[0],v,1];t.edited=r.edited;toast('Line corrected')}}}
+  TXHOLD=0;drawTx()};
+ ta.onkeydown=ev=>{ev.stopPropagation();if(ev.key=='Escape'){ev.preventDefault();done(false)}else if(ev.key=='Enter'&&!ev.shiftKey){ev.preventDefault();done(true)}};
+ ta.onblur=()=>done(true)}
 $('txh').onclick=async e=>{const b=e.target.closest('button,input');if(!b)return;
  if(b.dataset.view){TXVIEW=b.dataset.view;try{localStorage.setItem('txView',TXVIEW)}catch(x){}drawTx()}
  else if(b.dataset.get){const k=b.dataset.get;const r=await P('/api/transcript/'+V.video_id,{method:k});if(r.error){toast(r.error,6000);return}TX[k]={status:'missing',active:true};drawTx();loadTx()}
@@ -330,7 +346,7 @@ $('txh').onkeydown=e=>{if(e.target.id!='txq')return;e.stopPropagation();const hi
  else if(e.key=='Enter'||e.key=='ArrowDown'||e.key=='ArrowUp'){e.preventDefault();if(!hits.length){toast('No matches');return}TXHIT=e.key=='ArrowUp'?(TXHIT<=0?hits.length-1:TXHIT-1):(TXHIT>=hits.length-1?0:TXHIT+1);hits.forEach(h=>h.classList.remove('now'));const h=hits[TXHIT];h.classList.add('now');keepInView($('txl'),h);if(pl()){TXHOLD=Date.now()+5000;pl().seekTo(+h.dataset.t,true);pl().playVideo()}const c=$('txcount');if(c)c.textContent=(TXHIT+1)+' / '+hits.length;toast('Match '+(TXHIT+1)+' of '+hits.length+' · Enter or ↓ next, ↑ previous')}};
 $('txh').addEventListener('input',e=>{if(e.target.id=='txq'){TXHIT=-1;const f=$('txf');const lab=f&&f.closest('label');if(lab)lab.title=e.target.value?'Paused while a filter is typed':'Keep the current line highlighted and in view'}});
 $('txl').addEventListener('wheel',()=>{TXHOLD=Date.now()+5000},{passive:true});$('txl').addEventListener('touchmove',()=>{TXHOLD=Date.now()+5000},{passive:true});
-$('txl').onclick=async e=>{const pin=e.target.dataset.pin;if(pin!=null){const c=TX[TXVIEW].cues[+pin];const r=await P(`/api/watch/${V.video_id}/marks`,{t:c[0],body:c[1].slice(0,160)});V.marks.push({id:r.id,t:c[0],body:c[1].slice(0,160)});V.marks.sort((a,b)=>a.t-b.t);drawMarks();toast('Pinned at '+fmt(c[0]));return}
+$('txl').onclick=async e=>{if(e.target.tagName=='TEXTAREA')return;const ed=e.target.dataset.edit;if(ed!=null){editCue(+ed);return}const pin=e.target.dataset.pin;if(pin!=null){const c=TX[TXVIEW].cues[+pin];const r=await P(`/api/watch/${V.video_id}/marks`,{t:c[0],body:c[1].slice(0,160)});V.marks.push({id:r.id,t:c[0],body:c[1].slice(0,160)});V.marks.sort((a,b)=>a.t-b.t);drawMarks();toast('Pinned at '+fmt(c[0]));return}
  clearTimeout(SEEKT);if(e.detail>1)return;const sg=getSelection();if(sg&&!sg.isCollapsed&&compact(sg.toString()))return;
  const r=e.target.closest('[data-t]');if(r)SEEKT=setTimeout(()=>{const g=getSelection();if(g&&!g.isCollapsed&&compact(g.toString()))return;if(pl()){TXHOLD=0;pl().seekTo(+r.dataset.t,true);pl().playVideo()}},260)};
 let SEEKT=0;

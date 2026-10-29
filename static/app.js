@@ -196,6 +196,36 @@
   up.onclick=()=>go(0);dn.onclick=()=>go(sc.scrollHeight);
   const upd=()=>{const h=sc.clientHeight,t=sc.scrollTop,m=sc.scrollHeight;box.classList.toggle('on',m>h*3);up.disabled=t<h/2;dn.disabled=m-t-h<h/2};
   tgt.addEventListener('scroll',upd,{passive:true});addEventListener('resize',upd);new MutationObserver(upd).observe(el||document.body,{childList:true,subtree:true});upd();return upd};
+ // ---- rich notes: a small inline markup that stays readable as plain text, rendered to a tag whitelist.
+ //      **bold**  _italic_  __underline__  ~~strike~~  ==highlight==  ^super^  ~sub~   (\* etc. escapes a marker)
+ //      yc.rich(text) -> safe HTML.  yc.richBar(el, opts) -> toolbar above a textarea/input that wraps the selection;
+ //      Ctrl+B / I / U / H work in the field. Search still indexes the raw text, so marks never hide a word.
+ const RESC=s=>String(s==null?'':s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+ const RULES=[['**','b'],['__','u'],['~~','s'],['==','mark'],['_','i'],['^','sup'],['~','sub']];
+ yc.rich=t=>{let h=RESC(t);
+  h=h.replace(/\\([*_~=^\\])/g,(m,c)=>'&#'+c.charCodeAt(0)+';');            // escaped markers survive as literals
+  for(const [m,tag] of RULES){const e=m.replace(/[*^]/g,'\\$&');const wb=m=='_';   // _italics_ only at word edges, so snake_case and 2_3 stay literal; ^sup^ and ~sub~ may follow a letter (H~2~O)
+   h=h.replace(new RegExp((wb?'(^|[^\\w])':'()')+e+'(?=\\S)([^\\n]*?\\S)'+e+(wb?'(?![\\w])':''),'g'),`$1<${tag}>$2</${tag}>`)}
+  return h.replace(/\n/g,'<br>')};
+ yc.richPlain=t=>String(t||'').replace(/\\([*_~=^\\])/g,'$1').replace(/(\*\*|__|~~|==|[_^~])(?=\S)([^\n]*?\S)\1/g,'$2');
+ const EMO=['😀','😂','😍','🤔','😮','😢','😡','👍','👎','👏','🙏','🔥','⭐','❤️','✅','❌','⚠️','💡','📌','🔧','🔩','🧲','🪛','🔬','🖨️','📷','🎥','🎧','⚡','🧪','🧰','🪚','🪝','🧵','📏','📐','✂️','🧊','🌡️','⏱️','💾','🖥️','🔋','🔌','📦','🏷️','🎯','🚀','🎉','💯'];
+ yc.richBar=(el,o)=>{o=o||{};const bar=document.createElement('div');bar.className='rbar';bar.setAttribute('role','toolbar');bar.setAttribute('aria-label','Text formatting');
+  const B=[['**','B','Bold (Ctrl+B)','<b>B</b>'],['_','I','Italic (Ctrl+I)','<i>I</i>'],['__','U','Underline (Ctrl+U)','<u>U</u>'],['~~','S','Strikethrough','<s>S</s>'],['==','H','Highlight (Ctrl+H)','<mark>H</mark>'],['^','^','Superscript','x<sup style="font-size:.7em;vertical-align:super">2</sup>'],['~','v','Subscript','x<sub style="font-size:.7em;vertical-align:sub">2</sub>']];
+  bar.innerHTML=B.map(([m,k,t,l])=>`<button type=button class="sm ghost" data-m="${m}" title="${t}" aria-label="${t}">${l}</button>`).join('')+`<button type=button class="sm ghost" data-emoji title="Emoji" aria-label="Insert an emoji">😀</button><span class=rhelp title="**bold** _italic_ __underline__ ~~strike~~ ==highlight== ^super^ ~sub~  ·  \\* keeps a literal mark">?</span>`;
+  el.parentNode.insertBefore(bar,el);
+  const wrap=m=>{const a=el.selectionStart,b=el.selectionEnd,v=el.value;const sel=v.slice(a,b);
+   if(sel&&sel.startsWith(m)&&sel.endsWith(m)&&sel.length>=2*m.length){el.setRangeText(sel.slice(m.length,-m.length),a,b,'select')}
+   else if(sel){el.setRangeText(m+sel+m,a,b,'select');el.setSelectionRange(a+m.length,b+m.length)}
+   else if(v.slice(a,a+m.length)===m){el.setSelectionRange(a+m.length,a+m.length)}      // caret before the closing mark: step out of it
+   else{el.setRangeText(m+m,a,b,'end');el.setSelectionRange(a+m.length,a+m.length)}
+   el.focus();el.dispatchEvent(new Event('input',{bubbles:true}))};
+  const ins=t=>{const a=el.selectionStart,b=el.selectionEnd;el.setRangeText(t,a,b,'end');el.focus();el.dispatchEvent(new Event('input',{bubbles:true}))};
+  bar.addEventListener('mousedown',e=>{if(e.target.closest('button'))e.preventDefault()});   // keep the field's selection
+  bar.onclick=e=>{const b=e.target.closest('button');if(!b)return;if(b.dataset.m!=null){wrap(b.dataset.m);return}
+   if(b.hasAttribute('data-emoji')){let p=bar.querySelector('.emo');if(p){p.remove();el.focus();return}p=document.createElement('div');p.className='emo';p.setAttribute('role','listbox');p.innerHTML=EMO.map(x=>`<button type=button data-e="${x}" aria-label="${x}">${x}</button>`).join('');bar.appendChild(p);
+    p.addEventListener('mousedown',ev=>ev.preventDefault());p.onclick=ev=>{const q=ev.target.closest('[data-e]');if(q){ins(q.dataset.e);p.remove()}};const close=ev=>{if(!bar.contains(ev.target)){p.remove();document.removeEventListener('mousedown',close,true)}};setTimeout(()=>document.addEventListener('mousedown',close,true),0)}};
+  el.addEventListener('keydown',e=>{if(!(e.ctrlKey||e.metaKey)||e.altKey)return;const k=e.key.toLowerCase();const m={b:'**',i:'_',u:'__',h:'=='}[k];if(m){e.preventDefault();e.stopPropagation();wrap(m)}});
+  return bar};
  // status nodes announce politely
  if(!document.documentElement.lang)document.documentElement.lang='en';
  document.querySelectorAll('#info,#vs,#st,#pos,#toast').forEach(el=>{if(!el.getAttribute('role')){el.setAttribute('role','status');el.setAttribute('aria-live','polite')}});
