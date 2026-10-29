@@ -75,17 +75,23 @@ def _page_id(url):
     return None, 'could not fetch the channel page'
 
 def _ytdlp_id(url):
+    if FAKE: return None, 'fake: no yt-dlp'
     try:
         import yt_dlp
     except Exception:
         return None, 'yt-dlp not installed'
+    import ytpace
+    if ytpace.paused(): return None, 'YouTube asked us to slow down'
     try:
-        with yt_dlp.YoutubeDL({'quiet': True, 'no_warnings': True, 'extract_flat': True, 'playlist_items': '0', 'skip_download': True}) as y:
+        with yt_dlp.YoutubeDL({'quiet': True, 'no_warnings': True, 'extract_flat': True, 'playlist_items': '0', 'skip_download': True, 'socket_timeout': 20,
+                               'extractor_args': {'youtube': {'player_skip': ['js', 'configs']}}}) as y:
             info = y.extract_info(url, download=False) or {}
         cid = info.get('channel_id') or info.get('uploader_id') or ''
         return (cid, 'ytdlp') if UC.fullmatch(cid) else (None, 'yt-dlp gave no channel id')
     except Exception as e:
-        return None, f'yt-dlp: {str(e)[:120]}'
+        msg = str(e)
+        if re.search(r'429|Too Many|Sign in to confirm|bot', msg, re.I): ytpace.hit()
+        return None, f'yt-dlp: {msg[:120]}'
 
 def resolve_url(url):
     """channel_url -> (UC id, how) or (None, error). Cheapest path first."""
@@ -269,7 +275,8 @@ def setup(app, DB):
 
     @app.get('/api/feed/summary')
     def f_summary():
-        c = con(); s = ff.summary(c); c.close(); s['job'] = dict(ff.JOB); s['resolve'] = dict(JOB); return s
+        import ytpace
+        c = con(); s = ff.summary(c); c.close(); s['job'] = dict(ff.JOB); s['resolve'] = dict(JOB); s['pace'] = ytpace.status(); return s
 
     @app.get('/api/feed/items')
     def f_items(view: str = 'newest', limit: int = 200, offset: int = 0, shorts: str | None = None, channel: str | None = None, q: str | None = None):

@@ -13,6 +13,7 @@ Feed page. See docs/PRIVACY.md.
 """
 import os, re, json, sqlite3, threading, time, random, gzip, urllib.request, urllib.error, datetime as dt
 import xml.etree.ElementTree as ET
+import ytpace
 
 FAKE = os.environ.get('ORG_FEED_FAKE')   # tests only: Atom from tests/fixtures/feed/<channel_id>.xml, no network
 FIX = os.environ.get('ORG_FEED_FIXTURES') or os.path.join(os.path.dirname(os.path.abspath(__file__)), 'tests', 'fixtures', 'feed')
@@ -115,7 +116,7 @@ def fetch_feed(channel_id, etag=None, last_modified=None):
         except urllib.error.HTTPError as e:
             if e.code == 304: return 'unchanged', None, etag, last_modified
             if e.code in (404, 410): return 'fail', f'http {e.code}', None, None
-            if e.code == 429: return 'fail', 'http 429', None, None
+            if e.code == 429: ytpace.hit(); return 'fail', 'http 429', None, None
             if attempt: return 'fail', f'http {e.code}', None, None
             time.sleep(2)
         except ET.ParseError as e:
@@ -137,6 +138,7 @@ def probe_short(video_id):
         with op.open(req, timeout=15) as r: return 1 if r.status == 200 else None
     except urllib.error.HTTPError as e:
         if e.code in (301, 302, 303, 307, 308): return 0
+        if e.code == 429: ytpace.hit()
         return None
     except Exception:
         return None
@@ -203,11 +205,16 @@ def run_pass(path, kind, channel_ids=None, workers=4):
         new_ids = []
         def work():
             while not JOB['cancel'] and not POLLER['stop']:
+                if ytpace.paused() and not FAKE:
+                    JOB['note'] = 'YouTube asked us to slow down; resuming at ' + (ytpace.resume_at() or '')
+                    if not ytpace.sleep_if_paused(lambda: JOB['cancel'] or POLLER['stop']): return
+                    JOB['note'] = ''
                 with lk:
                     if idx[0] >= len(ids): return
                     cid = ids[idx[0]]; idx[0] += 1
                 et, lm = meta.get(cid, (None, None))
                 st, res, et2, lm2 = fetch_feed(cid, et, lm)
+                if st in ('ok', 'unchanged'): ytpace.ok()
                 with lk:
                     # one short write transaction per channel, committed at once, so the pages never wait on this worker
                     if st == 'ok':
@@ -221,7 +228,7 @@ def run_pass(path, kind, channel_ids=None, workers=4):
                     else:
                         c.execute("update channels set last_polled=?,poll_error=?,fail_n=fail_n+1 where channel_id=?", (now(), res, cid)); JOB['failed'] += 1
                         if res == 'http 429':
-                            JOB['note'] = 'YouTube is throttling; stopped early. Try again in a while.'; JOB['cancel'] = True
+                            JOB['note'] = 'YouTube asked us to slow down; resuming at ' + (ytpace.resume_at() or '')
                     JOB['done'] += 1
                     c.commit()
                 if not FAKE: time.sleep(random.uniform(0.25, 0.6))   # ~4 workers -> ~8 requests/s at most
@@ -229,14 +236,21 @@ def run_pass(path, kind, channel_ids=None, workers=4):
         [t.start() for t in ths]; [t.join() for t in ths]
         c.commit()
         # Shorts probe for anything still unknown (new this pass, or left over)
-        todo = [r[0] for r in c.execute("select video_id from feed_items where is_short is null and state in ('new','seen') order by published_at desc limit 2000")]
+        # Shorts probe: newest first, at most 500 per pass and about one a second, so a backlog drains over several
+        # wake-ups instead of as one burst that eats the address's rate budget (captions share it)
+        todo = [r[0] for r in c.execute("select video_id from feed_items where is_short is null and state in ('new','seen') order by published_at desc limit 500")]
         JOB.update(kind=kind + ':shorts', total=len(todo), done=0)
         for vid in todo:
             if JOB['cancel'] or POLLER['stop']: break
+            if ytpace.paused() and not FAKE:
+                JOB['note'] = 'YouTube asked us to slow down; resuming at ' + (ytpace.resume_at() or '')
+                if not ytpace.sleep_if_paused(lambda: JOB['cancel'] or POLLER['stop']): break
+                JOB['note'] = ''
             r = probe_short(vid)   # network first, outside any transaction
+            if r is not None: ytpace.ok()
             if r is not None: c.execute("update feed_items set is_short=?,is_short_src='probe' where video_id=?", (r, vid)); c.commit()
             JOB['done'] += 1
-            if not FAKE: time.sleep(random.uniform(0.15, 0.35))
+            if not FAKE: time.sleep(random.uniform(0.8, 1.3))
         c.commit()
         c.execute("insert into feed_log(at,kind,channels,new_items,unchanged,failed,seconds,note) values(?,?,?,?,?,?,?,?)",
                   (now(), kind, len(ids), JOB['new'], JOB['unchanged'], JOB['failed'], round(time.time() - t0, 1), JOB['note'] or None))
@@ -268,7 +282,11 @@ def _poll_loop(path):
         time.sleep(1)
     while not POLLER['stop']:
         try:
-            if time.time() - LAST_USER_ACTION[0] > 120 and not JOB['running']:
+            tx_busy = False
+            try:
+                import transcripts; tx_busy = bool(transcripts.QUEUE_LEN())
+            except Exception: pass
+            if time.time() - LAST_USER_ACTION[0] > 120 and not JOB['running'] and not tx_busy and not ytpace.paused():
                 c = sqlite3.connect(path, timeout=30); c.execute('pragma busy_timeout=30000')
                 on = setting(c, 'polling', '0') == '1' and setting(c, 'first_pass_at')
                 due = due_channels(c) if on else []

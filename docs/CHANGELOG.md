@@ -25,6 +25,13 @@ Watch page
 - The transcript header is flat: Follow Along, Note on Line, Voice on Line, Copy and Remove sit on their own line under Find, with no ⋯ button
 - The video endpoint tolerates a video with no triage row
 
+YouTube rate limits (`ytpace.py`)
+- Every request the app makes to youtube.com (caption fetches, feed checks, Shorts probes, the yt-dlp channel fallback) now shares one pace: a 429 anywhere pauses all of them for 5 minutes, doubling on repeats up to an hour, and resets after a quiet half hour. The Watch and Feed pages say "YouTube asked us to slow down; resuming at …" while it lasts
+- Caption fetches skip yt-dlp's player-JS and config requests (`player_skip`), roughly halving the requests per video
+- The Shorts probe runs at about one request a second and at most 500 per pass, so a backlog drains over several wake-ups rather than as one burst
+- The background feed check waits while transcript jobs are queued or running: captions you asked for go first
+- The yt-dlp channel-id fallback respects the pace and never runs under the test doubles
+
 Step 1 — Channel identity
 - New **Feed** page in the topbar and the Commander rail; `G` (Go to My Feed) jumps to it from Commander, History and the Watch page (with no video loaded). For now it holds one thing: the Channels panel
 - **Resolve Channels** (`R`) finds the stable YouTube id behind every channel in the library: one oEmbed lookup for each video imported before this version (to get the channel's page link), then one visit to each distinct channel page to read its `UC…` id. Progress and a Cancel button while it runs; the result is a per-channel list with handle, video count and how the id was found

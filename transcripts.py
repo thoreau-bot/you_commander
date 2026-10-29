@@ -4,10 +4,12 @@ that path downloads the audio to a temporary file, transcribes it on this machin
 Never an automatic pass over the library. YouTube's terms do not provide a download for other people's videos; this is a personal,
 private reference tool and using it is your call (see the design doc)."""
 import os, re, json, sqlite3, threading, time, random, tempfile, shutil
+import ytpace
 from fastapi.responses import JSONResponse
 from pydantic import BaseModel
 
 FAKE = os.environ.get('ORG_TRANSCRIPT_FAKE')   # tests only
+QUEUE_LEN = lambda: 0   # set by setup(): how many transcript jobs are queued or running (the feed poller waits for them)
 SCHEMA = """
 create table if not exists transcripts(video_id TEXT, kind TEXT, status TEXT, model TEXT, language TEXT,
   text TEXT, cues TEXT, error TEXT, fetched_at TEXT, PRIMARY KEY(video_id, kind));
@@ -65,7 +67,11 @@ def fetch_captions(vid):
         if vid[0] in '-_': return None
         return {'language': 'en', 'kind': 'auto', 'cues': merge_cues([(i * 4.0, f'Test caption line {i} for {vid}.') for i in range(400)])}
     import yt_dlp
-    opts = {'quiet': True, 'no_warnings': True, 'skip_download': True, 'noplaylist': True, 'socket_timeout': 25}
+    # Subtitles only: skip the player JS and the stream-format resolution yt-dlp does by default, which is most of the
+    # requests (and most of what trips YouTube's rate limit) for a fetch that never downloads anything.
+    opts = {'quiet': True, 'no_warnings': True, 'skip_download': True, 'noplaylist': True, 'socket_timeout': 25,
+            'writesubtitles': True, 'writeautomaticsub': True, 'subtitleslangs': ['en', 'en-orig', 'en-US', 'en-GB'],
+            'extractor_args': {'youtube': {'player_skip': ['js', 'configs'], 'player_client': ['web']}}}
     with yt_dlp.YoutubeDL(opts) as ydl:
         info = ydl.extract_info('https://www.youtube.com/watch?v=' + vid, download=False)
         tr = _pick_track(info)
@@ -132,7 +138,8 @@ def setup(app, DB):
             msg = str(e)[:300]
             save(vid, method, 'error', error=msg)
             JOB['note'] = msg
-            if re.search(r'429|Too Many|Sign in to confirm|bot', msg, re.I): return 'blocked'
+            if re.search(r'429|Too Many|Sign in to confirm|bot', msg, re.I):
+                ytpace.hit(); return 'blocked'
             return 'err'
 
     def worker():
@@ -143,17 +150,27 @@ def setup(app, DB):
                     QUEUE.clear(); JOB['running'] = False; JOB['current'] = None; JOB['method'] = None; JOB['cancel'] = False; return
                 vid, method = QUEUE.pop(0)
             JOB['current'] = vid; JOB['method'] = method
+            if ytpace.paused() and not FAKE:
+                JOB['note'] = 'YouTube asked us to slow down; resuming at ' + (ytpace.resume_at() or '')
+                if not ytpace.sleep_if_paused(lambda: JOB['cancel']): continue
+                JOB['note'] = ''
             r = run_one(vid, method)
+            if r in ('ok', 'none'): ytpace.ok()
             JOB['done'] += 1
             if r == 'blocked':
                 JOB['err'] += 1; blocked += 1
                 if blocked >= 3:
-                    JOB['note'] = 'YouTube is throttling requests. Stopped; wait a while and try again. ' + JOB['note']
+                    JOB['note'] = 'YouTube is throttling requests. Stopped; wait a while and try again.'
                     with LOCK: QUEUE.clear()
+                elif QUEUE and not FAKE:
+                    JOB['note'] = 'YouTube asked us to slow down; resuming at ' + (ytpace.resume_at() or '')
                 continue
             blocked = 0
             JOB['ok' if r == 'ok' else 'none' if r == 'none' else 'err'] += 1
             if QUEUE and not FAKE: time.sleep(random.uniform(1.5, 3.5))   # be polite
+
+    global QUEUE_LEN
+    QUEUE_LEN = lambda: len(QUEUE) + (1 if JOB['running'] else 0)
 
     def enqueue(items, front=False):
         with LOCK:
@@ -174,7 +191,7 @@ def setup(app, DB):
         try:
             import voice; w = voice.whisper_installed()
         except Exception: w = False
-        return {'yt_dlp': have_ytdlp() or bool(FAKE), 'whisper': w, 'job': dict(JOB, queued=len(QUEUE))}
+        return {'yt_dlp': have_ytdlp() or bool(FAKE), 'whisper': w, 'job': dict(JOB, queued=len(QUEUE)), 'pace': ytpace.status()}
 
     def is_active(vid, kind): return (JOB['current'], JOB['method']) == (vid, kind) or (vid, kind) in QUEUE
 
@@ -188,6 +205,7 @@ def setup(app, DB):
             d = dict(r); d['cues'] = json.loads(d['cues']) if d['cues'] else []; d.pop('text', None); d['active'] = is_active(vid, d['kind'])
             d['edited'] = sum(1 for x in d['cues'] if len(x) > 2 and x[2])
             out[d['kind']] = d
+        out['pace'] = ytpace.status(); out['note'] = JOB.get('note') or ''
         return out
 
     @app.post('/api/transcript/{vid}')

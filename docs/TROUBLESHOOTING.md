@@ -18,5 +18,8 @@
 
 **Reset** – stop the app and delete `organizer.db`.
 
+## "YouTube asked us to slow down" / HTTP 429
+YouTube throttles by address, across everything the app asks it for. Caption fetches are the heaviest (several requests per video), so they are the first to see a 429. When one arrives the app pauses all its YouTube traffic for a few minutes (longer if it keeps happening) and resumes on its own; the Watch and Feed pages show the resume time. Queue captions in smaller batches if it recurs, and leave the background feed check ticked: it waits while captions are queued.
+
 ## "database is locked", or the Watch page stays black
 Before 1.9's fix, a running Feed background check could hold the database for long stretches. If you still see this: the Feed page's "Check for new videos in the background" box can be unticked (Check Now still works on demand), and `BACKUP.bat` is always safe to run. Report it with the console log if it persists.

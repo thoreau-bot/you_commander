@@ -10,6 +10,7 @@ Single-process FastAPI app serving static HTML pages (vanilla JS, no build step)
 | `transcripts.py` | Caption fetch (`yt-dlp`, json3), Whisper path, background worker, transcript search |
 | `voice.py` | Local `faster-whisper` transcription, optional Ollama tag extraction |
 | `feed.py` | Feed: channel identity (`channels`, `video_channel`, the resolver worker), `/feed` and the `/api/feed/*` endpoints |
+| `ytpace.py` | One shared pace for every request to youtube.com: a 429 anywhere pauses all workers, with backoff |
 | `feed_fetch.py` | Feed: per-channel Atom fetch with conditional GETs, the Shorts HEAD probe, the tiered background poller, `feed_items` |
 | `ui.html` `feed.html` `triage.html` `watch.html` `history.html` `import.html` | Pages |
 | `static/app.css` `static/app.js` | Shared visual system (tokens, controls, light/dark) and the `?` help overlay; served at `/static/` |

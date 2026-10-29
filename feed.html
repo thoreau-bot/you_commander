@@ -163,6 +163,7 @@ function fstatusLine(j){
  if(S.last_polled)s+=` Last checked ${ago(S.last_polled)}`+(lr&&lr.failed?`, ${n(lr.failed)} channel${lr.failed>1?'s':''} could not be read.`:'.');
  if(S.polling){const t=S.tiers||{};s+=` Checking in the background: ${[t.hourly?n(t.hourly)+' hourly':'',t.sixhourly?n(t.sixhourly)+' every 6 h':'',t.daily?n(t.daily)+' daily':''].filter(Boolean).join(', ')}.`}
  if(S.unknown_len)s+=` ${n(S.unknown_len)} still being told apart from Shorts.`;
+ if(S.pace&&S.pace.paused)s+=` YouTube asked us to slow down; checks resume at ${S.pace.resume_at}.`;
  return s}
 function shownItems(){const q=fq2.value.trim().toLowerCase();return ITEMS.filter(i=>!q||((i.title||'')+' '+(i.channel||'')).toLowerCase().includes(q))}
 function drawFeed(j){if(j!==undefined)LASTF=j;j=LASTF;
