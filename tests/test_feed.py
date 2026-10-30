@@ -303,3 +303,27 @@ def test_shorts_tag_guess_and_standalone_probe(resolved):
     _wait_fetch(client)
     assert client.get('/api/feed/fetch/status').json()['kind'] == 'shorts'
     c = sqlite3.connect(db); c.execute("delete from feed_items where video_id in ('Uguess00001','Uplain00001')"); c.commit(); c.close()
+
+def test_pull_brings_a_feed_item_into_the_library(resolved):
+    client = resolved; db = os.environ['ORG_DB']
+    client.post('/api/feed/fetch'); _wait_fetch(client)
+    items = client.get('/api/feed/items').json(); assert items
+    vid = items[0]['video_id']
+    assert client.get(f'/api/video/{vid}').json() == {}                     # not a library video yet
+    r = client.post('/api/feed/pull', json={'video_ids': [vid]}).json()
+    assert r['ok'] and r['added'] == 1
+    v = client.get(f'/api/video/{vid}').json()
+    assert v['title'] == items[0]['title'] and v['channel'] == items[0]['channel'] and v['status'] == 'new'
+    assert any(t['name'] == 'Inbox' for t in v['tags'])
+    assert vid not in [i['video_id'] for i in client.get('/api/feed/items').json()]     # out of the feed
+    aud = client.get('/api/videos', params={'audit': 'from_feed'}).json()
+    assert aud and aud[0]['video_id'] == vid
+    assert client.get('/api/summary').json()['from_feed'] >= 1
+    assert client.post('/api/feed/pull', json={'video_ids': [vid]}).json()['added'] == 0   # idempotent
+    # the Watch page's data now exists for it
+    assert client.get(f'/api/watch/{vid}').status_code == 200
+    c = sqlite3.connect(db)
+    for t in ('videos', 'video_tags', 'triage', 'video_channel', 'watch_state', 'watch_log'):
+        try: c.execute(f"delete from {t} where video_id=?", (vid,))
+        except Exception: pass
+    c.execute("update feed_items set state='new' where video_id=?", (vid,)); c.commit(); c.close()

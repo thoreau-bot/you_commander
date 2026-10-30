@@ -179,7 +179,7 @@ def start(path):
     threading.Thread(target=_worker, args=(path,), name='feed-resolve', daemon=True).start(); return True
 
 # ---------------------------------------------------------------- app wiring
-def setup(app, DB):
+def setup(app, DB, fts_dirty_cb=lambda: None):
     ensure_schema(DB)
     def con():
         c = sqlite3.connect(DB, timeout=30); c.row_factory = sqlite3.Row; return c
@@ -292,6 +292,29 @@ def setup(app, DB):
 
     @app.get('/api/feed/fetch/status')
     def f_status(): return dict(ff.JOB)
+
+    class Pull(BaseModel): video_ids: list[str]
+    @app.post('/api/feed/pull')
+    def f_pull(b: Pull):
+        """Bring feed items into the library: a videos row (title, channel, channel link), an Inbox tag, a triage row,
+        a channel link, pulled_at for the From Feed audit; the feed item becomes 'pulled'. Idempotent per video."""
+        c = con(); t = ff.now(); n = 0
+        inbox = c.execute("select id from tags where name='Inbox'").fetchone()
+        for vid in dict.fromkeys(b.video_ids):
+            it = c.execute("select i.*, ch.title channel, ch.channel_url from feed_items i join channels ch using(channel_id) where i.video_id=?", (vid,)).fetchone()
+            if not it: continue
+            if not c.execute("select 1 from videos where video_id=?", (vid,)).fetchone():
+                c.execute("insert into videos(video_id,title,channel,channel_url,title_source,published_at,pulled_at) values(?,?,?,?,'feed',?,?)",
+                          (vid, it['title'], it['channel'], it['channel_url'], it['published_at'], t))
+                if inbox: c.execute("insert or ignore into video_tags(video_id,tag_id,source,confirmed) values(?,?,'feed',1)", (vid, inbox[0]))
+                c.execute("insert or ignore into triage(video_id,status) values(?,'new')", (vid,))
+                n += 1
+            else:
+                c.execute("update videos set pulled_at=coalesce(pulled_at,?) where video_id=?", (t, vid))
+            c.execute("insert or replace into video_channel(video_id,channel_id) values(?,?)", (vid, it['channel_id']))
+            c.execute("update feed_items set state='pulled',state_at=? where video_id=? and state in ('new','seen')", (t, vid))
+        c.commit(); c.close(); fts_dirty_cb()
+        return {'ok': 1, 'added': n}
 
     class St(BaseModel): video_ids: list[str]; state: str
     @app.post('/api/feed/items/state')

@@ -129,8 +129,8 @@ let PEND_OPEN=null;   // {start,paused}: open the next preview cued at a moment 
 function startPlayer(id){logOpen(id,'commander');destroyPlayer();const po=PEND_OPEN;PEND_OPEN=null;const mk=()=>{PLAYER=new YT.Player('pl_'+id,{host:'https://www.youtube-nocookie.com',videoId:id,playerVars:{autoplay:po&&po.paused?0:1,start:po?Math.floor(po.start||0):0,mute:MUTED?1:0,rel:0,playsinline:1},events:{onReady:e=>{MUTED?e.target.mute():e.target.unMute();if(po&&po.paused){try{e.target.pauseVideo()}catch(x){}say('Paused at '+Math.floor((po.start||0)/60)+':'+String(Math.floor(po.start||0)%60).padStart(2,'0')+', where you left off',3500)}else e.target.playVideo()}}})};if(window.YT&&YT.Player)mk();else{const t=setInterval(()=>{if(window.YT&&YT.Player){clearInterval(t);mk()}},200)}}
 let TAGS=[],SM={},cur={},J=async(u,o)=>(await fetch(u,o)).json();
 const esc=s=>(s||'').replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
-const AL={recent_adds:'Recent Adds',duplicates:'In Several Playlists',unavailable:'Unavailable',untagged_inbox:'Watch Later, Not Yet Sorted'};
-const AT={recent_adds:'The 200 most recently added videos',duplicates:'Videos that sit in more than one playlist',unavailable:'Private, removed or otherwise unplayable videos',untagged_inbox:'Still in Watch later and not tagged yet'};
+const AL={recent_adds:'Recent Adds',from_feed:'From Feed',duplicates:'In Several Playlists',unavailable:'Unavailable',untagged_inbox:'Watch Later, Not Yet Sorted'};
+const AT={recent_adds:'The 200 most recently added videos',from_feed:'Videos you pulled in from the Feed, newest first; tick them and press T to triage the batch',duplicates:'Videos that sit in more than one playlist',unavailable:'Private, removed or otherwise unplayable videos',untagged_inbox:'Still in Watch later and not tagged yet'};
 const PAGE=200;
 const say=(m,ms)=>yc.toast(m,ms);
 // ---- one owner for the view: cur, the rail highlight, the title line and the editor sheet ----

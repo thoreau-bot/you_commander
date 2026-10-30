@@ -83,7 +83,7 @@ main{max-width:1120px;margin:auto;padding:18px 22px 60px}
 <div id=help><div class=card>
  <h2>Keyboard shortcuts<span class=mut>Esc or ? closes</span></h2>
  <div class=cols>
-  <div><h3>New Videos</h3><dl><dt><kbd>↑</kbd><kbd>↓</kbd></dt><dd>move</dd><dt><kbd>Home</kbd><kbd>End</kbd></dt><dd>first, last (the round buttons at bottom left do the same by mouse)</dd><dt><kbd>Space</kbd></dt><dd>play here</dd><dt><kbd>W</kbd></dt><dd>Watch in Theater, with the rest of the list as the queue</dd><dt><kbd>Y</kbd></dt><dd>open on YouTube</dd><dt><kbd>X</kbd></dt><dd>dismiss (Z undoes while the toast shows)</dd><dt><kbd>R</kbd></dt><dd>Fetch New Videos (or Cancel while running)</dd><dt><kbd>/</kbd></dt><dd>filter</dd><dt><kbd>1</kbd><kbd>2</kbd><kbd>3</kbd></dt><dd>All, Videos, Shorts</dd></dl></div>
+  <div><h3>New Videos</h3><dl><dt><kbd>↑</kbd><kbd>↓</kbd></dt><dd>move</dd><dt><kbd>Home</kbd><kbd>End</kbd></dt><dd>first, last (the round buttons at bottom left do the same by mouse)</dd><dt><kbd>Space</kbd></dt><dd>play here</dd><dt><kbd>W</kbd></dt><dd>Watch in Theater: the video joins your library (Inbox), with the next nine as its queue</dd><dt><kbd>P</kbd></dt><dd>Pull into Triage: add to the library as Inbox without watching now</dd><dt><kbd>Y</kbd></dt><dd>open on YouTube</dd><dt><kbd>X</kbd></dt><dd>dismiss (Z undoes while the toast shows)</dd><dt><kbd>R</kbd></dt><dd>Fetch New Videos (or Cancel while running)</dd><dt><kbd>/</kbd></dt><dd>filter</dd><dt><kbd>1</kbd><kbd>2</kbd><kbd>3</kbd></dt><dd>All, Videos, Shorts</dd></dl></div>
   <div><h3>Pages &amp; views</h3><dl><dt><kbd>C</kbd></dt><dd>Channels view, and back</dd><dt>click a column title</dt><dd>sort by it; again to reverse (remembered on this computer)</dd><dt><kbd>Esc</kbd></dt><dd>close the preview, then back to Commander</dd></dl></div>
  </div>
 </div></div>
@@ -186,7 +186,7 @@ function drawFeed(j){if(j!==undefined)LASTF=j;j=LASTF;
  L.forEach((i,k)=>{const day=i.published_at.slice(0,10);if(day!==last){last=day;html+=`<div class=divider>${dayLabel(day)}</div>`}
   const open=OPEN===i.video_id;
   html+=`<div class="vrow${k==FI?' f':''}${open?' open':''}" data-v="${i.video_id}" data-k=${k}><a class=th href="https://youtu.be/${i.video_id}" target=_blank rel=noopener tabindex=-1 aria-label="Open on YouTube">${i.thumb_url?`<img src="${esc(i.thumb_url)}" alt="" loading=lazy>`:''}${i.is_short?'<span class=tag title="'+(i.is_short_src=='guess'?'Tagged #shorts by the channel; not yet confirmed':'Short')+'">Short'+(i.is_short_src=='guess'?'?':'')+'</span>':i.is_short==null?'<span class=tag title="Not yet told apart from Shorts">?</span>':''}</a><div><div class=t><a href="/watch?v=${i.video_id}" data-w="${i.video_id}">${esc(i.title)}</a></div><small>${ago(i.published_at)}${i.duration_s?' · '+clock(i.duration_s):''}</small></div><div><small title="${esc(i.handle||'')}">${esc(i.channel)}</small></div><div class=num title="${i.views_at?'As of '+when(i.views_at):''}">${kfmt(i.views)}</div></div>`;
-  if(open)html+=`<div class=prev><div class=stage id="st_${i.video_id}"><div id="pl_${i.video_id}"></div></div><div class=acts><button data-act=w>Watch in Theater<kbd>W</kbd></button><button data-act=y class=ghost>Open on YouTube<kbd>Y</kbd></button><span class=sp></span><button data-act=x class=ghost>Dismiss<kbd>X</kbd></button></div></div>`});
+  if(open)html+=`<div class=prev><div class=stage id="st_${i.video_id}"><div id="pl_${i.video_id}"></div></div><div class=acts><button data-act=w>Watch in Theater<kbd>W</kbd></button><button data-act=p class=ghost title="Add to the library as Inbox, to sort in Triage later">Pull into Triage<kbd>P</kbd></button><button data-act=y class=ghost>Open on YouTube<kbd>Y</kbd></button><span class=sp></span><button data-act=x class=ghost>Dismiss<kbd>X</kbd></button></div></div>`});
  flist.innerHTML=html;fmore.style.display=MORE?'':'none';
  const f=flist.querySelector('.vrow.f');if(f&&VIEW=='feed')f.scrollIntoView({block:'nearest'})}
 const clock=s=>{s=Math.floor(s||0);const h=Math.floor(s/3600),m=Math.floor(s%3600/60),x=s%60;return(h?h+':'+String(m).padStart(2,'0'):m)+':'+String(x).padStart(2,'0')};
@@ -200,12 +200,21 @@ function openPreview(id){if(OPEN===id){closePreview();return}destroyPlayer();OPE
  const mk=()=>{PLAYER=new YT.Player('pl_'+id,{host:'https://www.youtube-nocookie.com',videoId:id,playerVars:{autoplay:1,rel:0,playsinline:1},events:{onReady:e=>e.target.playVideo()}})};
  if(window.YT&&YT.Player)mk();else{const t=setInterval(()=>{if(window.YT&&YT.Player){clearInterval(t);mk()}},200)}
  try{fetch('/api/watch/'+id+'/open',{method:'POST',headers:{'content-type':'application/json'},body:JSON.stringify({source:'feed'})})}catch(e){}}
-function watchFrom(){const L=shownItems();if(!L.length){yc.toast('Nothing to watch here');return}const k=Math.max(0,Math.min(L.length-1,FI));const ids=L.map(x=>x.video_id).slice(0,300);if(!ids.includes(L[k].video_id))ids.unshift(L[k].video_id);try{localStorage.setItem('watchIds',JSON.stringify(ids))}catch(e){}location.href='/watch?q=1&v='+L[k].video_id}
+// Watching a feed item means bringing it into the library (Inbox + From Feed audit); the Watch page only plays library
+// videos. The video and the nine behind it are pulled so the Watch queue works.
+async function pullIds(ids){if(!ids.length)return{added:0};return await P('/api/feed/pull',{video_ids:ids})}
+async function watchFrom(){const L=shownItems();if(!L.length){yc.toast('Nothing to watch here');return}const k=Math.max(0,Math.min(L.length-1,FI));
+ let ids=L.map(x=>x.video_id).slice(k,k+10);if(!ids.includes(L[k].video_id))ids.unshift(L[k].video_id);
+ yc.toast('Adding to your library…');const r=await pullIds(ids);if(r.error){yc.toast(r.error,6000);return}
+ try{localStorage.setItem('watchIds',JSON.stringify(ids))}catch(e){}location.href='/watch?q=1&v='+L[k].video_id}
+async function pullToTriage(ids){ids=ids.filter(Boolean);if(!ids.length)return;const r=await pullIds(ids);if(r.error){yc.toast(r.error,6000);return}
+ ITEMS=ITEMS.filter(i=>!ids.includes(i.video_id));S.new=Math.max(0,(S.new||0)-ids.length);FI=Math.min(FI,Math.max(0,ITEMS.length-1));if(ids.includes(OPEN)){destroyPlayer();OPEN=null}drawFeed();
+ yc.toast((ids.length>1?ids.length+' videos':'Video')+' pulled into the library (Inbox, and the From Feed audit in Commander).',5000)}
 async function dismiss(ids){ids=ids.filter(Boolean);if(!ids.length)return;const L=shownItems();const nextId=(L[FI+1]||L[FI-1]||{}).video_id;
  await P('/api/feed/items/state',{video_ids:ids,state:'dismissed'});if(ids.includes(OPEN)){destroyPlayer();OPEN=null}
  ITEMS=ITEMS.filter(i=>!ids.includes(i.video_id));S.new=Math.max(0,(S.new||0)-ids.length);const k=ITEMS.findIndex(i=>i.video_id==nextId);FI=k<0?Math.min(FI,Math.max(0,ITEMS.length-1)):k;drawFeed();
  yc.toast(ids.length>1?`${ids.length} dismissed`:'Dismissed',5000,{undo:async()=>{await P('/api/feed/items/state',{video_ids:ids,state:'new'});await loadItems();yc.toast('Restored')}})}
-flist.onclick=e=>{const a=e.target.closest('[data-act]');if(a){const id=OPEN;if(a.dataset.act=='w'){FI=shownItems().findIndex(i=>i.video_id==id);watchFrom()}else if(a.dataset.act=='y')window.open('https://youtu.be/'+id,'_blank','noopener');else dismiss([id]);return}
+flist.onclick=e=>{const a=e.target.closest('[data-act]');if(a){const id=OPEN;if(a.dataset.act=='w'){FI=shownItems().findIndex(i=>i.video_id==id);watchFrom()}else if(a.dataset.act=='p'){pullToTriage([id])}else if(a.dataset.act=='y')window.open('https://youtu.be/'+id,'_blank','noopener');else dismiss([id]);return}
  const w=e.target.closest('[data-w]');if(w){e.preventDefault();FI=Number(w.closest('.vrow').dataset.k);watchFrom();return}
  if(e.target.closest('a'))return;
  const r=e.target.closest('.vrow[data-v]');if(!r)return;FI=Number(r.dataset.k);if(e.detail>1)return;openPreview(r.dataset.v)};
@@ -249,6 +258,7 @@ addEventListener('keydown',e=>{const a=document.activeElement;if(a&&a.tagName=='
  else if(kl=='w'){e.preventDefault();watchFrom()}
  else if(kl=='y'&&L[FI]){e.preventDefault();window.open('https://youtu.be/'+L[FI].video_id,'_blank','noopener')}
  else if(kl=='x'&&L[FI]){e.preventDefault();dismiss([L[FI].video_id])}
+ else if(kl=='p'&&L[FI]){e.preventDefault();pullToTriage([L[FI].video_id])}
  else if(kl=='r'){e.preventDefault();(FRUN?fcancel:fetchb).click()}
  else if(k=='1'||k=='2'||k=='3'){e.preventDefault();SHOW=['all','videos','shorts'][Number(k)-1];try{localStorage.setItem('feedShow',JSON.stringify(SHOW))}catch(e){}FI=0;closePreview();loadItems()}});
 yc.jump();

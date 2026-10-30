@@ -36,8 +36,11 @@ def ensure_schema(path):
     c.execute('PRAGMA journal_mode=WAL')
     c.executescript(SCHEMA)
     # 1.9: the channel's page URL from oEmbed (author_url), so channels can be told apart by more than their title.
-    if 'channel_url' not in {r[1] for r in c.execute('pragma table_info(videos)')}:
-        c.execute('alter table videos add column channel_url TEXT')
+    cols = {r[1] for r in c.execute('pragma table_info(videos)')}
+    if 'channel_url' not in cols: c.execute('alter table videos add column channel_url TEXT')
+    # 1.9: videos pulled in from the Feed carry when; the From Feed audit lists them newest first
+    if 'pulled_at' not in cols: c.execute('alter table videos add column pulled_at TEXT')
+    c.execute("create view if not exists audit_from_feed as select video_id,title,pulled_at added from videos where pulled_at is not null order by pulled_at desc")
     have_fts = c.execute("select 1 from sqlite_master where name='video_fts'").fetchone()
     if not have_fts:
         c.execute("create virtual table video_fts using fts5(title,channel,tags,notes,content='')")

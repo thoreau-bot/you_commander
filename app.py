@@ -24,7 +24,7 @@ def q(sql,a=()):
     r=[dict(x) for x in c.execute(sql,a)];c.close();return r
 def w(sql,a=()):
     _touch();c=sqlite3.connect(DB,timeout=30);cur=c.execute(sql,a);c.commit();i=cur.lastrowid;c.close();return i
-AUD=['recent_adds','duplicates','unavailable','untagged_inbox']
+AUD=['recent_adds','from_feed','duplicates','unavailable','untagged_inbox']
 _FTS_T=None
 def _fts_rebuild():
     c=sqlite3.connect(DB,isolation_level=None)
@@ -238,7 +238,7 @@ watch.setup(app,DB,video,AUDIO_DIR)
 import transcripts
 transcripts.setup(app,DB)
 import feed
-feed.setup(app,DB)
+feed.setup(app,DB,fts_dirty)
 # ---------------- Jobs: everything running in the background, on one page ----------------
 import feed_fetch, ytpace
 @app.get('/jobs',response_class=HTMLResponse)
