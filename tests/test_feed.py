@@ -282,3 +282,24 @@ def test_background_pass_never_blocks_the_pages(resolved):
             try: c.execute(f"delete from {t} where video_id='aaaaaaaaaaa'")
             except Exception: pass
         c.execute("delete from notes where video_id='aaaaaaaaaaa'"); c.commit(); c.close()
+
+def test_shorts_tag_guess_and_standalone_probe(resolved):
+    client = resolved; ff = _ff(); db = os.environ['ORG_DB']
+    assert ff.guess_short('Quick tip #Shorts', '') == 1 and ff.guess_short('x', 'see more #shorts in the description') == 1
+    assert ff.guess_short('No tag here', 'shorts of the summer') is None and ff.guess_short('#shortsighted', '') is None
+    c = sqlite3.connect(db)
+    chan = c.execute("select channel_id from channels limit 1").fetchone()[0]
+    c.execute("insert or replace into feed_items(video_id,channel_id,title,description,published_at,first_seen,state) values('Uguess00001',?,'A clip #shorts','', '2026-10-28T00:00:00','2026-10-28T00:00:00','new')", (chan,))
+    c.execute("insert or replace into feed_items(video_id,channel_id,title,description,published_at,first_seen,state) values('Uplain00001',?,'A plain one','', '2026-10-28T00:00:00','2026-10-28T00:00:00','new')", (chan,))
+    c.commit()
+    assert ff.guess_backlog(c) == 1
+    r = {x[0]: x[1:] for x in c.execute("select video_id,is_short,is_short_src from feed_items where video_id in ('Uguess00001','Uplain00001')")}
+    assert r['Uguess00001'] == (1, 'guess') and r['Uplain00001'] == (None, None)
+    c.close()
+    s = client.get('/api/feed/summary').json(); assert s['guessed'] >= 1 and s['unknown_len'] >= 1
+    assert next(i for i in client.get('/api/feed/items').json() if i['video_id'] == 'Uguess00001')['is_short_src'] == 'guess'
+    # the standalone probe confirms / resolves (fake probe: U… -> unknown stays, so these stay as they are; S… would confirm)
+    assert ff.start_probe(db)
+    _wait_fetch(client)
+    assert client.get('/api/feed/fetch/status').json()['kind'] == 'shorts'
+    c = sqlite3.connect(db); c.execute("delete from feed_items where video_id in ('Uguess00001','Uplain00001')"); c.commit(); c.close()

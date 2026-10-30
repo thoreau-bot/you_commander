@@ -354,7 +354,8 @@ def setup(app, DB):
         if b.ids: ids = list(dict.fromkeys(b.ids))
         elif b.tag: ids = [r[0] for r in c.execute("select video_id from video_tags where tag_id=?", (b.tag,))]
         else: ids = []
-        done = {r[0] for r in c.execute("select video_id from transcripts where kind=? and status in ('ok','none')", (b.method,))} if not b.force else set()
+        # 'none' results written on 2026-10-29 came from a broken build that read every video as captionless; retry those
+        done = {r[0] for r in c.execute("select video_id from transcripts where kind=? and (status='ok' or (status='none' and date(fetched_at)<>'2026-10-29'))", (b.method,))} if not b.force else set()
         c.close()
         # Three honest numbers: already done (skipped), queued now, and left over if the queue cap was hit.
         # The cap keeps one request from building a multi-day queue by accident; queue the rest with another press.

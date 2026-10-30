@@ -143,6 +143,19 @@ def probe_short(video_id):
     except Exception:
         return None
 
+SHORT_TAG = re.compile(r'(?<![\w#])#shorts?\b', re.I)
+def guess_short(title, description):
+    """A free first opinion: most Shorts carry #shorts in the title or description. 1 when seen, else None (not 0:
+    the absence of the tag says nothing). The HEAD probe confirms or overrides later."""
+    return 1 if SHORT_TAG.search((title or '') + ' ' + (description or '')) else None
+
+def guess_backlog(c):
+    """Apply the tag guess to every item still unknown. No network. Returns how many were marked."""
+    n = 0
+    for vid, title, desc in c.execute("select video_id,title,description from feed_items where is_short is null").fetchall():
+        if guess_short(title, desc): c.execute("update feed_items set is_short=1,is_short_src='guess' where video_id=?", (vid,)); n += 1
+    c.commit(); return n
+
 def upsert_entries(c, channel_id, entries):
     """Insert new items, refresh views/title on known ones. Returns the count of new rows."""
     new = 0; t = now()
@@ -153,9 +166,10 @@ def upsert_entries(c, channel_id, entries):
             c.execute("update feed_items set title=?,description=coalesce(?,description),views=coalesce(?,views),views_at=case when ? is null then views_at else ? end,rating_n=coalesce(?,rating_n),updated_at=? where video_id=?",
                       (d['title'], d['description'], d['views'], d['views'], t, d['rating_n'], iso_utc(d['updated'] or ''), d['video_id']))
         else:
-            c.execute("""insert into feed_items(video_id,channel_id,title,description,published_at,updated_at,thumb_url,views,views_at,rating_n,first_seen,state)
-                         values(?,?,?,?,?,?,?,?,?,?,?,'new')""",
-                      (d['video_id'], channel_id, d['title'], d['description'], pub, iso_utc(d['updated'] or ''), d['thumb'], d['views'], t if d['views'] is not None else None, d['rating_n'], t))
+            g = guess_short(d['title'], d['description'])
+            c.execute("""insert into feed_items(video_id,channel_id,title,description,published_at,updated_at,thumb_url,views,views_at,rating_n,first_seen,state,is_short,is_short_src)
+                         values(?,?,?,?,?,?,?,?,?,?,?,'new',?,?)""",
+                      (d['video_id'], channel_id, d['title'], d['description'], pub, iso_utc(d['updated'] or ''), d['thumb'], d['views'], t if d['views'] is not None else None, d['rating_n'], t, g, 'guess' if g else None))
             new += 1
     # already in the library? then it is not "new to you"; keep the row (stats, dedupe) but out of the feed
     new -= c.execute("update feed_items set state='seen',state_at=? where channel_id=? and state='new' and first_seen=? and video_id in (select video_id from videos)", (t, channel_id, t)).rowcount
@@ -235,23 +249,8 @@ def run_pass(path, kind, channel_ids=None, workers=4):
         ths = [threading.Thread(target=work, daemon=True) for _ in range(1 if FAKE else workers)]
         [t.start() for t in ths]; [t.join() for t in ths]
         c.commit()
-        # Shorts probe for anything still unknown (new this pass, or left over)
-        # Shorts probe: newest first, at most 500 per pass and about one a second, so a backlog drains over several
-        # wake-ups instead of as one burst that eats the address's rate budget (captions share it)
-        todo = [r[0] for r in c.execute("select video_id from feed_items where is_short is null and state in ('new','seen') order by published_at desc limit 500")]
-        JOB.update(kind=kind + ':shorts', total=len(todo), done=0)
-        for vid in todo:
-            if JOB['cancel'] or POLLER['stop']: break
-            if ytpace.paused() and not FAKE:
-                JOB['note'] = 'YouTube asked us to slow down; resuming at ' + (ytpace.resume_at() or '')
-                if not ytpace.sleep_if_paused(lambda: JOB['cancel'] or POLLER['stop']): break
-                JOB['note'] = ''
-            r = probe_short(vid)   # network first, outside any transaction
-            if r is not None: ytpace.ok()
-            if r is not None: c.execute("update feed_items set is_short=?,is_short_src='probe' where video_id=?", (r, vid)); c.commit()
-            JOB['done'] += 1
-            if not FAKE: time.sleep(random.uniform(0.8, 1.3))
-        c.commit()
+        guess_backlog(c)
+        probe_pass(c, kind + ':shorts', limit=500)
         c.execute("insert into feed_log(at,kind,channels,new_items,unchanged,failed,seconds,note) values(?,?,?,?,?,?,?,?)",
                   (now(), kind, len(ids), JOB['new'], JOB['unchanged'], JOB['failed'], round(time.time() - t0, 1), JOB['note'] or None))
         if kind == 'first' and not JOB['cancel']:
@@ -261,6 +260,50 @@ def run_pass(path, kind, channel_ids=None, workers=4):
         JOB['note'] = str(e)[:300]
     finally:
         c.close(); JOB.update(running=False, finished=time.time())
+
+def _idle_fast():
+    """True when the probe may run at the quick rate: no transcript job queued and the app not used for 2 minutes."""
+    try:
+        import transcripts
+        if transcripts.QUEUE_LEN(): return False
+    except Exception: pass
+    return time.time() - LAST_USER_ACTION[0] > 120
+
+def probe_pass(c, kind, limit=500):
+    """Tell Shorts apart with one HEAD request each: unknown items first (newest), then tag-guessed ones to confirm.
+    Quick (~2-3/s, up to `limit`) when the app is idle and no captions are queued; gentle (~1/s) otherwise."""
+    todo = [r[0] for r in c.execute("""select video_id from feed_items where state in ('new','seen') and (is_short is null or is_short_src='guess')
+                                        order by (is_short is not null), published_at desc limit ?""", (limit,)).fetchall()]
+    JOB.update(kind=kind, total=len(todo), done=0)
+    for vid in todo:
+        if JOB['cancel'] or POLLER['stop']: break
+        if ytpace.paused() and not FAKE:
+            JOB['note'] = 'YouTube asked us to slow down; resuming at ' + (ytpace.resume_at() or '')
+            if not ytpace.sleep_if_paused(lambda: JOB['cancel'] or POLLER['stop']): break
+            JOB['note'] = ''
+        r = probe_short(vid)   # network first, outside any transaction
+        if r is not None:
+            ytpace.ok(); c.execute("update feed_items set is_short=?,is_short_src='probe' where video_id=?", (r, vid)); c.commit()
+        JOB['done'] += 1
+        if not FAKE: time.sleep(random.uniform(0.3, 0.5) if _idle_fast() else random.uniform(0.8, 1.3))
+    c.commit()
+
+def run_probe_only(path):
+    """A probe-only job for the poller: drains the Shorts backlog between feed passes."""
+    c = sqlite3.connect(path, timeout=30, check_same_thread=False); c.execute('pragma busy_timeout=30000')
+    try:
+        guess_backlog(c)
+        probe_pass(c, 'shorts', limit=3000 if _idle_fast() else 500)
+    except Exception as e:
+        JOB['note'] = str(e)[:300]
+    finally:
+        c.close(); JOB.update(running=False, finished=time.time())
+
+def start_probe(path):
+    with LOCK:
+        if JOB['running']: return False
+        JOB.update(running=True, cancel=False, kind='shorts', total=0, done=0, new=0, unchanged=0, failed=0, note='', started=time.time())
+    threading.Thread(target=run_probe_only, args=(path,), name='feed-probe', daemon=True).start(); return True
 
 def start_pass(path, kind, channel_ids=None):
     with LOCK:
@@ -294,6 +337,13 @@ def _poll_loop(path):
                 if due:
                     start_pass(path, 'poll', due[:400])   # at most 400 channels per wake-up, so a backlog never becomes a long lock-out
                     while JOB['running'] and not POLLER['stop']: time.sleep(1)
+                # anything still not told apart from Shorts? drain it between passes (quick while idle)
+                c = sqlite3.connect(path, timeout=30); c.execute('pragma busy_timeout=30000')
+                backlog = c.execute("select count(*) from feed_items where state in ('new','seen') and (is_short is null or is_short_src='guess')").fetchone()[0] if on else 0
+                c.close()
+                if backlog and not JOB['running'] and not ytpace.paused():
+                    start_probe(path)
+                    while JOB['running'] and not POLLER['stop']: time.sleep(1)
         except Exception:
             pass
         for _ in range(int(os.environ.get('ORG_FEED_POLL_SECS', '600'))):
@@ -315,7 +365,7 @@ def items(c, view='newest', limit=200, offset=0, shorts=None, channel=None, q=No
     if q:
         where.append("(i.title like ? or ch.title like ?)"); a += [f'%{q}%', f'%{q}%']
     order = "i.published_at desc" if view == 'newest' else "i.published_at desc"
-    sql = f"""select i.video_id,i.title,i.published_at,i.thumb_url,i.views,i.views_at,i.is_short,i.duration_s,i.first_seen,
+    sql = f"""select i.video_id,i.title,i.published_at,i.thumb_url,i.views,i.views_at,i.is_short,i.is_short_src,i.duration_s,i.first_seen,
                      ch.channel_id,ch.title channel,ch.handle
               from feed_items i join channels ch on ch.channel_id=i.channel_id where {' and '.join(where)} order by {order} limit ? offset ?"""
     return [dict(r) for r in c.execute(sql, a + [limit, offset])]
@@ -325,6 +375,7 @@ def summary(c):
     s['new'] = c.execute("select count(*) from feed_items i join channels ch using(channel_id) where i.state='new' and ch.muted=0").fetchone()[0]
     s['new_shorts'] = c.execute("select count(*) from feed_items i join channels ch using(channel_id) where i.state='new' and ch.muted=0 and i.is_short=1").fetchone()[0]
     s['unknown_len'] = c.execute("select count(*) from feed_items where state='new' and is_short is null").fetchone()[0]
+    s['guessed'] = c.execute("select count(*) from feed_items where state='new' and is_short_src='guess'").fetchone()[0]
     s['channels'] = c.execute("select count(*) from channels where poll_enabled=1 and muted=0").fetchone()[0]
     s['last_polled'] = c.execute("select max(last_polled) from channels").fetchone()[0]
     s['failing'] = c.execute("select count(*) from channels where fail_n>=3").fetchone()[0]
