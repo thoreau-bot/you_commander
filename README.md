@@ -17,8 +17,10 @@ YouCommander imports your playlist exports from Google Takeout into a local SQLi
 - **Triage** – step through videos one at a time (or in a batch) to keep, tag, drop or skip, with undo and a change log.
 - **Watch page** – local player with resume, speed control, A–B loop, a reorderable queue, previous/next, and a "Copy as YouTube Queue" button.
 - **History** – everything you open or watch inside the app, with Continue Watching.
-- **Notes** – typed or voice notes at a timestamp, on the current transcript line, or on selected text.
-- **Transcripts** – read YouTube captions (via `yt-dlp`) and/or transcribe locally with Whisper, keep both versions, follow along, and search across all transcripts.
+- **Feed** – new uploads from every channel you have ever saved a video from, newest first, Shorts told apart, checked in the background on a schedule that follows your own library. No API key: public channel feeds only. Watch or pull a video into your library from there.
+- **Jobs** – everything running in the background (captions, Whisper, feed checks) on one page, with cancel and the Whisper audio settings.
+- **Notes** – typed or voice notes at a timestamp, on the current transcript line, or on selected text, with bold, italic, highlight, emoji and more.
+- **Captions and transcripts** – read YouTube captions (via `yt-dlp`) and/or transcribe locally with Whisper (optionally keeping the audio for a later, better model), keep both, correct lines and times in place, follow along, and search across all of them.
 - **Voice** (optional) – dictate notes and tags with local `faster-whisper`; optional local Ollama model for tag extraction.
 
 ## Quick start

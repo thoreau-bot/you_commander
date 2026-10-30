@@ -1,7 +1,7 @@
 # Changelog
 
-## Unreleased — Feed, steps 1 and 2 (branch feed-step1)
-The Feed page: first channel identity, then the new videos themselves (design: the project's feed-design doc). Regression suite: 24 checks (11 new), all green.
+## 1.9.0
+The **Feed**: new uploads from every channel in your library, with no API key. Plus a Jobs page, Whisper in its own lane with kept audio, rich notes, transcript correction, and a shared YouTube pace. Regression suite: 39 checks (26 new), all green. `python tools/selfcheck.py` checks the YouTube-facing pieces against real YouTube after an update.
 
 Step 2 — New Videos
 - The Feed page opens on **New Videos**. Three states lead into each other: *learn your channels* (Resolve Channels) → *your channels are ready* (Fetch New Videos) → the feed. Each state has one button, and finishing one lands you on the next
