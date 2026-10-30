@@ -18,6 +18,9 @@
 
 **Reset** – stop the app and delete `organizer.db`.
 
+## Captions or the feed stopped working after an update
+Run `python tools/selfcheck.py` from the app folder (with the venv active). It fetches one caption track, one channel feed and one Shorts probe against real YouTube and prints PASS or FAIL with the reason for each. Paste a failing line into the chat.
+
 ## "YouTube asked us to slow down" / HTTP 429
 YouTube throttles by address, across everything the app asks it for. Caption fetches are the heaviest (several requests per video), so they are the first to see a 429. When one arrives the app pauses all its YouTube traffic for a few minutes (longer if it keeps happening) and resumes on its own; the Watch and Feed pages show the resume time. Queue captions in smaller batches if it recurs, and leave the background feed check ticked: it waits while captions are queued.
 

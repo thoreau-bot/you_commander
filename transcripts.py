@@ -70,11 +70,11 @@ def fetch_captions(vid):
     import yt_dlp
     # Subtitles only: skip the player JS and the stream-format resolution yt-dlp does by default, which is most of the
     # requests (and most of what trips YouTube's rate limit) for a fetch that never downloads anything.
-    # With the player JS skipped there are no stream formats, and yt-dlp's format selector would raise
-    # "Requested format is not available" before we read the captions; ignore_no_formats_error lets it carry on.
+    # Plain extraction. Skipping the player JS/configs (tried in 1.9 to save requests) made yt-dlp return a player
+    # response with no captions block, so every fetch came back "no captions"; YouTube rate limits are handled by the
+    # shared pace (ytpace) instead. ignore_no_formats_error keeps a format-less response from aborting the caption read.
     opts = {'quiet': True, 'no_warnings': True, 'skip_download': True, 'noplaylist': True, 'socket_timeout': 25, 'no_color': True,
-            'ignore_no_formats_error': True,
-            'extractor_args': {'youtube': {'player_skip': ['js', 'configs'], 'player_client': ['web']}}}
+            'ignore_no_formats_error': True}
     with yt_dlp.YoutubeDL(opts) as ydl:
         info = ydl.extract_info('https://www.youtube.com/watch?v=' + vid, download=False)
         tr = _pick_track(info)
@@ -107,8 +107,7 @@ def whisper_audio(vid, keep=False, store=None):
     import yt_dlp
     d = tempfile.mkdtemp(prefix='org_audio_')
     try:
-        opts = {'quiet': True, 'no_warnings': True, 'noplaylist': True, 'format': 'bestaudio[ext=m4a]/bestaudio/best', 'outtmpl': os.path.join(d, '%(id)s.%(ext)s'), 'socket_timeout': 25,
-                'extractor_args': {'youtube': {'player_skip': ['configs']}}}
+        opts = {'quiet': True, 'no_warnings': True, 'noplaylist': True, 'format': 'bestaudio[ext=m4a]/bestaudio/best', 'outtmpl': os.path.join(d, '%(id)s.%(ext)s'), 'socket_timeout': 25, 'no_color': True}
         with yt_dlp.YoutubeDL(opts) as ydl: ydl.download(['https://www.youtube.com/watch?v=' + vid])
         files = [os.path.join(d, f) for f in os.listdir(d)]
         if not files: raise RuntimeError('audio download produced no file')

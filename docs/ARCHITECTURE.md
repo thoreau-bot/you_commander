@@ -15,6 +15,7 @@ Single-process FastAPI app serving static HTML pages (vanilla JS, no build step)
 | `ui.html` `feed.html` `triage.html` `watch.html` `history.html` `jobs.html` `import.html` | Pages (`/jobs` shows every background job; the link appears only while one runs) |
 | `static/app.css` `static/app.js` | Shared visual system (tokens, controls, light/dark) and the `?` help overlay; served at `/static/` |
 | `tools/make_demo.py` | Builds an invented demo library |
+| `tools/selfcheck.py` | Ten-second check of the YouTube-facing pieces against real YouTube (the tests use doubles) |
 | `tests/` | pytest smoke tests and a JS syntax check of every page |
 
 ## Data
