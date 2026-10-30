@@ -11,6 +11,7 @@ Single-process FastAPI app serving static HTML pages (vanilla JS, no build step)
 | `voice.py` | Local `faster-whisper` transcription, optional Ollama tag extraction |
 | `feed.py` | Feed: channel identity (`channels`, `video_channel`, the resolver worker), `/feed` and the `/api/feed/*` endpoints |
 | `ytpace.py` | One shared pace for every request to youtube.com: a 429 anywhere pauses all workers, with backoff |
+| `feed_rank.py` | Feed: channel affinity from watch / notes / triage, per-item base score with a stored breakdown, recency per mode at query time, retention |
 | `feed_fetch.py` | Feed: per-channel Atom fetch with conditional GETs, the Shorts HEAD probe, the tiered background poller, `feed_items` |
 | `ui.html` `feed.html` `triage.html` `watch.html` `history.html` `jobs.html` `import.html` | Pages (`/jobs` shows every background job; the link appears only while one runs) |
 | `static/app.css` `static/app.js` | Shared visual system (tokens, controls, light/dark) and the `?` help overlay; served at `/static/` |
@@ -19,7 +20,7 @@ Single-process FastAPI app serving static HTML pages (vanilla JS, no build step)
 | `tests/` | pytest smoke tests and a JS syntax check of every page |
 
 ## Data
-SQLite in WAL mode. Key tables: `videos`, `playlists`, `playlist_items`, `tags`/`video_tags`, `notes`, `watch_state`, `watch_log`, `video_marks`, `transcripts(video_id, kind, status, text, cues, …)`, `bulk_log`, `channels` / `video_channel` / `feed_items` / `feed_settings` / `feed_log` (feed). Full-text: `video_fts` (contentless) and `transcript_fts`. `importer.ensure_schema` and each module's `setup()` create/migrate tables idempotently.
+SQLite in WAL mode. Key tables: `videos`, `playlists`, `playlist_items`, `tags`/`video_tags`, `notes`, `watch_state`, `watch_log`, `video_marks`, `transcripts(video_id, kind, status, text, cues, …)`, `bulk_log`, `channels` / `video_channel` / `feed_items` / `feed_settings` / `feed_log` / `channel_affinity` (feed). Full-text: `video_fts` (contentless) and `transcript_fts`. `importer.ensure_schema` and each module's `setup()` create/migrate tables idempotently.
 
 ## Player
 Uses the YouTube IFrame API. Because focus inside a cross-origin iframe cannot be controlled, "player mode" drives the player through the API and captures keys on the parent page.

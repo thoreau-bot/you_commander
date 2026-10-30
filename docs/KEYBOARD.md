@@ -84,6 +84,11 @@ The video always has the keyboard on this page: the stage carries the same ring 
 | `X` | dismiss (`Z` undoes while the toast shows) |
 | `R` | Fetch New Videos / Check Now (Cancel while running); in the Channels view, Resolve Channels |
 | `1` `2` `3` | All, Videos, Shorts |
+| `O` | Ranked or Newest |
+| `V` | Recent or Review (Ranked) |
+| `I` | why this video is here |
+| `Enter` | tick; `P` / `X` then apply to the ticked |
+| `M` | mute the highlighted video's channel |
 | `/` | filter |
 | `C` | Channels view, and back |
 | click a column title | sort by it (Channels view) |

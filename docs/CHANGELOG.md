@@ -1,5 +1,15 @@
 # Changelog
 
+## Unreleased — Feed, step 3: ranking (branch feed-step3)
+The feed now ranks new videos by what your library says about their channels. Regression suite: 44 checks (5 new), all green.
+- **Ranked** is the default order (Newest is a chip away, `O`). The score of a video is its channel's *affinity*: how much of that channel you have watched to the end, noted, kept in Triage or pulled from the feed, standardised across all your channels; repeated drops in Triage pull a channel down (`0.8 × (drops ÷ decisions)²`, only once a channel has three decisions). A video already in your library, or a near-duplicate of a saved title from the same channel, sinks out of sight
+- **Recent | Review** (`V`): Recent shows what was published since you were last on the Feed page (or the last week), freshest first with a three-day half-life; Review shows the best of the last three weeks with a ten-day half-life, so the channel matters more than the hour. Switching re-sorts in place; nothing is recomputed. In Review a divider marks "Seen before"
+- **Why?** on every ranked row (`I`): the score in parts: channel affinity and what it is made of (saved / watched / noted / kept / dropped), duplicate or already-saved penalties, the recency term for the current mode. Topic matching (your tags) is a later step and the popover says so
+- **Tick** rows with `Enter` or the box in the preview; **Pull into Triage** / **Dismiss** then apply to all ticked (bulk bar)
+- **Mute**: `M` mutes the highlighted video's channel; after three dismissals from one channel with nothing kept, the feed offers to mute it
+- Scores recompute after every feed check and a minute after any tag, note, triage or pull change; items older than 60 days that nobody touched go hidden (never deleted)
+- `GET /api/feed/items?view=ranked|newest&mode=recent|review`, `POST /api/feed/settings {mode}`, `POST /api/feed/seen`, `POST /api/feed/rescore`; new `channel_affinity` table; `feed_rank.py`
+
 ## 1.9.0
 The **Feed**: new uploads from every channel in your library, with no API key. Plus a Jobs page, Whisper in its own lane with kept audio, rich notes, transcript correction, and a shared YouTube pace. Regression suite: 39 checks (26 new), all green. `python tools/selfcheck.py` checks the YouTube-facing pieces against real YouTube after an update.
 

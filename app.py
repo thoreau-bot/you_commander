@@ -46,7 +46,11 @@ def _fts_shape_ok():
     except Exception: return False
 if not _fts_shape_ok(): threading.Thread(target=_fts_rebuild,daemon=True).start()
 def fts_dirty(delay=1.0):
-    """Tags changed: rebuild the search index shortly (coalesces bursts such as triage confirms)."""
+    """Tags changed: rebuild the search index shortly (coalesces bursts such as triage confirms). The feed's ranking
+    reads the same signals, so it is marked dirty too (rescored a minute later, once)."""
+    try:
+        import feed_rank;feed_rank.dirty(DB)
+    except Exception:pass
     global _FTS_T
     if _FTS_T: _FTS_T.cancel()
     _FTS_T=threading.Timer(delay,_fts_rebuild);_FTS_T.daemon=True;_FTS_T.start()

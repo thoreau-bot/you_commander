@@ -39,6 +39,10 @@ main{max-width:1120px;margin:auto;padding:18px 22px 60px}
 .prev .stage{max-width:min(100%,900px)}
 .prev .acts{display:flex;flex-wrap:wrap;gap:6px;margin-top:10px;align-items:center}.prev .acts .sp{flex:1}
 .divider{padding:6px 14px;background:var(--sf2);color:var(--mut);font-size:var(--fs-s);font-weight:600;border-bottom:1px solid var(--bd)}
+.vrow.tk{background:var(--ac-s)}.vrow .why{min-height:0;height:18px;padding:0 5px;font-size:11px;color:var(--mut);font-variant-numeric:tabular-nums}.vrow .why:hover{color:var(--fg)}
+#fbulk{display:flex;gap:8px;align-items:center;padding:8px 14px;border-bottom:1px solid var(--bd);background:var(--sf2)}
+#fmode{margin-left:4px}#fmode kbd{margin:0 6px 0 2px}
+.whypop{font-size:var(--fs-s)}.whypop dl{display:grid;grid-template-columns:auto 1fr;gap:3px 12px;margin:8px 0 0}.whypop dt{color:var(--mut)}.whypop dd{margin:0;font-variant-numeric:tabular-nums}
 .lead{display:flex;flex-direction:column;align-items:center;gap:10px;padding:48px 20px;text-align:center}
 .lead b{font-size:var(--fs-l)}.lead p{margin:0;color:var(--mut);max-width:56ch}
 .lead .glyph{width:44px;height:44px;border-radius:12px;background:var(--ac-s);color:var(--ac);display:flex;align-items:center;justify-content:center}
@@ -56,7 +60,8 @@ main{max-width:1120px;margin:auto;padding:18px 22px 60px}
  <div class=panel id=fpanel>
   <div class=panel-h><span id=ftitle>New Videos</span><span id=fn class=mut style="font-weight:400"></span><span class=r><button id=fcancel class="sm ghost" style="display:none">Cancel</button><button id=fetchb class=pri>Fetch New Videos<kbd>R</kbd></button></span></div>
   <div class=status id=fstatus><span id=fstxt>Checking…</span><span class=prog id=fprog style="display:none"><i id=fpbar></i></span></div>
-  <div class=tools id=ftools><div class=search><input id=fq2 placeholder="Filter by title or channel" aria-label="Filter the feed"><kbd>/</kbd></div><span class=chips id=fchips role=group aria-label="Show"></span><span style="flex:1"></span><label class=mut style="display:flex;gap:6px;align-items:center;font-size:var(--fs-s)"><input type=checkbox id=pollon> Check for new videos in the background</label></div>
+  <div class=tools id=ftools><div class=search><input id=fq2 placeholder="Filter by title or channel" aria-label="Filter the feed"><kbd>/</kbd></div><span class=chips id=fchips role=group aria-label="Show"></span><span class=chips id=forder role=group aria-label="Order"></span><span class=group id=fmode role=group aria-label="Mode" title="Recent: what dropped since you were last here, freshest first. Review: the best of the last three weeks, by how much you care about the channel. V switches."></span><span style="flex:1"></span><label class=mut style="display:flex;gap:6px;align-items:center;font-size:var(--fs-s)"><input type=checkbox id=pollon> Check for new videos in the background</label></div>
+  <div class=bulk id=fbulk style="display:none"><b id=fbn></b><button id=fbp title="Add the ticked videos to the library as Inbox">Pull into Triage</button><button id=fbx class=ghost title="Dismiss the ticked videos">Dismiss</button><span style="flex:1"></span><button id=fbc class=ghost>Clear</button></div>
   <div id=flist></div>
   <div class=loadmore id=fmore style="display:none"><button class="sm ghost" id=fmoreb>Show More</button></div>
  </div>
@@ -83,7 +88,7 @@ main{max-width:1120px;margin:auto;padding:18px 22px 60px}
 <div id=help><div class=card>
  <h2>Keyboard shortcuts<span class=mut>Esc or ? closes</span></h2>
  <div class=cols>
-  <div><h3>New Videos</h3><dl><dt><kbd>↑</kbd><kbd>↓</kbd></dt><dd>move</dd><dt><kbd>Home</kbd><kbd>End</kbd></dt><dd>first, last (the round buttons at bottom left do the same by mouse)</dd><dt><kbd>Space</kbd></dt><dd>play here</dd><dt><kbd>W</kbd></dt><dd>Watch in Theater: the video joins your library (Inbox), with the next nine as its queue</dd><dt><kbd>P</kbd></dt><dd>Pull into Triage: add to the library as Inbox without watching now</dd><dt><kbd>Y</kbd></dt><dd>open on YouTube</dd><dt><kbd>X</kbd></dt><dd>dismiss (Z undoes while the toast shows)</dd><dt><kbd>R</kbd></dt><dd>Fetch New Videos (or Cancel while running)</dd><dt><kbd>/</kbd></dt><dd>filter</dd><dt><kbd>1</kbd><kbd>2</kbd><kbd>3</kbd></dt><dd>All, Videos, Shorts</dd></dl></div>
+  <div><h3>New Videos</h3><dl><dt><kbd>↑</kbd><kbd>↓</kbd></dt><dd>move</dd><dt><kbd>Home</kbd><kbd>End</kbd></dt><dd>first, last (the round buttons at bottom left do the same by mouse)</dd><dt><kbd>Space</kbd></dt><dd>play here</dd><dt><kbd>W</kbd></dt><dd>Watch in Theater: the video joins your library (Inbox), with the next nine as its queue</dd><dt><kbd>P</kbd></dt><dd>Pull into Triage: add to the library as Inbox without watching now</dd><dt><kbd>Y</kbd></dt><dd>open on YouTube</dd><dt><kbd>X</kbd></dt><dd>dismiss (Z undoes while the toast shows)</dd><dt><kbd>R</kbd></dt><dd>Fetch New Videos (or Cancel while running)</dd><dt><kbd>/</kbd></dt><dd>filter</dd><dt><kbd>1</kbd><kbd>2</kbd><kbd>3</kbd></dt><dd>All, Videos, Shorts</dd><dt><kbd>O</kbd></dt><dd>Ranked or Newest</dd><dt><kbd>V</kbd></dt><dd>Recent or Review (Ranked only)</dd><dt><kbd>Enter</kbd></dt><dd>tick; P / X then apply to the ticked</dd><dt><kbd>I</kbd></dt><dd>why this video is here (the score, in parts)</dd><dt><kbd>M</kbd></dt><dd>mute the highlighted video’s channel (offered automatically after three dismissals from one channel)</dd></dl></div>
   <div><h3>Pages &amp; views</h3><dl><dt><kbd>C</kbd></dt><dd>Channels view, and back</dd><dt>click a column title</dt><dd>sort by it; again to reverse (remembered on this computer)</dd><dt><kbd>Esc</kbd></dt><dd>close the preview, then back to Commander</dd></dl></div>
  </div>
 </div></div>
@@ -100,6 +105,8 @@ let VIEW='feed';                                      // 'feed' | 'channels'; de
 let D={channels:[],unresolved:[],videos:0,linked:0,pending:{need_url:0,need_id:0,unresolved:0}},S={},RUN=false,FRUN=false,FI=0,CI=0,POLL=null,FPOLL=null,LASTJ=null,LASTF=null,UNALL=false;
 let ITEMS=[],SHOW=ld('feedShow','all'),OPEN=null,PLAYER=null,PAGE=0,MORE=false;
 const SHOWS={all:['All',null],videos:['Videos','hide'],shorts:['Shorts','only']};
+let ORDER=ld('feedOrder','ranked');   // 'ranked' | 'newest'  (Ranked honours the Recent / Review mode)
+let TICK=new Set();
 
 // ---------------------------------------------------------------- views
 function paintViews(){views.innerHTML=[['feed','New Videos'],['channels','Channels']].map(([k,l])=>`<button role=tab data-v=${k} class="sm ${k==VIEW?'on':'ghost'}" aria-selected="${k==VIEW}">${l}${k=='channels'&&D.pending&&(D.pending.need_url||D.pending.need_id)?' <span class=pill>needs attention</span>':''}</button>`).join('');
@@ -159,7 +166,7 @@ function fstatusLine(j){
  if(!D.videos)return'No videos yet. Import from Takeout first.';
  if(!ready())return'';
  if(!S.first_pass_at)return`${n(S.channels)} channels are ready. Press Fetch New Videos to see what they have posted lately.`;
- const lr=S.last_run;let s=`${n(S.new)} new video${S.new==1?'':'s'}${S.new_shorts?' ('+n(S.new_shorts)+' Shorts)':''} from ${n(S.channels)} channels.`;
+ const lr=S.last_run;let s=ORDER=='ranked'?(S.mode=='review'?`Best of the last three weeks: ${n(S.in_window_review)} videos, ranked by your library.`:`${n(S.in_window_recent)} videos${S.last_seen_at?' since you were last here':' this week'}, ranked by your library.`):`${n(S.new)} new video${S.new==1?'':'s'}${S.new_shorts?' ('+n(S.new_shorts)+' Shorts)':''} from ${n(S.channels)} channels.`;
  if(S.last_polled)s+=` Last checked ${ago(S.last_polled)}`+(lr&&lr.failed?`, ${n(lr.failed)} channel${lr.failed>1?'s':''} could not be read.`:'.');
  if(S.polling){const t=S.tiers||{};s+=` Checking in the background: ${[t.hourly?n(t.hourly)+' hourly':'',t.sixhourly?n(t.sixhourly)+' every 6 h':'',t.daily?n(t.daily)+' daily':''].filter(Boolean).join(', ')}.`}
  if(S.unknown_len||S.guessed){const bits=[];if(S.unknown_len)bits.push(n(S.unknown_len)+' not yet told apart from Shorts');if(S.guessed)bits.push(n(S.guessed)+' tagged #shorts, awaiting confirmation');s+=` ${bits.join('; ')}. Checks run in the background, quickly while the app is idle.`}
@@ -172,6 +179,8 @@ function drawFeed(j){if(j!==undefined)LASTF=j;j=LASTF;
  const st=fstatusLine(j);fstxt.textContent=st+(j&&j.note?' '+j.note:'');fstatus.style.display=st||FRUN?'':'none';
  pollon.checked=!!S.polling;pollon.disabled=!S.first_pass_at;
  fchips.innerHTML=Object.entries(SHOWS).map(([k,v])=>`<button data-s=${k} class="sm ${k==SHOW?'on':'ghost'}" aria-pressed="${k==SHOW}">${v[0]}${k=='shorts'&&S.new_shorts?' <span class=pill>'+n(S.new_shorts)+'</span>':''}</button>`).join('');
+ forder.innerHTML=[['ranked','Ranked'],['newest','Newest']].map(([k,l])=>`<button data-o=${k} class="sm ${k==ORDER?'on':'ghost'}" aria-pressed="${k==ORDER}" title="${k=='ranked'?'By how much you are likely to care, from your own library':'Newest first, everything'}">${l}</button>`).join('');
+ fmode.style.display=ORDER=='ranked'?'':'none';fmode.innerHTML=[['recent','Recent'],['review','Review']].map(([k,l])=>`<button data-m=${k} class="${S.mode==k?'on':''}" aria-pressed="${S.mode==k}">${l}</button>`).join('')+'<kbd>V</kbd>';
  ftools.style.display=S.first_pass_at?'':'none';
  const L=shownItems();FI=Math.min(FI,Math.max(0,L.length-1));fn.textContent=S.new?n(S.new):'';
  hsum.textContent=VIEW=='feed'&&S.first_pass_at?`${n(S.new)} new`:'';
@@ -182,11 +191,14 @@ function drawFeed(j){if(j!==undefined)LASTF=j;j=LASTF;
   flist.innerHTML=`<div class=lead><div class=glyph><svg width=22 height=22 viewBox="0 0 16 16" fill=none stroke=currentColor stroke-width=1.7 stroke-linecap=round stroke-linejoin=round><path d="M8 2v8M4.5 6.5 8 10l3.5-3.5M3 13h10"/></svg></div><b>Your channels are ready</b><p>${n(S.channels)} channels, from ${n(D.linked)} saved videos. Fetching asks each channel’s public feed for its latest uploads: no key, no sign-in, nothing written to YouTube. The first pass takes a few minutes; videos appear as they arrive.</p><button class=pri id=gofetch>Fetch New Videos<kbd>R</kbd></button></div>`;
   document.getElementById('gofetch').onclick=()=>fetchb.click();return}
  if(!L.length){flist.innerHTML=ITEMS.length?`<div class=empty><b>No video matches</b>Nothing matches “${esc(fq2.value.trim())}”.</div>`:FRUN?`<div class=empty><b>Fetching…</b>New videos appear here as each channel answers.</div>`:`<div class=empty><b>Nothing new since you last looked</b>${SHOW=='shorts'?'No new Shorts from your channels.':SHOW=='videos'?'No new videos; try All to include Shorts.':'Check Now asks every channel again; the background check does it on its own.'}</div>`;fmore.style.display='none';return}
- let last=null,html='<div class="vrow head"><span></span><span>Video</span><span>Channel</span><span class=num>Views</span></div>';
- L.forEach((i,k)=>{const day=i.published_at.slice(0,10);if(day!==last){last=day;html+=`<div class=divider>${dayLabel(day)}</div>`}
+ let last=null,seenDiv=false,html='<div class="vrow head"><span></span><span>Video</span><span>Channel</span><span class=num>Views</span></div>';
+ const seenAt=S.last_seen_at||'';
+ L.forEach((i,k)=>{
+  if(ORDER=='ranked'){if(S.mode=='review'&&seenAt&&!seenDiv&&i.published_at<seenAt){seenDiv=true;html+=`<div class=divider>Seen before · published before you were last here</div>`}}
+  else{const day=i.published_at.slice(0,10);if(day!==last){last=day;html+=`<div class=divider>${dayLabel(day)}</div>`}}
   const open=OPEN===i.video_id;
-  html+=`<div class="vrow${k==FI?' f':''}${open?' open':''}" data-v="${i.video_id}" data-k=${k}><a class=th href="https://youtu.be/${i.video_id}" target=_blank rel=noopener tabindex=-1 aria-label="Open on YouTube">${i.thumb_url?`<img src="${esc(i.thumb_url)}" alt="" loading=lazy>`:''}${i.is_short?'<span class=tag title="'+(i.is_short_src=='guess'?'Tagged #shorts by the channel; not yet confirmed':'Short')+'">Short'+(i.is_short_src=='guess'?'?':'')+'</span>':i.is_short==null?'<span class=tag title="Not yet told apart from Shorts">?</span>':''}</a><div><div class=t><a href="/watch?v=${i.video_id}" data-w="${i.video_id}">${esc(i.title)}</a></div><small>${ago(i.published_at)}${i.duration_s?' · '+clock(i.duration_s):''}</small></div><div><small title="${esc(i.handle||'')}">${esc(i.channel)}</small></div><div class=num title="${i.views_at?'As of '+when(i.views_at):''}">${kfmt(i.views)}</div></div>`;
-  if(open)html+=`<div class=prev><div class=stage id="st_${i.video_id}"><div id="pl_${i.video_id}"></div></div><div class=acts><button data-act=w>Watch in Theater<kbd>W</kbd></button><button data-act=p class=ghost title="Add to the library as Inbox, to sort in Triage later">Pull into Triage<kbd>P</kbd></button><button data-act=y class=ghost>Open on YouTube<kbd>Y</kbd></button><span class=sp></span><button data-act=x class=ghost>Dismiss<kbd>X</kbd></button></div></div>`});
+  html+=`<div class="vrow${k==FI?' f':''}${open?' open':''}${TICK.has(i.video_id)?' tk':''}" data-v="${i.video_id}" data-k=${k}><a class=th href="https://youtu.be/${i.video_id}" target=_blank rel=noopener tabindex=-1 aria-label="Open on YouTube">${i.thumb_url?`<img src="${esc(i.thumb_url)}" alt="" loading=lazy>`:''}${i.is_short?'<span class=tag title="'+(i.is_short_src=='guess'?'Tagged #shorts by the channel; not yet confirmed':'Short')+'">Short'+(i.is_short_src=='guess'?'?':'')+'</span>':i.is_short==null?'<span class=tag title="Not yet told apart from Shorts">?</span>':''}</a><div><div class=t><a href="/watch?v=${i.video_id}" data-w="${i.video_id}">${esc(i.title)}</a></div><small>${ago(i.published_at)}${i.duration_s?' · '+clock(i.duration_s):''}${ORDER=='ranked'&&i.score!=null?` · <button class="why ghost" data-why="${i.video_id}" title="Why is this here?">${(i.score).toFixed(2)} why?</button>`:''}</small></div><div><small title="${esc(i.handle||'')}">${esc(i.channel)}</small></div><div class=num title="${i.views_at?'As of '+when(i.views_at):''}">${kfmt(i.views)}</div></div>`;
+  if(open)html+=`<div class=prev><div class=stage id="st_${i.video_id}"><div id="pl_${i.video_id}"></div></div><div class=acts><input type=checkbox class=sel data-tick="${i.video_id}" ${TICK.has(i.video_id)?'checked':''} aria-label="Tick"><button data-act=w>Watch in Theater<kbd>W</kbd></button><button data-act=p class=ghost title="Add to the library as Inbox, to sort in Triage later">Pull into Triage<kbd>P</kbd></button><button data-act=y class=ghost>Open on YouTube<kbd>Y</kbd></button><span class=sp></span><button data-act=x class=ghost>Dismiss<kbd>X</kbd></button></div></div>`});
  flist.innerHTML=html;fmore.style.display=MORE?'':'none';
  const f=flist.querySelector('.vrow.f');if(f&&VIEW=='feed')f.scrollIntoView({block:'nearest'})}
 const clock=s=>{s=Math.floor(s||0);const h=Math.floor(s/3600),m=Math.floor(s%3600/60),x=s%60;return(h?h+':'+String(m).padStart(2,'0'):m)+':'+String(x).padStart(2,'0')};
@@ -207,24 +219,52 @@ async function watchFrom(){const L=shownItems();if(!L.length){yc.toast('Nothing 
  let ids=L.map(x=>x.video_id).slice(k,k+10);if(!ids.includes(L[k].video_id))ids.unshift(L[k].video_id);
  yc.toast('Adding to your library…');const r=await pullIds(ids);if(r.error){yc.toast(r.error,6000);return}
  try{localStorage.setItem('watchIds',JSON.stringify(ids))}catch(e){}location.href='/watch?q=1&v='+L[k].video_id}
-async function pullToTriage(ids){ids=ids.filter(Boolean);if(!ids.length)return;const r=await pullIds(ids);if(r.error){yc.toast(r.error,6000);return}
+async function pullToTriage(ids){ids=ids.filter(Boolean);if(!ids.length)return;ids.forEach(id=>{const i=ITEMS.find(x=>x.video_id==id);if(i)PULLED[i.channel_id]=1});const r=await pullIds(ids);if(r.error){yc.toast(r.error,6000);return}
  ITEMS=ITEMS.filter(i=>!ids.includes(i.video_id));S.new=Math.max(0,(S.new||0)-ids.length);FI=Math.min(FI,Math.max(0,ITEMS.length-1));if(ids.includes(OPEN)){destroyPlayer();OPEN=null}drawFeed();
  yc.toast((ids.length>1?ids.length+' videos':'Video')+' pulled into the library (Inbox, and the From Feed audit in Commander).',5000)}
+const DISMISSED={},PULLED={};
+async function muteChannel(cid,name,anchor){if(!await yc.confirm({anchor:anchor||fetchb,message:`Mute “${name}”? Its videos leave the feed and the channel is no longer checked. You can turn it back on in the Channels tab.`,ok:'Mute'}))return;await P('/api/feed/channel/'+cid,{muted:1,poll_enabled:0});ITEMS=ITEMS.filter(i=>i.channel_id!=cid);FI=Math.min(FI,Math.max(0,ITEMS.length-1));drawFeed();yc.toast(`“${name}” muted.`,4000)}
 async function dismiss(ids){ids=ids.filter(Boolean);if(!ids.length)return;const L=shownItems();const nextId=(L[FI+1]||L[FI-1]||{}).video_id;
+ const byChan={};ids.forEach(id=>{const i=ITEMS.find(x=>x.video_id==id);if(i){byChan[i.channel_id]=i;DISMISSED[i.channel_id]=(DISMISSED[i.channel_id]||0)+1}});
  await P('/api/feed/items/state',{video_ids:ids,state:'dismissed'});if(ids.includes(OPEN)){destroyPlayer();OPEN=null}
  ITEMS=ITEMS.filter(i=>!ids.includes(i.video_id));S.new=Math.max(0,(S.new||0)-ids.length);const k=ITEMS.findIndex(i=>i.video_id==nextId);FI=k<0?Math.min(FI,Math.max(0,ITEMS.length-1)):k;drawFeed();
- yc.toast(ids.length>1?`${ids.length} dismissed`:'Dismissed',5000,{undo:async()=>{await P('/api/feed/items/state',{video_ids:ids,state:'new'});await loadItems();yc.toast('Restored')}})}
+ yc.toast(ids.length>1?`${ids.length} dismissed`:'Dismissed',5000,{undo:async()=>{await P('/api/feed/items/state',{video_ids:ids,state:'new'});await loadItems();yc.toast('Restored')}});
+ // three dismissals from one channel with nothing pulled from it: offer to mute it (once per channel per visit)
+ for(const [cid,i] of Object.entries(byChan)){if(DISMISSED[cid]==3&&!PULLED[cid]){const row=ITEMS.find(x=>x.channel_id==cid);if(!row)continue;
+   const anchor=flist.querySelector(`.vrow[data-v="${row.video_id}"]`)||fetchb;
+   if(await yc.confirm({anchor,message:`That is three from “${i.channel}” dismissed and none kept. Mute the channel? Its videos leave the feed and it is no longer checked; the Channels tab can turn it back on.`,ok:'Mute Channel'}))await P('/api/feed/channel/'+cid,{muted:1,poll_enabled:0}).then(()=>{ITEMS=ITEMS.filter(x=>x.channel_id!=cid);FI=Math.min(FI,Math.max(0,ITEMS.length-1));drawFeed();yc.toast(`“${i.channel}” muted.`,4000)})}}}
 flist.onclick=e=>{const a=e.target.closest('[data-act]');if(a){const id=OPEN;if(a.dataset.act=='w'){FI=shownItems().findIndex(i=>i.video_id==id);watchFrom()}else if(a.dataset.act=='p'){pullToTriage([id])}else if(a.dataset.act=='y')window.open('https://youtu.be/'+id,'_blank','noopener');else dismiss([id]);return}
  const w=e.target.closest('[data-w]');if(w){e.preventDefault();FI=Number(w.closest('.vrow').dataset.k);watchFrom();return}
- if(e.target.closest('a'))return;
+ if(e.target.closest('a')||e.target.closest('[data-why]')||e.target.closest('[data-tick]'))return;
  const r=e.target.closest('.vrow[data-v]');if(!r)return;FI=Number(r.dataset.k);if(e.detail>1)return;openPreview(r.dataset.v)};
 fchips.onclick=e=>{const b=e.target.closest('[data-s]');if(!b)return;SHOW=b.dataset.s;try{localStorage.setItem('feedShow',JSON.stringify(SHOW))}catch(e){}FI=0;closePreview();loadItems()};
+forder.onclick=e=>{const b=e.target.closest('[data-o]');if(!b)return;setOrder(b.dataset.o)};
+function setOrder(o){ORDER=o;try{localStorage.setItem('feedOrder',JSON.stringify(o))}catch(e){}FI=0;closePreview();loadItems()}
+fmode.onclick=async e=>{const b=e.target.closest('[data-m]');if(!b)return;await setMode(b.dataset.m)};
+async function setMode(m){await P('/api/feed/settings',{mode:m});S.mode=m;FI=0;closePreview();yc.toast(m=='review'?'Review: the best of the last three weeks.':'Recent: what dropped since you were last here.',2500);await loadItems()}
+// tick: Space on a row with the preview closed? No: Space previews. Ticks are the checkbox or Enter; bulk Pull / Dismiss apply to ticked.
+function tick(id,on){if(on)TICK.add(id);else TICK.delete(id);bulkUI()}
+function bulkUI(){fbulk.style.display=TICK.size?'':'none';fbn.textContent=TICK.size+' ticked';document.querySelectorAll('#flist .vrow').forEach(r=>r.classList.toggle('tk',TICK.has(r.dataset.v)))}
+flist.addEventListener('change',e=>{if(e.target.dataset.tick)tick(e.target.dataset.tick,e.target.checked)});
+fbp.onclick=()=>{const ids=[...TICK];TICK.clear();bulkUI();pullToTriage(ids)};fbx.onclick=()=>{const ids=[...TICK];TICK.clear();bulkUI();dismiss(ids)};fbc.onclick=()=>{TICK.clear();bulkUI()};
+// why? popover: the stored terms plus the live recency line
+function whyPop(anchor,i){let w={},t={};try{const j=JSON.parse(i.score_json||'{}');w=j.why||{};t=j.terms||{}}catch(e){}
+ const age=(Date.now()-new Date(i.published_at+'Z'))/36e5,rec=(i.score||0)-(i.base_score||0);
+ const rows=[['Channel',`${(t.chan||0).toFixed(2)} · affinity ${(w.affinity??0).toFixed(2)}`],['From this channel',`${w.n_library??0} saved, ${w.n_watched??0} watched${w.mean_completion!=null?' ('+Math.round(w.mean_completion*100)+'% on average)':''}, ${w.n_noted??0} with notes`]];
+ if(w.n_kept||w.n_dropped)rows.push(['Triage',`${w.n_kept} kept, ${w.n_dropped} dropped${w.drop_ratio!=null&&(w.n_kept+w.n_dropped)>=3?' · penalty '+(0.8*w.drop_ratio*w.drop_ratio).toFixed(2):''}`]);
+ if(t.dup)rows.push(['Looks like a saved video',t.dup.toFixed(2)]);if(t.seen)rows.push(['Already in your library',t.seen.toFixed(2)]);
+ rows.push([S.mode=='review'?'Recency (Review)':'Recency (Recent)',`+${rec.toFixed(2)} · ${age<48?Math.round(age)+' h':Math.round(age/24)+' d'} old`]);rows.push(['Score',(i.score||0).toFixed(2)]);
+ const el=document.createElement('div');el.className='pop whypop';el.setAttribute('role','dialog');el.innerHTML=`<b>Why this is here</b><dl>${rows.map(([k,v])=>`<dt>${esc(k)}</dt><dd>${esc(v)}</dd>`).join('')}</dl><p class=mut style="margin:8px 0 0">Topic matching (your tags) comes in a later step.</p>`;
+ document.body.appendChild(el);const r=anchor.getBoundingClientRect();el.style.position='fixed';el.style.left=Math.min(r.left,innerWidth-340)+'px';el.style.top=(r.bottom+6)+'px';el.style.maxWidth='330px';el.style.zIndex=50;
+ const close=ev=>{if(ev.type=='keydown'&&ev.key!='Escape')return;if(ev.type=='mousedown'&&el.contains(ev.target))return;el.remove();document.removeEventListener('mousedown',close,true);document.removeEventListener('keydown',close,true)};
+ setTimeout(()=>{document.addEventListener('mousedown',close,true);document.addEventListener('keydown',close,true)},0)}
+flist.addEventListener('click',e=>{const b=e.target.closest('[data-why]');if(!b)return;e.stopPropagation();const i=ITEMS.find(x=>x.video_id==b.dataset.why);if(i)whyPop(b,i)},true);
 fq2.oninput=()=>{FI=0;drawFeed()};fq.oninput=()=>{CI=0;drawChannels()};
 fmoreb.onclick=()=>loadItems(true);
 pollon.onchange=async()=>{await P('/api/feed/settings',{polling:pollon.checked});S.polling=pollon.checked;yc.toast(pollon.checked?'The app will check your channels in the background while it is running.':'Background checks are off. Check Now still works.');drawFeed()};
 
 // ---------------------------------------------------------------- loading
-async function loadItems(more){if(!more){PAGE=0}const lim=200,off=PAGE*lim;const q=new URLSearchParams({limit:lim,offset:off});const sh=SHOWS[SHOW][1];if(sh)q.set('shorts',sh);
+async function loadItems(more){if(!more){PAGE=0}const lim=200,off=PAGE*lim;const q=new URLSearchParams({limit:lim,offset:off,view:ORDER});const sh=SHOWS[SHOW][1];if(sh)q.set('shorts',sh);
  const r=await J('/api/feed/items?'+q);MORE=r.length==lim;ITEMS=more?ITEMS.concat(r):r;if(more)PAGE++;drawFeed()}
 async function load(j){const [d,s]=await Promise.all([J('/api/feed/channels'),J('/api/feed/summary')]);D=d;S=s;draw(j);if(VIEW=='feed'&&S.first_pass_at)await loadItems()}
 async function poll(){const j=await J('/api/feed/resolve/status');if(j.running){drawChannels(j);POLL=setTimeout(poll,700)}else{POLL=null;await load(j);
@@ -257,10 +297,16 @@ addEventListener('keydown',e=>{const a=document.activeElement;if(a&&a.tagName=='
  else if(k==' '&&L[FI]){e.preventDefault();openPreview(L[FI].video_id)}
  else if(kl=='w'){e.preventDefault();watchFrom()}
  else if(kl=='y'&&L[FI]){e.preventDefault();window.open('https://youtu.be/'+L[FI].video_id,'_blank','noopener')}
- else if(kl=='x'&&L[FI]){e.preventDefault();dismiss([L[FI].video_id])}
- else if(kl=='p'&&L[FI]){e.preventDefault();pullToTriage([L[FI].video_id])}
+ else if(kl=='x'&&L[FI]){e.preventDefault();dismiss(TICK.size?[...TICK]:[L[FI].video_id]);TICK.clear();bulkUI()}
+ else if(kl=='p'&&L[FI]){e.preventDefault();pullToTriage(TICK.size?[...TICK]:[L[FI].video_id]);TICK.clear();bulkUI()}
+ else if(kl=='v'&&ORDER=='ranked'){e.preventDefault();setMode(S.mode=='review'?'recent':'review')}
+ else if(kl=='m'&&L[FI]){e.preventDefault();muteChannel(L[FI].channel_id,L[FI].channel,flist.querySelector('.vrow.f'))}
+ else if(kl=='o'){e.preventDefault();setOrder(ORDER=='ranked'?'newest':'ranked')}
+ else if(k=='Enter'&&L[FI]){e.preventDefault();tick(L[FI].video_id,!TICK.has(L[FI].video_id))}
+ else if(kl=='i'&&L[FI]&&ORDER=='ranked'){e.preventDefault();const b=flist.querySelector(`[data-why="${L[FI].video_id}"]`);if(b)whyPop(b,L[FI])}
  else if(kl=='r'){e.preventDefault();(FRUN?fcancel:fetchb).click()}
  else if(k=='1'||k=='2'||k=='3'){e.preventDefault();SHOW=['all','videos','shorts'][Number(k)-1];try{localStorage.setItem('feedShow',JSON.stringify(SHOW))}catch(e){}FI=0;closePreview();loadItems()}});
+addEventListener('pagehide',()=>{if(S.first_pass_at&&navigator.sendBeacon)navigator.sendBeacon('/api/feed/seen',new Blob(['{}'],{type:'application/json'}))});
 yc.jump();
 (async()=>{const [j,f]=await Promise.all([J('/api/feed/resolve/status'),J('/api/feed/fetch/status')]);await load(j.running?j:null);
  // any channel resolved -> New Videos. Only a library with no channels at all opens on the Channels tab.

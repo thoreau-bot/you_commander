@@ -270,8 +270,8 @@ def setup(app, DB, fts_dirty_cb=lambda: None):
         return {'ok': 1, 'videos': n}
 
     # ---------------------------------------------------------------- step 2: new videos
-    import feed_fetch as ff
-    ff.ensure_schema(DB); ff.start_poller(DB)
+    import feed_fetch as ff, feed_rank
+    ff.ensure_schema(DB); feed_rank.ensure_schema(DB); ff.start_poller(DB)
 
     @app.get('/api/feed/summary')
     def f_summary():
@@ -279,8 +279,16 @@ def setup(app, DB, fts_dirty_cb=lambda: None):
         c = con(); s = ff.summary(c); c.close(); s['job'] = dict(ff.JOB); s['resolve'] = dict(JOB); s['pace'] = ytpace.status(); return s
 
     @app.get('/api/feed/items')
-    def f_items(view: str = 'newest', limit: int = 200, offset: int = 0, shorts: str | None = None, channel: str | None = None, q: str | None = None):
-        c = con(); r = ff.items(c, view, min(limit, 500), offset, shorts, channel, q); c.close(); return r
+    def f_items(view: str = 'ranked', limit: int = 200, offset: int = 0, shorts: str | None = None, channel: str | None = None, q: str | None = None, mode: str | None = None):
+        c = con(); r = ff.items(c, view, min(limit, 500), offset, shorts, channel, q, mode); c.close(); return r
+
+    @app.post('/api/feed/rescore')
+    def f_rescore(): return {'ok': 1, 'scored': feed_rank.rescore(DB)}
+
+    @app.post('/api/feed/seen')
+    def f_seen():
+        """The user is leaving the Feed page: Recent mode's window starts here next time."""
+        c = con(); ff.set_setting(c, 'last_seen_at', ff.now()); c.commit(); c.close(); return {'ok': 1}
 
     @app.post('/api/feed/fetch')
     def f_fetch(kind: str = 'manual'):
@@ -313,7 +321,7 @@ def setup(app, DB, fts_dirty_cb=lambda: None):
                 c.execute("update videos set pulled_at=coalesce(pulled_at,?) where video_id=?", (t, vid))
             c.execute("insert or replace into video_channel(video_id,channel_id) values(?,?)", (vid, it['channel_id']))
             c.execute("update feed_items set state='pulled',state_at=? where video_id=? and state in ('new','seen')", (t, vid))
-        c.commit(); c.close(); fts_dirty_cb()
+        c.commit(); c.close(); fts_dirty_cb(); feed_rank.dirty(DB)
         return {'ok': 1, 'added': n}
 
     class St(BaseModel): video_ids: list[str]; state: str
@@ -325,11 +333,13 @@ def setup(app, DB, fts_dirty_cb=lambda: None):
             n += c.execute("update feed_items set state=?,state_at=? where video_id=?", (b.state, t, v)).rowcount
         c.commit(); c.close(); return {'ok': 1, 'changed': n}
 
-    class Sett(BaseModel): polling: bool | None = None
+    class Sett(BaseModel): polling: bool | None = None; mode: str | None = None
     @app.post('/api/feed/settings')
     def f_settings(b: Sett):
+        if b.mode is not None and b.mode not in feed_rank.MODES: return {'error': 'bad mode'}
         c = con()
         if b.polling is not None: ff.set_setting(c, 'polling', '1' if b.polling else '0')
+        if b.mode is not None: ff.set_setting(c, 'mode', b.mode)
         c.commit(); c.close(); return {'ok': 1}
 
     class ChSet(BaseModel): tier: str | None = None; muted: int | None = None; poll_enabled: int | None = None

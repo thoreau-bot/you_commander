@@ -2,19 +2,6 @@
 import os, sqlite3, sys, time, pytest
 from conftest import takeout_csvs
 
-@pytest.fixture(scope='module')
-def lib(client):
-    """The imported test library (titles filled by the oEmbed test double), whichever test file runs first."""
-    if client.get('/api/summary').json()['videos'] == 0:
-        client.post('/api/import/reset')
-        for n, d in takeout_csvs().items(): client.post('/api/import/stage', params={'name': n}, content=d)
-        client.post('/api/import/run', json={'label': 'Test Account'})
-    client.post('/api/import/titles')
-    for _ in range(50):
-        if not client.get('/api/import/status').json().get('running'): break
-        time.sleep(0.1)
-    return client
-
 def _feed(): return sys.modules['feed']   # imported by app with ORG_FEED_FAKE set
 
 def _wait(client, secs=5):
@@ -98,12 +85,6 @@ def test_phase_a_backfills_pre_1_9_rows_and_unresolved_is_reported(lib):
 # ---------------------------------------------------------------- step 2: new videos
 def _ff(): return sys.modules['feed_fetch']
 
-@pytest.fixture(scope='module')
-def resolved(lib):
-    """The library with every channel resolved (step 1), whatever order the tests ran in."""
-    if lib.get('/api/feed/channels').json()['linked'] < 4:
-        lib.post('/api/feed/resolve'); _wait(lib)
-    return lib
 
 def _wait_fetch(client, secs=10):
     for _ in range(int(secs / 0.05)):

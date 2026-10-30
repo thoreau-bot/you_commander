@@ -256,6 +256,8 @@ def run_pass(path, kind, channel_ids=None, workers=4):
         if kind == 'first' and not JOB['cancel']:
             set_setting(c, 'first_pass_at', now()); set_setting(c, 'polling', setting(c, 'polling', '1'))
         c.commit()
+        import feed_rank
+        feed_rank.compute_affinity(c); feed_rank.score_items(c); feed_rank.retention(c)
     except Exception as e:
         JOB['note'] = str(e)[:300]
     finally:
@@ -357,16 +359,33 @@ def start_poller(path):
     POLLER['thread'] = threading.Thread(target=_poll_loop, args=(path,), name='feed-poller', daemon=True); POLLER['thread'].start()
 
 # ---------------------------------------------------------------- queries
-def items(c, view='newest', limit=200, offset=0, shorts=None, channel=None, q=None):
+def items(c, view='ranked', limit=200, offset=0, shorts=None, channel=None, q=None, mode=None):
+    """view: 'ranked' (base_score + recency per mode, within the mode's window) or 'newest' (published_at desc, no window)."""
+    import feed_rank
     where = ["i.state='new'", "ch.muted=0"]; a = []
     if shorts == 'only': where.append("i.is_short=1")
     elif shorts == 'hide': where.append("coalesce(i.is_short,0)=0")
     if channel: where.append("i.channel_id=?"); a.append(channel)
     if q:
         where.append("(i.title like ? or ch.title like ?)"); a += [f'%{q}%', f'%{q}%']
-    order = "i.published_at desc" if view == 'newest' else "i.published_at desc"
+    mode = mode or setting(c, 'mode', 'recent')
+    if view == 'ranked':
+        p = feed_rank.mode_params(mode)
+        if mode == 'recent':
+            seen_at = setting(c, 'last_seen_at')
+            lo = seen_at or (dt.datetime.utcnow() - dt.timedelta(days=p['window_days'])).isoformat(timespec='seconds')
+            # since I was last here; but never an empty page: fall back to the window when nothing is that new
+            if not c.execute("select 1 from feed_items where state='new' and published_at>=? limit 1", (lo,)).fetchone():
+                lo = (dt.datetime.utcnow() - dt.timedelta(days=p['window_days'])).isoformat(timespec='seconds')
+        else:
+            lo = (dt.datetime.utcnow() - dt.timedelta(days=p['window_days'])).isoformat(timespec='seconds')
+        where.append("i.published_at >= ?"); a.append(lo)
+        order = feed_rank.ranked_sql(mode) + " desc, i.published_at desc"
+        score_col = feed_rank.ranked_sql(mode) + " score,"
+    else:
+        order = "i.published_at desc"; score_col = "coalesce(i.base_score,0) score,"
     sql = f"""select i.video_id,i.title,i.published_at,i.thumb_url,i.views,i.views_at,i.is_short,i.is_short_src,i.duration_s,i.first_seen,
-                     ch.channel_id,ch.title channel,ch.handle
+                     i.base_score,i.score_json,{score_col} ch.channel_id,ch.title channel,ch.handle
               from feed_items i join channels ch on ch.channel_id=i.channel_id where {' and '.join(where)} order by {order} limit ? offset ?"""
     return [dict(r) for r in c.execute(sql, a + [limit, offset])]
 
@@ -376,6 +395,13 @@ def summary(c):
     s['new_shorts'] = c.execute("select count(*) from feed_items i join channels ch using(channel_id) where i.state='new' and ch.muted=0 and i.is_short=1").fetchone()[0]
     s['unknown_len'] = c.execute("select count(*) from feed_items where state='new' and is_short is null").fetchone()[0]
     s['guessed'] = c.execute("select count(*) from feed_items where state='new' and is_short_src='guess'").fetchone()[0]
+    s['mode'] = setting(c, 'mode', 'recent'); s['last_seen_at'] = setting(c, 'last_seen_at')
+    s['scored'] = c.execute("select count(*) from feed_items where state='new' and base_score is not null").fetchone()[0]
+    s['affinity_rows'] = c.execute("select count(*) from channel_affinity").fetchone()[0] if c.execute("select 1 from sqlite_master where name='channel_affinity'").fetchone() else 0
+    import feed_rank
+    for m, pm in feed_rank.MODES.items():
+        lo = (dt.datetime.utcnow() - dt.timedelta(days=pm['window_days'])).isoformat(timespec='seconds')
+        s['in_window_' + m] = c.execute("select count(*) from feed_items i join channels ch using(channel_id) where i.state='new' and ch.muted=0 and i.published_at>=?", (lo,)).fetchone()[0]
     s['channels'] = c.execute("select count(*) from channels where poll_enabled=1 and muted=0").fetchone()[0]
     s['last_polled'] = c.execute("select max(last_polled) from channels").fetchone()[0]
     s['failing'] = c.execute("select count(*) from channels where fail_n>=3").fetchone()[0]

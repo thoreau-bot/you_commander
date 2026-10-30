@@ -29,3 +29,29 @@ def takeout_csvs():
     return {'playlists.csv': idx.getvalue().encode(),
             'Watch later-videos.csv': vids(['aaaaaaaaaaa', 'bbbbbbbbbbb', 'ccccccccccc']),
             'Soldering-videos.csv': vids(['bbbbbbbbbbb', 'ddddddddddd'])}
+
+
+@pytest.fixture(scope='module')
+def lib(client):
+    """The imported test library (titles filled by the oEmbed test double), whichever test file runs first."""
+    import time
+    if client.get('/api/summary').json()['videos'] == 0:
+        client.post('/api/import/reset')
+        for n, d in takeout_csvs().items(): client.post('/api/import/stage', params={'name': n}, content=d)
+        client.post('/api/import/run', json={'label': 'Test Account'})
+    client.post('/api/import/titles')
+    for _ in range(50):
+        if not client.get('/api/import/status').json().get('running'): break
+        time.sleep(0.1)
+    return client
+
+@pytest.fixture(scope='module')
+def resolved(lib):
+    """The library with every channel resolved (step 1), whatever order the tests ran in."""
+    import time
+    if lib.get('/api/feed/channels').json()['linked'] < 4:
+        lib.post('/api/feed/resolve')
+        for _ in range(100):
+            if not lib.get('/api/feed/resolve/status').json().get('running'): break
+            time.sleep(0.05)
+    return lib
